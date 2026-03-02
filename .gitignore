@@ -1,0 +1,32 @@
+# Dependencies
+/vendor/
+/node_modules/
+
+# Environment & config files with secrets
+.env
+config/database.php
+
+# Uploaded files
+/public/uploads/
+/storage/
+
+# Logs
+/logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Compiled assets
+/public/dist/
+/public/build/
+
+# Composer lock (optional: keep if you want reproducible builds)
+# composer.lock
