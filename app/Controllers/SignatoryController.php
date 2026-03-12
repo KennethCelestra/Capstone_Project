@@ -3,7 +3,6 @@ require_once ROOT_PATH . '/app/Models/ClearanceStatus.php';
 
 class SignatoryController extends Controller
 {
-
     private ClearanceStatus $statusModel;
 
     public function __construct()
@@ -15,9 +14,9 @@ class SignatoryController extends Controller
     {
         $this->requireLogin('signatory');
         $data = [
-            'clearances' => $this->statusModel->getPendingBySignatory($_SESSION['user_id']),
-            'flash' => $this->getFlash(),
-            'userName' => $_SESSION['user_name'],
+            'clearances' => $this->statusModel->getClearancesForSignatory($_SESSION['user_id']),
+            'flash'      => $this->getFlash(),
+            'userName'   => $_SESSION['user_name'],
         ];
         $this->view('layouts/main', array_merge($data, ['content' => 'signatory/dashboard']));
     }
@@ -25,10 +24,21 @@ class SignatoryController extends Controller
     public function clearances(): void
     {
         $this->requireLogin('signatory');
+        $signatoryId   = (int) $_SESSION['user_id'];
+        $clearanceSummaries = $this->statusModel->getClearancesForSignatory($signatoryId);
+
+        // Attach student list to each clearance
+        $clearances = [];
+        foreach ($clearanceSummaries as $c) {
+            $cid = (int) $c['clearance_id'];
+            $c['students'] = $this->statusModel->getStudentsForSignatory($cid, $signatoryId);
+            $clearances[]  = $c;
+        }
+
         $data = [
-            'clearances' => $this->statusModel->getPendingBySignatory($_SESSION['user_id']),
-            'flash' => $this->getFlash(),
-            'userName' => $_SESSION['user_name'],
+            'clearances' => $clearances,
+            'flash'      => $this->getFlash(),
+            'userName'   => $_SESSION['user_name'],
         ];
         $this->view('layouts/main', array_merge($data, ['content' => 'signatory/clearances']));
     }
@@ -36,8 +46,9 @@ class SignatoryController extends Controller
     public function signClearance(): void
     {
         $this->requireLogin('signatory');
-        $studentId = (int) $this->getPost('student_id');
-        $this->statusModel->sign($studentId, $_SESSION['user_id']);
+        $clearanceId = (int) $this->getPost('clearance_id');
+        $studentId   = (int) $this->getPost('student_id');
+        $this->statusModel->sign($clearanceId, $studentId, $_SESSION['user_id']);
         $this->setFlash('success', 'Clearance signed successfully.');
         $this->redirect('signatory/clearances');
     }
