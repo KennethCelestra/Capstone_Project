@@ -60,7 +60,6 @@ $totalPending = $totalStudents - $totalFlagged - $totalCleared;
     <h3>Quick Actions</h3>
     <div class="action-buttons">
         <a href="<?= BASE_URL ?>adviser/clearances" class="btn btn-primary">📋 View Clearance Status</a>
-        <a href="<?= BASE_URL ?>adviser/enrollment" class="btn btn-secondary">🎓 Enrollment Committee View</a>
         <?php if ($totalFlagged > 0): ?>
             <a href="<?= BASE_URL ?>adviser/clearances?status=flagged" class="btn btn-danger">
                 🚩 View Flagged Students (<?= $totalFlagged ?>)
@@ -68,16 +67,3 @@ $totalPending = $totalStudents - $totalFlagged - $totalCleared;
         <?php endif; ?>
     </div>
 </div>
-
-<style>
-.btn-danger {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: #fff; border: none;
-    padding: .5rem 1rem; border-radius: 8px;
-    font-weight: 600; cursor: pointer;
-    transition: opacity .2s, transform .15s;
-    font-size: .875rem; text-decoration: none;
-    display: inline-flex; align-items: center; gap: .35rem;
-}
-.btn-danger:hover { opacity:.9; transform:translateY(-1px); }
-</style>

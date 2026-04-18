@@ -141,15 +141,6 @@ class AdviserController extends Controller
         $this->view('layouts/main', array_merge($data, ['content' => 'adviser/clearances']));
     }
 
-    // ----------------------------------------------------------------
-    // Enrollment route — redirect to unified clearances view
-    // ----------------------------------------------------------------
-
-    public function enrollment(): void
-    {
-        $this->requireLogin('adviser');
-        $this->redirect('adviser/clearances');
-    }
 
     // ----------------------------------------------------------------
     // Helpers

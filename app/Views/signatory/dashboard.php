@@ -53,10 +53,5 @@ foreach ($clearances as $c) {
     <h3>Quick Actions</h3>
     <div class="action-buttons">
         <a href="<?= BASE_URL ?>signatory/clearances" class="btn btn-primary">📋 Manage Student Clearances</a>
-        <?php if ($totalFlagged > 0): ?>
-            <a href="<?= BASE_URL ?>signatory/confirm" class="btn btn-danger">
-                🚩 Review & Send Deficiency Emails (<?= $totalFlagged ?> flagged)
-            </a>
-        <?php endif; ?>
     </div>
 </div>

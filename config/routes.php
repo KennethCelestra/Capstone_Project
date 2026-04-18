@@ -16,12 +16,11 @@ $routes = [
     // ---- Admin: Dashboard ----
     'GET /admin/dashboard'                        => ['AdminController', 'dashboard'],
 
-    // ---- Admin: Students (global page kept for direct URL access) ----
+    // ---- Admin: Students ----
     'GET /admin/students'                         => ['AdminController', 'students'],
     'POST /admin/students/add'                    => ['AdminController', 'addStudent'],
     'POST /admin/students/delete'                 => ['AdminController', 'deleteStudent'],
     'POST /admin/students/upload'                 => ['AdminController', 'uploadStudents'],
-    'POST /admin/students/dummies'                => ['AdminController', 'insertDummies'],
 
     // ---- Admin: Advisers ----
     'GET /admin/advisers'                         => ['AdminController', 'advisers'],
@@ -59,13 +58,11 @@ $routes = [
 
     // ---- Admin: Clearance – Student management ----
     'POST /admin/clearances/students/upload'      => ['AdminController', 'uploadStudents'],
-    'POST /admin/clearances/students/dummies'     => ['AdminController', 'insertDummies'],
     'POST /admin/clearances/students/remove'      => ['AdminController', 'removeStudentFromClearance'],
 
     // ---- Adviser ----
     'GET /adviser/dashboard'                      => ['AdviserController', 'dashboard'],
     'GET /adviser/clearances'                     => ['AdviserController', 'clearances'],
-    'GET /adviser/enrollment'                     => ['AdviserController', 'enrollment'],
 
     // ---- Signatory ----
     'GET /signatory/dashboard'                    => ['SignatoryController', 'dashboard'],
@@ -73,9 +70,5 @@ $routes = [
     'POST /signatory/students/flag'               => ['SignatoryController', 'flagStudent'],
     'POST /signatory/students/clear'              => ['SignatoryController', 'clearStudent'],
     'POST /signatory/students/clear-all'          => ['SignatoryController', 'clearAll'],
-    'GET /signatory/confirm'                      => ['SignatoryController', 'confirmFlags'],
     'POST /signatory/confirm/submit'              => ['SignatoryController', 'submitConfirm'],
-
-    // ---- Legacy (kept for backward compat) ----
-    'POST /signatory/clearances/sign'             => ['SignatoryController', 'clearStudent'],
 ];

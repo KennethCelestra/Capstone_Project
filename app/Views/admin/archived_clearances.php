@@ -1,6 +1,4 @@
-<?php
-// admin/archived_clearances.php
-?>
+
 <div class="page-header">
     <div>
         <a href="<?= BASE_URL ?>admin/clearances" class="back-link">← Active Clearances</a>
@@ -69,32 +67,4 @@
     </div>
 <?php endif; ?>
 
-<style>
-.back-link {
-    display: inline-block; color: var(--text-muted, #94a3b8);
-    text-decoration: none; font-size: .875rem;
-    margin-bottom: .4rem; transition: color .15s;
-}
-.back-link:hover { color: var(--text, #e2e8f0); }
 
-.row-archived { opacity: .85; }
-
-.badge-archived {
-    background: rgba(148,163,184,.15);
-    color: #94a3b8;
-    border: 1px solid rgba(148,163,184,.3);
-    padding: .15rem .5rem; border-radius: 999px;
-    font-size: .72rem; font-weight: 600;
-}
-
-.btn-warning {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: #fff; border: none;
-    padding: .4rem .85rem; border-radius: 8px;
-    font-weight: 600; cursor: pointer;
-    transition: opacity .2s, transform .15s;
-    font-size: .8rem; text-decoration: none;
-    display: inline-flex; align-items: center; gap: .3rem;
-}
-.btn-warning:hover { opacity: .9; transform: translateY(-1px); }
-</style>

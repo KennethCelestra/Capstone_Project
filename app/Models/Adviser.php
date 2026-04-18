@@ -51,12 +51,6 @@ class Adviser extends Model
         }
     }
 
-    public function findByEmail(string $email): array|false
-    {
-        $stmt = $this->db->prepare("SELECT * FROM advisers WHERE email = ?");
-        $stmt->execute([$email]);
-        return $stmt->fetch();
-    }
 
     /**
      * Get all advisers NOT yet assigned to the given clearance.

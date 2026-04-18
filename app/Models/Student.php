@@ -60,19 +60,6 @@ class Student extends Model
     }
 
 
-    public function findByStudentId(string $studentId): array|false
-    {
-        $stmt = $this->db->prepare("SELECT * FROM students WHERE student_id = ?");
-        $stmt->execute([$studentId]);
-        return $stmt->fetch();
-    }
-
-    public function findByEmail(string $email): array|false
-    {
-        $stmt = $this->db->prepare("SELECT * FROM students WHERE email = ?");
-        $stmt->execute([$email]);
-        return $stmt->fetch();
-    }
 
     public function findAll(): array
     {

@@ -118,13 +118,6 @@ class ClearanceStatus extends Model
         return $stmt->execute([$clearanceId, $studentId, $signatoryId]);
     }
 
-    /**
-     * Legacy sign method (kept for backward compatibility).
-     */
-    public function sign(int $clearanceId, int $studentId, int $signatoryId): bool
-    {
-        return $this->clearStudent($clearanceId, $studentId, $signatoryId);
-    }
 
     // ----------------------------------------------------------------
     // CLEARED CHECK: Used to fire the "all cleared" email
@@ -231,27 +224,6 @@ class ClearanceStatus extends Model
         return $stmt->fetchAll();
     }
 
-    // ----------------------------------------------------------------
-    // LEGACY: kept for older views
-    // ----------------------------------------------------------------
-
-    public function getForStudentInClearance(int $clearanceId, int $studentId): array
-    {
-        $stmt = $this->db->prepare("
-            SELECT cs.*, sg.full_name AS signatory_name, sg.office
-            FROM clearance_status cs
-            JOIN signatories sg ON cs.signatory_id = sg.id
-            WHERE cs.clearance_id = ? AND cs.student_id = ?
-            ORDER BY sg.office ASC
-        ");
-        $stmt->execute([$clearanceId, $studentId]);
-        return $stmt->fetchAll();
-    }
-
-    public function getForSignatory(int $clearanceId, int $signatoryId): array
-    {
-        return $this->getStudentsForSignatory($clearanceId, $signatoryId);
-    }
 
     // ----------------------------------------------------------------
     // SIGNATORY: Bulk clear all pending (non-flagged) students

@@ -52,12 +52,6 @@ class Signatory extends Model
         }
     }
 
-    public function findByEmail(string $email): array|false
-    {
-        $stmt = $this->db->prepare("SELECT * FROM signatories WHERE email = ?");
-        $stmt->execute([$email]);
-        return $stmt->fetch();
-    }
 
     /**
      * Get all signatories NOT yet assigned to the given clearance.

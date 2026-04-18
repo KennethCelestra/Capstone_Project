@@ -215,19 +215,4 @@ class Clearance extends Model
         ")->execute([$clearanceId, $studentDbId]);
     }
 
-    /**
-     * Get clearance status per signatory for a specific student in a clearance.
-     */
-    public function getStudentDetail(int $clearanceId, int $studentDbId): array
-    {
-        $stmt = $this->db->prepare("
-            SELECT cs.*, sg.full_name AS signatory_name, sg.office
-            FROM clearance_status cs
-            JOIN signatories sg ON cs.signatory_id = sg.id
-            WHERE cs.clearance_id = ? AND cs.student_id = ?
-            ORDER BY sg.office ASC
-        ");
-        $stmt->execute([$clearanceId, $studentDbId]);
-        return $stmt->fetchAll();
-    }
 }

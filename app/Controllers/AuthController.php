@@ -1,5 +1,4 @@
 <?php
-require_once ROOT_PATH . '/app/Models/Student.php';
 
 class AuthController extends Controller
 {
