@@ -38,7 +38,7 @@
                     </a>
                     <a href="<?= BASE_URL ?>admin/advisers"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/advisers') !== false ? 'active' : '' ?>">
-                        <span class="nav-icon">👨‍🏫</span> Advisers
+                        <span class="nav-icon">🎓</span> Enrollment Committee
                     </a>
                 <?php elseif ($_SESSION['user_role'] === 'adviser'): ?>
                     <a href="<?= BASE_URL ?>adviser/dashboard"
@@ -47,7 +47,11 @@
                     </a>
                     <a href="<?= BASE_URL ?>adviser/clearances"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/clearances') !== false ? 'active' : '' ?>">
-                        <span class="nav-icon">📋</span> Clearances
+                        <span class="nav-icon">📋</span> Clearance Status
+                    </a>
+                    <a href="<?= BASE_URL ?>adviser/enrollment"
+                       class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/enrollment') !== false ? 'active' : '' ?>">
+                        <span class="nav-icon">🎓</span> Enrollment View
                     </a>
                 <?php elseif ($_SESSION['user_role'] === 'signatory'): ?>
                     <a href="<?= BASE_URL ?>signatory/dashboard"
@@ -55,8 +59,12 @@
                         <span class="nav-icon">📊</span> Dashboard
                     </a>
                     <a href="<?= BASE_URL ?>signatory/clearances"
-                       class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/clearances') !== false ? 'active' : '' ?>">
-                        <span class="nav-icon">✍️</span> Sign Clearances
+                       class="nav-link <?= (strpos($_SERVER['REQUEST_URI'], '/clearances') !== false) ? 'active' : '' ?>">
+                        <span class="nav-icon">📋</span> Manage Students
+                    </a>
+                    <a href="<?= BASE_URL ?>signatory/confirm"
+                       class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/confirm') !== false ? 'active' : '' ?>">
+                        <span class="nav-icon">🚩</span> Confirm &amp; Send Emails
                     </a>
                 <?php endif; ?>
             </nav>

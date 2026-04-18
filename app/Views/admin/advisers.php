@@ -1,7 +1,7 @@
 <div class="page-header">
-    <h2>Manage Advisers</h2>
+    <h2>Manage Enrollment Committee</h2>
     <button class="btn btn-primary" onclick="document.getElementById('addAdviserModal').style.display='flex'">
-        + Add Adviser
+        + Add Member
     </button>
 </div>
 
@@ -18,7 +18,7 @@
         </thead>
         <tbody>
             <?php if (empty($advisers)): ?>
-                <tr><td colspan="5" class="text-center">No advisers found.</td></tr>
+                <tr><td colspan="5" class="text-center">No enrollment committee members found.</td></tr>
             <?php else: ?>
                 <?php foreach ($advisers as $a): ?>
                     <tr>
@@ -34,7 +34,7 @@
                                 Edit
                             </button>
                             <form action="<?= BASE_URL ?>admin/advisers/delete" method="POST" style="display:inline"
-                                  onsubmit="return confirm('Delete this adviser?')">
+                                  onsubmit="return confirm('Delete this enrollment committee member?')">
                                 <input type="hidden" name="id" value="<?= $a['id'] ?>">
                                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                             </form>
@@ -50,7 +50,7 @@
 <div id="addAdviserModal" class="modal" style="display:none;">
     <div class="modal-box">
         <div class="modal-header">
-            <h3>Add New Adviser</h3>
+            <h3>Add Enrollment Committee Member</h3>
             <button onclick="document.getElementById('addAdviserModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <form action="<?= BASE_URL ?>admin/advisers/add" method="POST" class="modal-form">
@@ -73,7 +73,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
                         onclick="document.getElementById('addAdviserModal').style.display='none'">Cancel</button>
-                <button type="submit" class="btn btn-primary">Add Adviser</button>
+                <button type="submit" class="btn btn-primary">Add Member</button>
             </div>
         </form>
     </div>
@@ -83,7 +83,7 @@
 <div id="editAdviserModal" class="modal" style="display:none;">
     <div class="modal-box">
         <div class="modal-header">
-            <h3>Edit Adviser</h3>
+            <h3>Edit Enrollment Committee Member</h3>
             <button onclick="document.getElementById('editAdviserModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <form action="<?= BASE_URL ?>admin/advisers/edit" method="POST" class="modal-form">

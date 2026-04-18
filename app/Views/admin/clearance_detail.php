@@ -21,7 +21,7 @@ $cid = $clearance['id'];
 <!-- ===== TABS ===== -->
 <div class="tabs">
     <button class="tab-btn active" onclick="showTab('tab-sig', this)">✍️ Signatories (<?= count($assignedSignatories) ?>)</button>
-    <button class="tab-btn"        onclick="showTab('tab-adv', this)">👨‍🏫 Advisers (<?= count($assignedAdvisers) ?>)</button>
+    <button class="tab-btn"        onclick="showTab('tab-adv', this)">🎓 Enrollment Committee (<?= count($assignedAdvisers) ?>)</button>
     <button class="tab-btn"        onclick="showTab('tab-stu', this)">👥 Students (<?= count($students) ?>)</button>
 </div>
 
@@ -68,21 +68,21 @@ $cid = $clearance['id'];
     <?php endif; ?>
 </div>
 
-<!-- ===== TAB: Advisers ===== -->
+<!-- ===== TAB: Enrollment Committee ===== -->
 <div id="tab-adv" class="tab-content" style="display:none">
     <div class="section-header">
-        <h3>Assigned Advisers / Enrollment Committee</h3>
+        <h3>Assigned Enrollment Committee Members</h3>
         <?php if (!empty($unassignedAdvisers)): ?>
             <button class="btn btn-primary btn-sm" onclick="document.getElementById('assignAdvModal').style.display='flex'">
-                + Assign Adviser
+                + Assign Member
             </button>
         <?php else: ?>
-            <span class="text-muted" style="font-size:.85rem">All advisers are assigned</span>
+            <span class="text-muted" style="font-size:.85rem">All enrollment committee members are assigned</span>
         <?php endif; ?>
     </div>
 
     <?php if (empty($assignedAdvisers)): ?>
-        <p class="text-muted">No advisers assigned yet.</p>
+        <p class="text-muted">No enrollment committee members assigned yet.</p>
     <?php else: ?>
         <div class="table-container">
             <table class="data-table">
@@ -97,7 +97,7 @@ $cid = $clearance['id'];
                             <td><?= htmlspecialchars($a['email']) ?></td>
                             <td>
                                 <form action="<?= BASE_URL ?>admin/clearances/advisers/remove" method="POST"
-                                      onsubmit="return confirm('Remove this adviser from the clearance?')">
+                                      onsubmit="return confirm('Remove this enrollment committee member from the clearance?')">
                                     <input type="hidden" name="clearance_id" value="<?= $cid ?>">
                                     <input type="hidden" name="adviser_id"   value="<?= $a['id'] ?>">
                                     <button type="submit" class="btn btn-danger btn-sm">Remove</button>
@@ -254,15 +254,15 @@ $cid = $clearance['id'];
 <div id="assignAdvModal" class="modal" style="display:none;">
     <div class="modal-box">
         <div class="modal-header">
-            <h3>Assign Adviser</h3>
+            <h3>Assign Enrollment Committee Member</h3>
             <button onclick="document.getElementById('assignAdvModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <form action="<?= BASE_URL ?>admin/clearances/advisers/assign" method="POST" class="modal-form">
             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
             <div class="form-group">
-                <label>Select Adviser</label>
+                <label>Select Enrollment Committee Member</label>
                 <select name="adviser_id" required>
-                    <option value="">-- Choose Adviser --</option>
+                    <option value="">-- Choose Member --</option>
                     <?php foreach ($unassignedAdvisers as $ua): ?>
                         <option value="<?= $ua['id'] ?>">
                             <?= htmlspecialchars($ua['full_name']) ?> — <?= htmlspecialchars($ua['department']) ?>

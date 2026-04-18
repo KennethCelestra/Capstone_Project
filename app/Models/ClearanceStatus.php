@@ -4,9 +4,217 @@ class ClearanceStatus extends Model
 {
     protected string $table = 'clearance_status';
 
+    // ----------------------------------------------------------------
+    // SIGNATORY: Student listing
+    // ----------------------------------------------------------------
+
     /**
-     * Get all clearance statuses for a specific student in a specific clearance.
+     * Get all students in a clearance for a given signatory,
+     * including their email, flag note, and updated_at.
      */
+    public function getStudentsForSignatory(int $clearanceId, int $signatoryId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT st.id, st.student_id AS student_number, st.full_name,
+                   st.email, st.course, st.year_level, st.section,
+                   COALESCE(cs.status, 'pending') AS status,
+                   cs.flag_note, cs.signed_at, cs.updated_at
+            FROM clearance_students cst
+            JOIN students st ON st.id = cst.student_id
+            LEFT JOIN clearance_status cs
+                ON cs.student_id   = st.id
+               AND cs.clearance_id = cst.clearance_id
+               AND cs.signatory_id = ?
+            WHERE cst.clearance_id = ?
+            ORDER BY cs.status ASC, st.full_name ASC
+        ");
+        $stmt->execute([$signatoryId, $clearanceId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get all clearances a signatory is assigned to, with summary counts.
+     */
+    public function getClearancesForSignatory(int $signatoryId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT c.id AS clearance_id, c.name AS clearance_name, c.school_year,
+                   COUNT(DISTINCT cst.student_id)                              AS total_students,
+                   COALESCE(SUM(cs.status = 'flagged'),  0)                    AS flagged_count,
+                   COALESCE(SUM(cs.status = 'cleared'),  0)                    AS cleared_count,
+                   COALESCE(SUM(cs.status = 'pending' OR cs.status IS NULL), 0) AS pending_count
+            FROM clearance_signatories csig
+            JOIN clearances c   ON c.id  = csig.clearance_id
+            JOIN clearance_students cst ON cst.clearance_id = c.id
+            LEFT JOIN clearance_status cs
+                ON cs.clearance_id = c.id
+               AND cs.student_id   = cst.student_id
+               AND cs.signatory_id = ?
+            WHERE csig.signatory_id = ?
+            GROUP BY c.id, c.name, c.school_year
+            ORDER BY c.name ASC
+        ");
+        $stmt->execute([$signatoryId, $signatoryId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get all flagged students for the confirmation screen.
+     */
+    public function getFlaggedStudentsForConfirmation(int $signatoryId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT cs.clearance_id, c.name AS clearance_name,
+                   st.id AS student_db_id, st.student_id AS student_number,
+                   st.full_name, st.email, st.course, st.year_level, st.section,
+                   cs.flag_note, cs.updated_at
+            FROM clearance_status cs
+            JOIN clearances c  ON c.id  = cs.clearance_id
+            JOIN students   st ON st.id = cs.student_id
+            WHERE cs.signatory_id = ? AND cs.status = 'flagged'
+            ORDER BY c.name ASC, st.full_name ASC
+        ");
+        $stmt->execute([$signatoryId]);
+        return $stmt->fetchAll();
+    }
+
+    // ----------------------------------------------------------------
+    // SIGNATORY: Actions
+    // ----------------------------------------------------------------
+
+    /**
+     * Flag a student with a deficiency note.
+     */
+    public function flagStudent(int $clearanceId, int $studentId, int $signatoryId, string $note): bool
+    {
+        $stmt = $this->db->prepare("
+            INSERT INTO clearance_status (clearance_id, student_id, signatory_id, status, flag_note, signed_at)
+            VALUES (?, ?, ?, 'flagged', ?, NULL)
+            ON DUPLICATE KEY UPDATE status = 'flagged', flag_note = VALUES(flag_note), signed_at = NULL
+        ");
+        return $stmt->execute([$clearanceId, $studentId, $signatoryId, $note]);
+    }
+
+    /**
+     * Clear (unflag) a student — sets status to 'cleared'.
+     */
+    public function clearStudent(int $clearanceId, int $studentId, int $signatoryId): bool
+    {
+        $stmt = $this->db->prepare("
+            INSERT INTO clearance_status (clearance_id, student_id, signatory_id, status, flag_note, signed_at)
+            VALUES (?, ?, ?, 'cleared', NULL, NOW())
+            ON DUPLICATE KEY UPDATE status = 'cleared', flag_note = NULL, signed_at = NOW()
+        ");
+        return $stmt->execute([$clearanceId, $studentId, $signatoryId]);
+    }
+
+    /**
+     * Legacy sign method (kept for backward compatibility).
+     */
+    public function sign(int $clearanceId, int $studentId, int $signatoryId): bool
+    {
+        return $this->clearStudent($clearanceId, $studentId, $signatoryId);
+    }
+
+    // ----------------------------------------------------------------
+    // CLEARED CHECK: Used to fire the "all cleared" email
+    // ----------------------------------------------------------------
+
+    /**
+     * Returns true if the student has NO flagged rows in the given clearance.
+     * A student is "fully cleared" when no signatory has flagged them.
+     */
+    public function isStudentFullyCleared(int $clearanceId, int $studentId): bool
+    {
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) FROM clearance_status
+            WHERE clearance_id = ? AND student_id = ? AND status = 'flagged'
+        ");
+        $stmt->execute([$clearanceId, $studentId]);
+        return (int)$stmt->fetchColumn() === 0;
+    }
+
+    /**
+     * Get student email + name + clearance name for the "fully cleared" email.
+     */
+    public function getStudentClearanceInfo(int $clearanceId, int $studentId): array|false
+    {
+        $stmt = $this->db->prepare("
+            SELECT st.full_name, st.email, c.name AS clearance_name
+            FROM students   st
+            JOIN clearances c  ON c.id = ?
+            WHERE st.id = ?
+        ");
+        $stmt->execute([$clearanceId, $studentId]);
+        return $stmt->fetch();
+    }
+
+    // ----------------------------------------------------------------
+    // ADVISER: Student listing with full signatory detail
+    // ----------------------------------------------------------------
+
+    /**
+     * Get clearances an adviser is assigned to, with per-student flag detail.
+     */
+    public function getClearancesForAdviser(int $adviserId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT
+                c.id AS clearance_id,
+                c.name AS clearance_name,
+                c.school_year,
+                st.id,
+                st.student_id AS student_number,
+                st.full_name,
+                st.email,
+                st.course,
+                st.year_level,
+                st.section,
+                COALESCE(SUM(cs.status = 'cleared'), 0)                          AS cleared_count,
+                COALESCE(SUM(cs.status = 'flagged'), 0)                          AS flagged_count,
+                COALESCE(COUNT(cs.id), 0)                                         AS total_count
+            FROM clearance_advisers ca
+            JOIN clearances c  ON c.id  = ca.clearance_id
+            JOIN clearance_students cst ON cst.clearance_id = c.id
+            JOIN students   st ON st.id = cst.student_id
+            LEFT JOIN clearance_status cs ON cs.clearance_id = c.id AND cs.student_id = st.id
+            WHERE ca.adviser_id = ?
+            GROUP BY c.id, c.name, c.school_year,
+                     st.id, st.student_id, st.full_name, st.email,
+                     st.course, st.year_level, st.section
+            ORDER BY c.name ASC, st.full_name ASC
+        ");
+        $stmt->execute([$adviserId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get per-signatory flag detail for a specific student in a clearance.
+     * Used by adviser to see exactly who flagged and why.
+     */
+    public function getSignatoryDetailForStudent(int $clearanceId, int $studentId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT sg.full_name AS signatory_name, sg.office,
+                   COALESCE(cs.status, 'pending') AS status,
+                   cs.flag_note, cs.signed_at
+            FROM clearance_signatories csig
+            JOIN signatories sg ON sg.id = csig.signatory_id
+            LEFT JOIN clearance_status cs
+                ON cs.signatory_id = sg.id
+               AND cs.clearance_id  = csig.clearance_id
+               AND cs.student_id    = ?
+            WHERE csig.clearance_id = ?
+            ORDER BY sg.office ASC
+        ");
+        $stmt->execute([$studentId, $clearanceId]);
+        return $stmt->fetchAll();
+    }
+
+    // ----------------------------------------------------------------
+    // LEGACY: kept for older views
+    // ----------------------------------------------------------------
+
     public function getForStudentInClearance(int $clearanceId, int $studentId): array
     {
         $stmt = $this->db->prepare("
@@ -20,105 +228,8 @@ class ClearanceStatus extends Model
         return $stmt->fetchAll();
     }
 
-    /**
-     * Get all pending students for a signatory in a clearance (for signatory view).
-     */
     public function getForSignatory(int $clearanceId, int $signatoryId): array
     {
-        $stmt = $this->db->prepare("
-            SELECT cs.*, st.student_id AS student_number, st.full_name, st.course, st.year_level, st.section
-            FROM clearance_status cs
-            JOIN students st ON st.id = cs.student_id
-            WHERE cs.clearance_id = ? AND cs.signatory_id = ?
-            ORDER BY st.full_name ASC
-        ");
-        $stmt->execute([$clearanceId, $signatoryId]);
-        return $stmt->fetchAll();
-    }
-
-    /**
-     * Mark a specific status row as signed.
-     */
-    public function sign(int $clearanceId, int $studentId, int $signatoryId): bool
-    {
-        $stmt = $this->db->prepare("
-            UPDATE clearance_status
-            SET status = 'signed', signed_at = NOW()
-            WHERE clearance_id = ? AND student_id = ? AND signatory_id = ?
-        ");
-        return $stmt->execute([$clearanceId, $studentId, $signatoryId]);
-    }
-
-    /**
-     * Get clearances an adviser is assigned to, with student progress.
-     */
-    public function getClearancesForAdviser(int $adviserId): array
-    {
-        $stmt = $this->db->prepare("
-            SELECT
-                c.id AS clearance_id,
-                c.name AS clearance_name,
-                c.school_year,
-                st.id,
-                st.student_id AS student_number,
-                st.full_name,
-                st.course,
-                st.year_level,
-                st.section,
-                COALESCE(SUM(cs.status = 'signed'), 0) AS signed_count,
-                COALESCE(COUNT(cs.id), 0)              AS total_count
-            FROM clearance_advisers ca
-            JOIN clearances c ON c.id = ca.clearance_id
-            JOIN clearance_students cst ON cst.clearance_id = c.id
-            JOIN students st ON st.id = cst.student_id
-            LEFT JOIN clearance_status cs ON cs.clearance_id = c.id AND cs.student_id = st.id
-            WHERE ca.adviser_id = ?
-            GROUP BY c.id, c.name, c.school_year, st.id, st.student_id, st.full_name, st.course, st.year_level, st.section
-            ORDER BY c.name ASC, st.full_name ASC
-        ");
-        $stmt->execute([$adviserId]);
-        return $stmt->fetchAll();
-    }
-
-    /**
-     * Get clearances a signatory is assigned to.
-     */
-    public function getClearancesForSignatory(int $signatoryId): array
-    {
-        $stmt = $this->db->prepare("
-            SELECT c.id AS clearance_id, c.name AS clearance_name, c.school_year,
-                   COUNT(DISTINCT cs.student_id)                               AS total_students,
-                   COALESCE(SUM(cs.status = 'signed'), 0)                      AS signed_count
-            FROM clearance_signatories csig
-            JOIN clearances c ON c.id = csig.clearance_id
-            LEFT JOIN clearance_status cs ON cs.clearance_id = c.id AND cs.signatory_id = ?
-            WHERE csig.signatory_id = ?
-            GROUP BY c.id, c.name, c.school_year
-            ORDER BY c.name ASC
-        ");
-        $stmt->execute([$signatoryId, $signatoryId]);
-        return $stmt->fetchAll();
-    }
-
-    /**
-     * Get all students in a clearance with their sign status for a specific signatory.
-     */
-    public function getStudentsForSignatory(int $clearanceId, int $signatoryId): array
-    {
-        $stmt = $this->db->prepare("
-            SELECT st.id, st.student_id AS student_number, st.full_name, st.course,
-                   st.year_level, st.section,
-                   cs.status, cs.signed_at
-            FROM clearance_students cst
-            JOIN students st ON st.id = cst.student_id
-            LEFT JOIN clearance_status cs
-                ON cs.student_id   = st.id
-               AND cs.clearance_id = cst.clearance_id
-               AND cs.signatory_id = ?
-            WHERE cst.clearance_id = ?
-            ORDER BY cs.status ASC, st.full_name ASC
-        ");
-        $stmt->execute([$signatoryId, $clearanceId]);
-        return $stmt->fetchAll();
+        return $this->getStudentsForSignatory($clearanceId, $signatoryId);
     }
 }

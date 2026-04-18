@@ -60,9 +60,16 @@ $routes = [
     // ---- Adviser ----
     'GET /adviser/dashboard'                      => ['AdviserController', 'dashboard'],
     'GET /adviser/clearances'                     => ['AdviserController', 'clearances'],
+    'GET /adviser/enrollment'                     => ['AdviserController', 'enrollment'],
 
     // ---- Signatory ----
     'GET /signatory/dashboard'                    => ['SignatoryController', 'dashboard'],
     'GET /signatory/clearances'                   => ['SignatoryController', 'clearances'],
-    'POST /signatory/clearances/sign'             => ['SignatoryController', 'signClearance'],
+    'POST /signatory/students/flag'               => ['SignatoryController', 'flagStudent'],
+    'POST /signatory/students/clear'              => ['SignatoryController', 'clearStudent'],
+    'GET /signatory/confirm'                      => ['SignatoryController', 'confirmFlags'],
+    'POST /signatory/confirm/submit'              => ['SignatoryController', 'submitConfirm'],
+
+    // ---- Legacy (kept for backward compat) ----
+    'POST /signatory/clearances/sign'             => ['SignatoryController', 'clearStudent'],
 ];

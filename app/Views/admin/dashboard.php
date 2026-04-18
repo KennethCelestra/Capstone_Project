@@ -26,10 +26,10 @@
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon">👨‍🏫</div>
+        <div class="stat-icon">🎓</div>
         <div class="stat-info">
             <span class="stat-value"><?= $adviserCount ?></span>
-            <span class="stat-label">Advisers</span>
+            <span class="stat-label">Enrollment Committee</span>
         </div>
     </div>
 </div>
@@ -40,7 +40,7 @@
         <a href="<?= BASE_URL ?>admin/clearances" class="btn btn-primary">📋 Manage Clearances</a>
         <a href="<?= BASE_URL ?>admin/students"   class="btn btn-secondary">👥 Manage Students</a>
         <a href="<?= BASE_URL ?>admin/signatories" class="btn btn-secondary">✍️ Manage Signatories</a>
-        <a href="<?= BASE_URL ?>admin/advisers"    class="btn btn-secondary">👨‍🏫 Manage Advisers</a>
+        <a href="<?= BASE_URL ?>admin/advisers"    class="btn btn-secondary">🎓 Manage Enrollment Committee</a>
     </div>
 </div>
 
@@ -50,7 +50,7 @@
         <li><strong>Create a Clearance</strong> — go to <em>Clearances</em> and click "New Clearance".</li>
         <li><strong>Upload Students</strong> — inside a clearance, upload a CSV or insert dummy students.</li>
         <li><strong>Assign Signatories</strong> — inside a clearance, assign who needs to sign.</li>
-        <li><strong>Assign Advisers</strong> — assign advisers who can view progress of students.</li>
-        <li><strong>Share Credentials</strong> — go to <em>Signatories</em> / <em>Advisers</em> to see their login info.</li>
+        <li><strong>Assign Enrollment Committee</strong> — assign enrollment committee members who can view student clearance progress.</li>
+        <li><strong>Share Credentials</strong> — go to <em>Signatories</em> / <em>Enrollment Committee</em> to see their login info.</li>
     </ol>
 </div>
