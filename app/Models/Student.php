@@ -59,38 +59,6 @@ class Student extends Model
         return [$inserted, $skipped];
     }
 
-    /**
-     * Insert a set of pre-defined dummy students for testing.
-     * Returns [inserted, skipped].
-     */
-    public function insertDummies(): array
-    {
-        $dummies = [
-            ['2024-00001', 'Juan Dela Cruz',       'juan.delacruz@school.edu',   'BSIT', 2, 'A'],
-            ['2024-00002', 'Maria Santos',          'maria.santos@school.edu',    'BSIT', 2, 'A'],
-            ['2024-00003', 'Pedro Reyes',           'pedro.reyes@school.edu',     'BSCS', 3, 'B'],
-            ['2024-00004', 'Ana Garcia',            'ana.garcia@school.edu',      'BSCS', 1, 'C'],
-            ['2024-00005', 'Carlo Mendoza',         'carlo.mendoza@school.edu',   'BSIT', 4, 'A'],
-            ['2024-00006', 'Liza Bautista',         'liza.bautista@school.edu',   'BSIS', 2, 'B'],
-            ['2024-00007', 'Ramon Villanueva',      'ramon.villanueva@school.edu','BSIT', 3, 'C'],
-            ['2024-00008', 'Kristine Fernandez',    'kristine.fernandez@school.edu','BSCS', 1, 'A'],
-            ['2024-00009', 'Mark Ramos',            'mark.ramos@school.edu',      'BSIS', 4, 'B'],
-            ['2024-00010', 'Alyssa Torres',         'alyssa.torres@school.edu',   'BSIT', 2, 'C'],
-        ];
-
-        $rows = [];
-        foreach ($dummies as $d) {
-            $rows[] = [
-                'student_id' => $d[0],
-                'full_name'  => $d[1],
-                'email'      => $d[2],
-                'course'     => $d[3],
-                'year_level' => $d[4],
-                'section'    => $d[5],
-            ];
-        }
-        return $this->bulkInsertFromCSV($rows);
-    }
 
     public function findByStudentId(string $studentId): array|false
     {

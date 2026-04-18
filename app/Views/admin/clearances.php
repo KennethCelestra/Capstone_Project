@@ -46,12 +46,13 @@
                                     onclick="openEditClearance(<?= $c['id'] ?>, '<?= htmlspecialchars(addslashes($c['name'])) ?>', '<?= htmlspecialchars(addslashes($c['description'])) ?>', '<?= htmlspecialchars($c['school_year']) ?>')">
                                 Edit
                             </button>
-                            <form action="<?= BASE_URL ?>admin/clearances/delete" method="POST" style="display:inline"
-                                  onsubmit="return confirm('Delete this clearance? All related data will be removed.')">
+                            <form action="<?= BASE_URL ?>admin/clearances/archive" method="POST" style="display:inline"
+                                  onsubmit="return confirm('Archive this clearance? It will be hidden from active list but all data is preserved.')">
                                 <input type="hidden" name="id" value="<?= $c['id'] ?>">
-                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                <button type="submit" class="btn btn-warning btn-sm">🗄️ Archive</button>
                             </form>
                         </td>
+
                     </tr>
                 <?php endforeach; ?>
             </tbody>

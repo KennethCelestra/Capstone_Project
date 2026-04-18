@@ -211,19 +211,6 @@ class SignatoryController extends Controller
     // Confirmation screen (inline confirm — kept for email sending)
     // ----------------------------------------------------------------
 
-    public function confirmFlags(): void
-    {
-        $this->requireLogin('signatory');
-        $signatoryId = (int) $_SESSION['user_id'];
-        $flagged     = $this->statusModel->getFlaggedStudentsForConfirmation($signatoryId);
-
-        $data = [
-            'flagged'  => $flagged,
-            'flash'    => $this->getFlash(),
-            'userName' => $_SESSION['user_name'],
-        ];
-        $this->view('layouts/main', array_merge($data, ['content' => 'signatory/confirm']));
-    }
 
     public function submitConfirm(): void
     {
@@ -235,8 +222,7 @@ class SignatoryController extends Controller
         $officeName      = $signatoryRecord ? $signatoryRecord['office'] : 'Office';
 
         $clearanceId = (int) $this->getPost('clearance_id', 0);
-
-        $flagged = $this->statusModel->getFlaggedStudentsForConfirmation($signatoryId);
+        $flagged     = $this->statusModel->getFlaggedStudentsForConfirmation($signatoryId, $clearanceId);
         $sent    = 0;
         $errors  = 0;
 

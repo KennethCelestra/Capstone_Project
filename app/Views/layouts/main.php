@@ -25,8 +25,12 @@
                         <span class="nav-icon">📊</span> Dashboard
                     </a>
                     <a href="<?= BASE_URL ?>admin/clearances"
-                       class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/clearances') !== false ? 'active' : '' ?>">
+                       class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/clearances') !== false && strpos($_SERVER['REQUEST_URI'], '/archived') === false ? 'active' : '' ?>">
                         <span class="nav-icon">📋</span> Clearances
+                    </a>
+                    <a href="<?= BASE_URL ?>admin/archived-clearances"
+                       class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/archived-clearances') !== false ? 'active' : '' ?>">
+                        <span class="nav-icon">🗄️</span> Archived
                     </a>
                     <a href="<?= BASE_URL ?>admin/signatories"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/signatories') !== false ? 'active' : '' ?>">

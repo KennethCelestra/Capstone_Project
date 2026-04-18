@@ -119,24 +119,15 @@ $cid = $clearance['id'];
 <div id="tab-stu" class="tab-content" style="display:none">
     <div class="section-header">
         <h3>Enrolled Students</h3>
-        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
-            <button class="btn btn-primary btn-sm"
-                    onclick="document.getElementById('uploadCSVModal').style.display='flex'">
-                📤 Upload CSV
-            </button>
-            <form action="<?= BASE_URL ?>admin/clearances/students/dummies" method="POST" style="display:inline">
-                <input type="hidden" name="clearance_id" value="<?= $cid ?>">
-                <button type="submit" class="btn btn-secondary btn-sm"
-                        onclick="return confirm('Insert 10 dummy students and enroll them?')">
-                    🧪 Insert Dummies
-                </button>
-            </form>
-        </div>
+        <button class="btn btn-primary btn-sm"
+                onclick="document.getElementById('uploadCSVModal').style.display='flex'">
+            📤 Upload CSV
+        </button>
     </div>
     <?php if (empty($students)): ?>
         <div class="empty-state" style="padding:2rem">
             <div class="empty-icon">👥</div>
-            <p>No students enrolled yet. Upload a CSV or insert dummy data.</p>
+            <p>No students enrolled yet. Please upload a CSV file to enroll students.</p>
             <p class="text-muted" style="font-size:.8rem">
                 CSV format: <code>student_id, full_name, email, course, year_level, section</code>
             </p>
@@ -147,32 +138,45 @@ $cid = $clearance['id'];
                 <thead>
                     <tr>
                         <th>Student ID</th><th>Full Name</th><th>Course</th>
-                        <th>Year / Section</th><th>Progress</th><th>Status</th><th>Action</th>
+                        <th>Year / Section</th><th>Cleared</th><th>Flagged</th><th>Pending</th><th>Overall</th><th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($students as $s):
-                        $total   = (int) $s['total_count'];
-                        $signed  = (int) $s['signed_count'];
-                        $pct     = $total > 0 ? round(($signed / $total) * 100) : 0;
-                        $cleared = ($total > 0 && $signed === $total);
+                        $totalSig = (int) $s['total_signatories'];
+                        $cleared  = (int) $s['cleared_count'];
+                        $flagged  = (int) $s['flagged_count'];
+                        $pending  = (int) $s['pending_count'];
+
+                        if ($flagged > 0) {
+                            $overallBadge = '<span class="badge badge-danger">🚩 Has Deficiency</span>';
+                        } elseif ($totalSig > 0 && $cleared === $totalSig) {
+                            $overallBadge = '<span class="badge badge-success">✅ Fully Cleared</span>';
+                        } else {
+                            $overallBadge = '<span class="badge badge-warning">⏳ In Progress</span>';
+                        }
                     ?>
-                        <tr>
+                        <tr class="<?= $flagged > 0 ? 'row-flagged' : ($cleared === $totalSig && $totalSig > 0 ? 'row-cleared' : '') ?>">
                             <td><?= htmlspecialchars($s['student_number']) ?></td>
-                            <td><?= htmlspecialchars($s['full_name']) ?></td>
+                            <td><strong><?= htmlspecialchars($s['full_name']) ?></strong></td>
                             <td><?= htmlspecialchars($s['course']) ?></td>
                             <td><?= $s['year_level'] ?> – <?= htmlspecialchars($s['section']) ?></td>
+                            <td><span class="badge badge-success">✅ <?= $cleared ?></span></td>
                             <td>
-                                <div class="progress-bar-wrap">
-                                    <div class="progress-bar" style="width:<?= $pct ?>%"></div>
-                                </div>
-                                <small><?= $signed ?>/<?= $total ?> signed</small>
+                                <?php if ($flagged > 0): ?>
+                                    <span class="badge badge-danger">🚩 <?= $flagged ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
                             </td>
                             <td>
-                                <span class="badge <?= $cleared ? 'badge-success' : 'badge-warning' ?>">
-                                    <?= $cleared ? 'Cleared' : 'Pending' ?>
-                                </span>
+                                <?php if ($pending > 0): ?>
+                                    <span class="badge badge-warning">⏳ <?= $pending ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
                             </td>
+                            <td><?= $overallBadge ?></td>
                             <td>
                                 <form action="<?= BASE_URL ?>admin/clearances/students/remove"
                                       method="POST" onsubmit="return confirm('Remove student from clearance?')">
@@ -188,6 +192,8 @@ $cid = $clearance['id'];
         </div>
     <?php endif; ?>
 </div>
+
+
 
 
 <!-- ====== Edit Clearance Modal ====== -->

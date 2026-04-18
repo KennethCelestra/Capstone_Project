@@ -40,6 +40,9 @@ $routes = [
     'POST /admin/clearances/create'               => ['AdminController', 'createClearance'],
     'POST /admin/clearances/edit'                 => ['AdminController', 'editClearance'],
     'POST /admin/clearances/delete'               => ['AdminController', 'deleteClearance'],
+    'POST /admin/clearances/archive'              => ['AdminController', 'archiveClearance'],
+    'POST /admin/clearances/unarchive'            => ['AdminController', 'unarchiveClearance'],
+    'GET /admin/archived-clearances'              => ['AdminController', 'archivedClearances'],
 
     // ---- Admin: Clearance Detail (dynamic ID via GET param) ----
     'GET /admin/clearances/detail'                => ['AdminController', 'clearanceDetail'],

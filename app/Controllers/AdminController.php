@@ -133,29 +133,6 @@ class AdminController extends Controller
         $this->redirect("admin/clearances/detail?id={$clearanceId}{$qs}");
     }
 
-    public function insertDummies(): void
-    {
-        $this->requireLogin('admin');
-        $clearanceId  = (int) $this->getPost('clearance_id');
-        $returnWizard = (int) $this->getPost('return_wizard', 0);
-
-        [$inserted, $skipped] = $this->studentModel->insertDummies();
-
-        if ($clearanceId > 0) {
-            $dummyIds = ['2024-00001','2024-00002','2024-00003','2024-00004','2024-00005',
-                         '2024-00006','2024-00007','2024-00008','2024-00009','2024-00010'];
-            foreach ($dummyIds as $sid) {
-                $student = $this->studentModel->findByStudentId($sid);
-                if ($student) {
-                    $this->clearanceModel->enrollStudent($clearanceId, (int) $student['id']);
-                }
-            }
-        }
-
-        $this->setFlash('success', "Dummy students: {$inserted} inserted, {$skipped} already existed.");
-        $qs = $returnWizard ? "&wizard={$returnWizard}" : '';
-        $this->redirect("admin/clearances/detail?id={$clearanceId}{$qs}");
-    }
 
     // ================================================================
     //  ADVISERS
@@ -301,8 +278,8 @@ class AdminController extends Controller
         }
         $this->clearanceModel->create($data);
         $newId = $this->clearanceModel->getLastInsertId();
-        $this->setFlash('success', 'Clearance created! Complete the setup below.');
-        $this->redirect("admin/clearances/detail?id={$newId}&wizard=1");
+        $this->setFlash('success', 'Clearance created successfully.');
+        $this->redirect("admin/clearances/detail?id={$newId}");
     }
 
     public function editClearance(): void
@@ -316,7 +293,7 @@ class AdminController extends Controller
         ];
         $this->clearanceModel->update($id, $data);
         $this->setFlash('success', 'Clearance updated.');
-        $this->redirect("admin/clearances/{$id}");
+        $this->redirect("admin/clearances/detail?id={$id}");
     }
 
     public function deleteClearance(): void
@@ -326,6 +303,35 @@ class AdminController extends Controller
         $this->clearanceModel->delete($id);
         $this->setFlash('success', 'Clearance deleted.');
         $this->redirect('admin/clearances');
+    }
+
+    public function archiveClearance(): void
+    {
+        $this->requireLogin('admin');
+        $id = (int) $this->getPost('id');
+        $this->clearanceModel->archive($id);
+        $this->setFlash('success', 'Clearance archived. You can restore it from Archived Clearances.');
+        $this->redirect('admin/clearances');
+    }
+
+    public function unarchiveClearance(): void
+    {
+        $this->requireLogin('admin');
+        $id = (int) $this->getPost('id');
+        $this->clearanceModel->unarchive($id);
+        $this->setFlash('success', 'Clearance restored to active.');
+        $this->redirect('admin/archived-clearances');
+    }
+
+    public function archivedClearances(): void
+    {
+        $this->requireLogin('admin');
+        $data = [
+            'clearances' => $this->clearanceModel->findAllArchived(),
+            'flash'      => $this->getFlash(),
+            'userName'   => $_SESSION['user_name'],
+        ];
+        $this->view('layouts/main', array_merge($data, ['content' => 'admin/archived_clearances']));
     }
 
     public function clearanceDetail(): void

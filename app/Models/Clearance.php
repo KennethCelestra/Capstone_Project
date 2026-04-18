@@ -47,10 +47,41 @@ class Clearance extends Model
             LEFT JOIN clearance_signatories cs2 ON cs2.clearance_id = c.id
             LEFT JOIN clearance_advisers    ca  ON ca.clearance_id  = c.id
             LEFT JOIN clearance_students    cst ON cst.clearance_id = c.id
+            WHERE c.archived = 0
             GROUP BY c.id
             ORDER BY c.created_at DESC
         ");
         return $stmt->fetchAll();
+    }
+
+    public function findAllArchived(): array
+    {
+        $stmt = $this->db->query("
+            SELECT c.*,
+                   COUNT(DISTINCT cs2.signatory_id) AS signatory_count,
+                   COUNT(DISTINCT ca.adviser_id)    AS adviser_count,
+                   COUNT(DISTINCT cst.student_id)   AS student_count
+            FROM clearances c
+            LEFT JOIN clearance_signatories cs2 ON cs2.clearance_id = c.id
+            LEFT JOIN clearance_advisers    ca  ON ca.clearance_id  = c.id
+            LEFT JOIN clearance_students    cst ON cst.clearance_id = c.id
+            WHERE c.archived = 1
+            GROUP BY c.id
+            ORDER BY c.created_at DESC
+        ");
+        return $stmt->fetchAll();
+    }
+
+    public function archive(int $id): bool
+    {
+        return $this->db->prepare("UPDATE clearances SET archived = 1 WHERE id = ?")
+                        ->execute([$id]);
+    }
+
+    public function unarchive(int $id): bool
+    {
+        return $this->db->prepare("UPDATE clearances SET archived = 0 WHERE id = ?")
+                        ->execute([$id]);
     }
 
     // ---- SIGNATORIES ----
@@ -140,13 +171,17 @@ class Clearance extends Model
                 st.course,
                 st.year_level,
                 st.section,
-                COALESCE(SUM(cs.status = 'signed'), 0) AS signed_count,
-                COALESCE(COUNT(cs.id), 0)              AS total_count
+                COUNT(DISTINCT csig.signatory_id)                   AS total_signatories,
+                COALESCE(SUM(cs.status = 'cleared'), 0)             AS cleared_count,
+                COALESCE(SUM(cs.status = 'flagged'), 0)             AS flagged_count,
+                COALESCE(SUM(cs.status = 'pending' OR cs.status IS NULL OR cs.status = 'signed'), 0) AS pending_count
             FROM clearance_students cst
             JOIN students st ON st.id = cst.student_id
+            LEFT JOIN clearance_signatories csig ON csig.clearance_id = cst.clearance_id
             LEFT JOIN clearance_status cs
-                ON cs.student_id  = st.id
+                ON cs.student_id   = st.id
                AND cs.clearance_id = cst.clearance_id
+               AND cs.signatory_id = csig.signatory_id
             WHERE cst.clearance_id = ?
             GROUP BY st.id, st.student_id, st.full_name, st.course, st.year_level, st.section
             ORDER BY st.full_name ASC

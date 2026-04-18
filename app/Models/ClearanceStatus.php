@@ -59,11 +59,12 @@ class ClearanceStatus extends Model
     }
 
     /**
-     * Get all flagged students for the confirmation screen.
+     * Get all flagged students for the confirmation process.
+     * Optionally filtered by clearance.
      */
-    public function getFlaggedStudentsForConfirmation(int $signatoryId): array
+    public function getFlaggedStudentsForConfirmation(int $signatoryId, int $clearanceId = 0): array
     {
-        $stmt = $this->db->prepare("
+        $sql = "
             SELECT cs.clearance_id, c.name AS clearance_name,
                    st.id AS student_db_id, st.student_id AS student_number,
                    st.full_name, st.email, st.course, st.year_level, st.section,
@@ -72,9 +73,18 @@ class ClearanceStatus extends Model
             JOIN clearances c  ON c.id  = cs.clearance_id
             JOIN students   st ON st.id = cs.student_id
             WHERE cs.signatory_id = ? AND cs.status = 'flagged'
-            ORDER BY c.name ASC, st.full_name ASC
-        ");
-        $stmt->execute([$signatoryId]);
+        ";
+        $params = [$signatoryId];
+
+        if ($clearanceId > 0) {
+            $sql .= " AND cs.clearance_id = ?";
+            $params[] = $clearanceId;
+        }
+
+        $sql .= " ORDER BY c.name ASC, st.full_name ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 

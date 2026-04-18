@@ -95,9 +95,20 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
     </div>
     <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
         <?php if ($totalFlagged > 0): ?>
-            <a href="<?= BASE_URL ?>signatory/confirm?cid=<?= $selectedCid ?>" class="btn btn-danger">
-                🚩 Confirm &amp; Send Emails <span class="badge-count"><?= $totalFlagged ?></span>
-            </a>
+            <form action="<?= BASE_URL ?>signatory/confirm/submit" method="POST" id="direct-email-form"
+                  onsubmit="return confirm('Send deficiency emails to all <?= $totalFlagged ?> flagged student(s)?')">
+                <input type="hidden" name="clearance_id" value="<?= $selectedCid ?>">
+                <button type="submit" class="btn btn-danger" id="send-emails-btn">
+                    🚩 Send Deficiency Emails <span class="badge-count"><?= $totalFlagged ?></span>
+                </button>
+            </form>
+            <script>
+            document.getElementById('direct-email-form').addEventListener('submit', function() {
+                const btn = document.getElementById('send-emails-btn');
+                btn.disabled = true;
+                btn.innerHTML = '📧 Sending…';
+            });
+            </script>
         <?php endif; ?>
         <!-- Clear All pending students (skips flagged) -->
         <form action="<?= BASE_URL ?>signatory/students/clear-all" method="POST"

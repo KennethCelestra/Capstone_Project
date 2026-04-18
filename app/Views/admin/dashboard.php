@@ -48,7 +48,7 @@
     <h3>📌 Getting Started</h3>
     <ol style="margin-top:.75rem;line-height:2;">
         <li><strong>Create a Clearance</strong> — go to <em>Clearances</em> and click "New Clearance".</li>
-        <li><strong>Upload Students</strong> — inside a clearance, upload a CSV or insert dummy students.</li>
+        <li><strong>Upload Students</strong> — inside a clearance, upload a CSV file of students.</li>
         <li><strong>Assign Signatories</strong> — inside a clearance, assign who needs to sign.</li>
         <li><strong>Assign Enrollment Committee</strong> — assign enrollment committee members who can view student clearance progress.</li>
         <li><strong>Share Credentials</strong> — go to <em>Signatories</em> / <em>Enrollment Committee</em> to see their login info.</li>
