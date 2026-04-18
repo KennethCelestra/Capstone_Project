@@ -1,10 +1,11 @@
 <!-- ===== Signatory: Confirm & Send Deficiency Emails ===== -->
+<?php $cid = (int)($_GET['cid'] ?? 0); ?>
 <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
     <div>
         <h2>🚩 Confirm Deficiency Emails</h2>
         <p class="text-muted">Review all flagged students below. Click <strong>Send Emails</strong> to notify them.</p>
     </div>
-    <a href="<?= BASE_URL ?>signatory/clearances" class="btn btn-secondary">← Back to Students</a>
+    <a href="<?= BASE_URL ?>signatory/clearances<?= $cid > 0 ? '?cid='.$cid : '' ?>" class="btn btn-secondary">← Back to Students</a>
 </div>
 
 <?php if (empty($flagged)): ?>
@@ -62,6 +63,7 @@
         </div>
         <form action="<?= BASE_URL ?>signatory/confirm/submit" method="POST"
               onsubmit="return confirm('Send deficiency emails to all <?= count($flagged) ?> flagged student(s)?')">
+            <input type="hidden" name="clearance_id" value="<?= $cid ?>">
             <button type="submit" class="btn btn-danger btn-lg" id="send-emails-btn">
                 📧 Send Deficiency Emails to All Flagged Students
             </button>

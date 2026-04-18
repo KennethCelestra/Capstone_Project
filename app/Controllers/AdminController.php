@@ -86,19 +86,21 @@ class AdminController extends Controller
     public function uploadStudents(): void
     {
         $this->requireLogin('admin');
-        $clearanceId = (int) $this->getPost('clearance_id');
+        $clearanceId  = (int) $this->getPost('clearance_id');
+        $returnWizard = (int) $this->getPost('return_wizard', 0); // 0 = no wizard
 
         if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
             $this->setFlash('error', 'Please select a valid CSV file.');
-            $this->redirect("admin/clearances/{$clearanceId}");
+            $qs = $returnWizard ? "?wizard={$returnWizard}" : '';
+            $this->redirect("admin/clearances/detail?id={$clearanceId}{$qs}");
             return;
         }
 
-        $file = $_FILES['csv_file']['tmp_name'];
+        $file   = $_FILES['csv_file']['tmp_name'];
         $handle = fopen($file, 'r');
         if (!$handle) {
             $this->setFlash('error', 'Could not read the uploaded file.');
-            $this->redirect("admin/clearances/{$clearanceId}");
+            $this->redirect("admin/clearances/detail?id={$clearanceId}");
             return;
         }
 
@@ -106,7 +108,6 @@ class AdminController extends Controller
         $header = null;
         while (($line = fgetcsv($handle)) !== false) {
             if ($header === null) {
-                // Normalize header keys
                 $header = array_map(fn($h) => strtolower(trim($h)), $line);
                 continue;
             }
@@ -117,13 +118,9 @@ class AdminController extends Controller
 
         [$inserted, $skipped] = $this->studentModel->bulkInsertFromCSV($rows);
 
-        // Enroll newly inserted students into the clearance
-        if ($clearanceId > 0 && $inserted > 0) {
-            // Re-fetch all students that are now in DB but not yet in this clearance,
-            // using the student_ids that came from the CSV
+        if ($clearanceId > 0) {
+            $csvIds     = array_column($rows, 'student_id');
             $unEnrolled = $this->studentModel->findNotInClearance($clearanceId);
-            // Filter to only those whose student_id appeared in the CSV
-            $csvIds = array_column($rows, 'student_id');
             foreach ($unEnrolled as $st) {
                 if (in_array($st['student_id'], $csvIds, true)) {
                     $this->clearanceModel->enrollStudent($clearanceId, (int) $st['id']);
@@ -132,17 +129,18 @@ class AdminController extends Controller
         }
 
         $this->setFlash('success', "Import complete: {$inserted} inserted, {$skipped} skipped.");
-        $this->redirect("admin/clearances/{$clearanceId}");
+        $qs = $returnWizard ? "&wizard={$returnWizard}" : '';
+        $this->redirect("admin/clearances/detail?id={$clearanceId}{$qs}");
     }
 
     public function insertDummies(): void
     {
         $this->requireLogin('admin');
-        $clearanceId = (int) $this->getPost('clearance_id');
+        $clearanceId  = (int) $this->getPost('clearance_id');
+        $returnWizard = (int) $this->getPost('return_wizard', 0);
 
         [$inserted, $skipped] = $this->studentModel->insertDummies();
 
-        // Enroll dummy students into the clearance
         if ($clearanceId > 0) {
             $dummyIds = ['2024-00001','2024-00002','2024-00003','2024-00004','2024-00005',
                          '2024-00006','2024-00007','2024-00008','2024-00009','2024-00010'];
@@ -154,8 +152,9 @@ class AdminController extends Controller
             }
         }
 
-        $this->setFlash('success', "Dummy students: {$inserted} inserted, {$skipped} already existed. All enrolled in clearance.");
-        $this->redirect("admin/clearances/{$clearanceId}");
+        $this->setFlash('success', "Dummy students: {$inserted} inserted, {$skipped} already existed.");
+        $qs = $returnWizard ? "&wizard={$returnWizard}" : '';
+        $this->redirect("admin/clearances/detail?id={$clearanceId}{$qs}");
     }
 
     // ================================================================
@@ -302,8 +301,8 @@ class AdminController extends Controller
         }
         $this->clearanceModel->create($data);
         $newId = $this->clearanceModel->getLastInsertId();
-        $this->setFlash('success', 'Clearance created successfully.');
-        $this->redirect("admin/clearances/{$newId}");
+        $this->setFlash('success', 'Clearance created! Complete the setup below.');
+        $this->redirect("admin/clearances/detail?id={$newId}&wizard=1");
     }
 
     public function editClearance(): void
@@ -358,21 +357,41 @@ class AdminController extends Controller
     public function assignSignatory(): void
     {
         $this->requireLogin('admin');
-        $clearanceId  = (int) $this->getPost('clearance_id');
-        $signatoryId  = (int) $this->getPost('signatory_id');
+        $clearanceId = (int) $this->getPost('clearance_id');
+        $signatoryId = (int) $this->getPost('signatory_id');
         $this->clearanceModel->assignSignatory($clearanceId, $signatoryId);
         $this->setFlash('success', 'Signatory assigned to clearance.');
-        $this->redirect("admin/clearances/{$clearanceId}");
+        $this->redirect("admin/clearances/detail?id={$clearanceId}");
+    }
+
+    public function bulkAssignSignatories(): void
+    {
+        $this->requireLogin('admin');
+        $clearanceId  = (int) $this->getPost('clearance_id');
+        $signatoryIds = $this->getPost('signatory_ids', []);
+        $returnWizard = (int) $this->getPost('return_wizard', 0);
+
+        if (!empty($signatoryIds)) {
+            foreach ((array) $signatoryIds as $sid) {
+                $this->clearanceModel->assignSignatory($clearanceId, (int) $sid);
+            }
+            $count = count($signatoryIds);
+            $this->setFlash('success', "{$count} signator" . ($count === 1 ? 'y' : 'ies') . " assigned.");
+        } else {
+            $this->setFlash('error', 'No signatories selected.');
+        }
+        $qs = $returnWizard ? "&wizard={$returnWizard}" : '';
+        $this->redirect("admin/clearances/detail?id={$clearanceId}{$qs}");
     }
 
     public function removeSignatory(): void
     {
         $this->requireLogin('admin');
-        $clearanceId  = (int) $this->getPost('clearance_id');
-        $signatoryId  = (int) $this->getPost('signatory_id');
+        $clearanceId = (int) $this->getPost('clearance_id');
+        $signatoryId = (int) $this->getPost('signatory_id');
         $this->clearanceModel->removeSignatory($clearanceId, $signatoryId);
         $this->setFlash('success', 'Signatory removed from clearance.');
-        $this->redirect("admin/clearances/{$clearanceId}");
+        $this->redirect("admin/clearances/detail?id={$clearanceId}");
     }
 
     // ---- Adviser assignment ----
@@ -384,7 +403,25 @@ class AdminController extends Controller
         $adviserId   = (int) $this->getPost('adviser_id');
         $this->clearanceModel->assignAdviser($clearanceId, $adviserId);
         $this->setFlash('success', 'Adviser assigned to clearance.');
-        $this->redirect("admin/clearances/{$clearanceId}");
+        $this->redirect("admin/clearances/detail?id={$clearanceId}");
+    }
+
+    public function bulkAssignAdvisers(): void
+    {
+        $this->requireLogin('admin');
+        $clearanceId = (int) $this->getPost('clearance_id');
+        $adviserIds  = $this->getPost('adviser_ids', []);
+        // adviser assignment is optional — no error if empty
+        if (!empty($adviserIds)) {
+            foreach ((array) $adviserIds as $aid) {
+                $this->clearanceModel->assignAdviser($clearanceId, (int) $aid);
+            }
+            $count = count($adviserIds);
+            $this->setFlash('success', "{$count} adviser" . ($count === 1 ? '' : 's') . " assigned.");
+        } else {
+            $this->setFlash('success', 'Clearance setup complete. No advisers assigned (optional).');
+        }
+        $this->redirect("admin/clearances/detail?id={$clearanceId}");
     }
 
     public function removeAdviser(): void
@@ -394,7 +431,7 @@ class AdminController extends Controller
         $adviserId   = (int) $this->getPost('adviser_id');
         $this->clearanceModel->removeAdviser($clearanceId, $adviserId);
         $this->setFlash('success', 'Adviser removed from clearance.');
-        $this->redirect("admin/clearances/{$clearanceId}");
+        $this->redirect("admin/clearances/detail?id={$clearanceId}");
     }
 
     // ---- Student removal from clearance ----
@@ -406,6 +443,6 @@ class AdminController extends Controller
         $studentId   = (int) $this->getPost('student_id');
         $this->clearanceModel->removeStudent($clearanceId, $studentId);
         $this->setFlash('success', 'Student removed from clearance.');
-        $this->redirect("admin/clearances/{$clearanceId}");
+        $this->redirect("admin/clearances/detail?id={$clearanceId}");
     }
 }

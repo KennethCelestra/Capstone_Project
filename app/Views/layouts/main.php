@@ -28,10 +28,6 @@
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/clearances') !== false ? 'active' : '' ?>">
                         <span class="nav-icon">📋</span> Clearances
                     </a>
-                    <a href="<?= BASE_URL ?>admin/students"
-                       class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/students') !== false ? 'active' : '' ?>">
-                        <span class="nav-icon">👥</span> Students
-                    </a>
                     <a href="<?= BASE_URL ?>admin/signatories"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/signatories') !== false ? 'active' : '' ?>">
                         <span class="nav-icon">✍️</span> Signatories
@@ -47,11 +43,7 @@
                     </a>
                     <a href="<?= BASE_URL ?>adviser/clearances"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/clearances') !== false ? 'active' : '' ?>">
-                        <span class="nav-icon">📋</span> Clearance Status
-                    </a>
-                    <a href="<?= BASE_URL ?>adviser/enrollment"
-                       class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/enrollment') !== false ? 'active' : '' ?>">
-                        <span class="nav-icon">🎓</span> Enrollment View
+                        <span class="nav-icon">📋</span> My Clearances
                     </a>
                 <?php elseif ($_SESSION['user_role'] === 'signatory'): ?>
                     <a href="<?= BASE_URL ?>signatory/dashboard"
@@ -60,11 +52,7 @@
                     </a>
                     <a href="<?= BASE_URL ?>signatory/clearances"
                        class="nav-link <?= (strpos($_SERVER['REQUEST_URI'], '/clearances') !== false) ? 'active' : '' ?>">
-                        <span class="nav-icon">📋</span> Manage Students
-                    </a>
-                    <a href="<?= BASE_URL ?>signatory/confirm"
-                       class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/confirm') !== false ? 'active' : '' ?>">
-                        <span class="nav-icon">🚩</span> Confirm &amp; Send Emails
+                        <span class="nav-icon">📋</span> My Clearances
                     </a>
                 <?php endif; ?>
             </nav>

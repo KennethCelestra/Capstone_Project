@@ -31,56 +31,80 @@ class SignatoryController extends Controller
     }
 
     // ----------------------------------------------------------------
-    // Student list (main work screen)
+    // My Clearances — two-phase view
+    //   Phase 1 (no ?cid): show clearance selection cards
+    //   Phase 2 (?cid=N) : show student list for that clearance
     // ----------------------------------------------------------------
 
     public function clearances(): void
     {
         $this->requireLogin('signatory');
-        $signatoryId = (int) $_SESSION['user_id'];
+        $signatoryId     = (int) $_SESSION['user_id'];
+        $selectedCid     = (int) $this->getGet('cid', 0);
 
-        // Filters from GET
-        $search      = trim($this->getGet('search', ''));
-        $filterStatus = $this->getGet('status', 'all');   // all|pending|cleared|flagged
-        $filterCourse = $this->getGet('course', '');
-        $filterYear   = $this->getGet('year', '');
-
+        // Always load clearance summaries (for cards / back nav)
         $clearanceSummaries = $this->statusModel->getClearancesForSignatory($signatoryId);
 
-        $clearances = [];
-        foreach ($clearanceSummaries as $c) {
-            $cid = (int) $c['clearance_id'];
-            $students = $this->statusModel->getStudentsForSignatory($cid, $signatoryId);
+        // Phase 2: a specific clearance is selected
+        if ($selectedCid > 0) {
+            // Verify this signatory is actually assigned to this clearance
+            $validCids = array_column($clearanceSummaries, 'clearance_id');
+            if (!in_array($selectedCid, $validCids)) {
+                $this->setFlash('error', 'You are not assigned to that clearance.');
+                $this->redirect('signatory/clearances');
+                return;
+            }
 
-            // Apply filters client-side via PHP
+            // Filters from GET
+            $search       = trim($this->getGet('search', ''));
+            $filterStatus = $this->getGet('status', 'all');
+            $filterCourse = $this->getGet('course', '');
+            $filterYear   = $this->getGet('year', '');
+
+            $students = $this->statusModel->getStudentsForSignatory($selectedCid, $signatoryId);
+
+            // Collect unique courses / year levels before filtering
+            $courses    = array_unique(array_column($students, 'course'));
+            $yearLevels = array_unique(array_column($students, 'year_level'));
+            sort($courses);
+            sort($yearLevels);
+
+            // Apply filters
             $students = $this->applyFilters($students, $search, $filterStatus, $filterCourse, $filterYear);
 
-            $c['students'] = $students;
-            $clearances[]  = $c;
-        }
-
-        // Collect unique courses and year levels for filter dropdowns
-        $allStudents = [];
-        foreach ($clearances as $c) {
-            foreach ($c['students'] as $s) {
-                $allStudents[] = $s;
+            // Find the selected clearance summary record
+            $selectedClearance = null;
+            foreach ($clearanceSummaries as $c) {
+                if ((int)$c['clearance_id'] === $selectedCid) {
+                    $selectedClearance = $c;
+                    break;
+                }
             }
-        }
-        $courses    = array_unique(array_column($allStudents, 'course'));
-        $yearLevels = array_unique(array_column($allStudents, 'year_level'));
-        sort($courses);
-        sort($yearLevels);
 
+            $data = [
+                'phase'             => 'detail',
+                'selectedCid'       => $selectedCid,
+                'selectedClearance' => $selectedClearance,
+                'students'          => $students,
+                'flash'             => $this->getFlash(),
+                'userName'          => $_SESSION['user_name'],
+                'search'            => $search,
+                'filterStatus'      => $filterStatus,
+                'filterCourse'      => $filterCourse,
+                'filterYear'        => $filterYear,
+                'courses'           => $courses,
+                'yearLevels'        => $yearLevels,
+            ];
+            $this->view('layouts/main', array_merge($data, ['content' => 'signatory/clearances']));
+            return;
+        }
+
+        // Phase 1: clearance selection cards
         $data = [
-            'clearances'    => $clearances,
-            'flash'         => $this->getFlash(),
-            'userName'      => $_SESSION['user_name'],
-            'search'        => $search,
-            'filterStatus'  => $filterStatus,
-            'filterCourse'  => $filterCourse,
-            'filterYear'    => $filterYear,
-            'courses'       => $courses,
-            'yearLevels'    => $yearLevels,
+            'phase'      => 'select',
+            'clearances' => $clearanceSummaries,
+            'flash'      => $this->getFlash(),
+            'userName'   => $_SESSION['user_name'],
         ];
         $this->view('layouts/main', array_merge($data, ['content' => 'signatory/clearances']));
     }
@@ -104,11 +128,11 @@ class SignatoryController extends Controller
             $this->setFlash('error', 'Please provide a reason for flagging.');
         }
 
-        $this->redirect('signatory/clearances');
+        $this->redirect("signatory/clearances?cid={$clearanceId}");
     }
 
     // ----------------------------------------------------------------
-    // Unflag (clear) a student
+    // Clear (sign off) a single student
     // ----------------------------------------------------------------
 
     public function clearStudent(): void
@@ -121,7 +145,7 @@ class SignatoryController extends Controller
         if ($clearanceId && $studentId) {
             $this->statusModel->clearStudent($clearanceId, $studentId, $signatoryId);
 
-            // Check if student is now fully cleared across ALL signatories
+            // Fire "fully cleared" email if student is cleared by ALL signatories
             if ($this->statusModel->isStudentFullyCleared($clearanceId, $studentId)) {
                 $info = $this->statusModel->getStudentClearanceInfo($clearanceId, $studentId);
                 if ($info) {
@@ -133,14 +157,58 @@ class SignatoryController extends Controller
                 }
             }
 
-            $this->setFlash('success', 'Student deficiency has been cleared.');
+            $this->setFlash('success', 'Student has been cleared.');
         }
 
-        $this->redirect('signatory/clearances');
+        $this->redirect("signatory/clearances?cid={$clearanceId}");
     }
 
     // ----------------------------------------------------------------
-    // Confirmation screen
+    // Clear ALL pending (non-flagged) students in bulk
+    // ----------------------------------------------------------------
+
+    public function clearAll(): void
+    {
+        $this->requireLogin('signatory');
+        $clearanceId = (int) $this->getPost('clearance_id');
+        $signatoryId = (int) $_SESSION['user_id'];
+
+        if ($clearanceId) {
+            $clearedIds = $this->statusModel->clearAllPending($clearanceId, $signatoryId);
+            $count = count($clearedIds);
+
+            if ($count > 0) {
+                // Check each student to see if they are now fully cleared
+                $fullyClearedCount = 0;
+                foreach ($clearedIds as $studentId) {
+                    if ($this->statusModel->isStudentFullyCleared($clearanceId, $studentId)) {
+                        $info = $this->statusModel->getStudentClearanceInfo($clearanceId, $studentId);
+                        if ($info) {
+                            Mailer::sendClearedEmail(
+                                $info['email'],
+                                $info['full_name'],
+                                $info['clearance_name']
+                            );
+                            $fullyClearedCount++;
+                        }
+                    }
+                }
+
+                $msg = "{$count} student(s) have been cleared.";
+                if ($fullyClearedCount > 0) {
+                    $msg .= " {$fullyClearedCount} student(s) have completed their full clearance and were notified via email.";
+                }
+                $this->setFlash('success', $msg);
+            } else {
+                $this->setFlash('info', 'No pending students to clear (all are either already cleared or flagged).');
+            }
+        }
+
+        $this->redirect("signatory/clearances?cid={$clearanceId}");
+    }
+
+    // ----------------------------------------------------------------
+    // Confirmation screen (inline confirm — kept for email sending)
     // ----------------------------------------------------------------
 
     public function confirmFlags(): void
@@ -162,10 +230,11 @@ class SignatoryController extends Controller
         $this->requireLogin('signatory');
         $signatoryId = (int) $_SESSION['user_id'];
 
-        // Fetch signatory office name
         $signatoryModel  = new Signatory();
         $signatoryRecord = $signatoryModel->findById($signatoryId);
         $officeName      = $signatoryRecord ? $signatoryRecord['office'] : 'Office';
+
+        $clearanceId = (int) $this->getPost('clearance_id', 0);
 
         $flagged = $this->statusModel->getFlaggedStudentsForConfirmation($signatoryId);
         $sent    = 0;
@@ -188,7 +257,8 @@ class SignatoryController extends Controller
             $this->setFlash('warning', "Emails sent: {$sent}. Failed: {$errors}. Check your mail configuration.");
         }
 
-        $this->redirect('signatory/clearances');
+        $redirect = $clearanceId > 0 ? "signatory/clearances?cid={$clearanceId}" : 'signatory/clearances';
+        $this->redirect($redirect);
     }
 
     // ----------------------------------------------------------------
@@ -203,22 +273,18 @@ class SignatoryController extends Controller
         string $year
     ): array {
         return array_values(array_filter($students, function ($s) use ($search, $status, $course, $year) {
-            // Search by name or student number
             if ($search !== '') {
                 $haystack = strtolower($s['full_name'] . ' ' . $s['student_number']);
                 if (strpos($haystack, strtolower($search)) === false) {
                     return false;
                 }
             }
-            // Status filter
             if ($status !== 'all' && $s['status'] !== $status) {
                 return false;
             }
-            // Course filter
             if ($course !== '' && $s['course'] !== $course) {
                 return false;
             }
-            // Year level filter
             if ($year !== '' && (string)$s['year_level'] !== $year) {
                 return false;
             }

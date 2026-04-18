@@ -1,6 +1,10 @@
 <?php
 $cid = $clearance['id'];
 ?>
+
+<!-- ========================================================
+     MAIN CLEARANCE DETAIL PAGE
+     ======================================================== -->
 <div class="page-header">
     <div>
         <a href="<?= BASE_URL ?>admin/clearances" class="back-link">← All Clearances</a>
@@ -12,17 +16,25 @@ $cid = $clearance['id'];
             <?php endif; ?>
         </p>
     </div>
-    <button class="btn btn-secondary"
-            onclick="openEditClearanceDetail(<?= $cid ?>, '<?= htmlspecialchars(addslashes($clearance['name'])) ?>', '<?= htmlspecialchars(addslashes($clearance['description'])) ?>', '<?= htmlspecialchars($clearance['school_year']) ?>')">
-        ✏️ Edit Info
-    </button>
+    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm"
+                onclick="openEditClearanceDetail(<?= $cid ?>, '<?= htmlspecialchars(addslashes($clearance['name'])) ?>', '<?= htmlspecialchars(addslashes($clearance['description'])) ?>', '<?= htmlspecialchars($clearance['school_year']) ?>')">
+            ✏️ Edit Info
+        </button>
+    </div>
 </div>
 
 <!-- ===== TABS ===== -->
 <div class="tabs">
-    <button class="tab-btn active" onclick="showTab('tab-sig', this)">✍️ Signatories (<?= count($assignedSignatories) ?>)</button>
-    <button class="tab-btn"        onclick="showTab('tab-adv', this)">🎓 Enrollment Committee (<?= count($assignedAdvisers) ?>)</button>
-    <button class="tab-btn"        onclick="showTab('tab-stu', this)">👥 Students (<?= count($students) ?>)</button>
+    <button class="tab-btn active" onclick="showTab('tab-sig', this)">
+        ✍️ Signatories (<?= count($assignedSignatories) ?>)
+    </button>
+    <button class="tab-btn" onclick="showTab('tab-adv', this)">
+        👨‍🏫 Enrollment Committee (<?= count($assignedAdvisers) ?>)
+    </button>
+    <button class="tab-btn" onclick="showTab('tab-stu', this)">
+        👥 Students (<?= count($students) ?>)
+    </button>
 </div>
 
 <!-- ===== TAB: Signatories ===== -->
@@ -30,22 +42,18 @@ $cid = $clearance['id'];
     <div class="section-header">
         <h3>Assigned Signatories</h3>
         <?php if (!empty($unassignedSignatories)): ?>
-            <button class="btn btn-primary btn-sm" onclick="document.getElementById('assignSigModal').style.display='flex'">
+            <button class="btn btn-primary btn-sm"
+                    onclick="document.getElementById('assignSigModal').style.display='flex'">
                 + Assign Signatory
             </button>
-        <?php else: ?>
-            <span class="text-muted" style="font-size:.85rem">All signatories are assigned</span>
         <?php endif; ?>
     </div>
-
     <?php if (empty($assignedSignatories)): ?>
         <p class="text-muted">No signatories assigned yet.</p>
     <?php else: ?>
         <div class="table-container">
             <table class="data-table">
-                <thead>
-                    <tr><th>Name</th><th>Office</th><th>Email</th><th>Action</th></tr>
-                </thead>
+                <thead><tr><th>Name</th><th>Office</th><th>Email</th><th>Action</th></tr></thead>
                 <tbody>
                     <?php foreach ($assignedSignatories as $s): ?>
                         <tr>
@@ -53,8 +61,8 @@ $cid = $clearance['id'];
                             <td><?= htmlspecialchars($s['office']) ?></td>
                             <td><?= htmlspecialchars($s['email']) ?></td>
                             <td>
-                                <form action="<?= BASE_URL ?>admin/clearances/signatories/remove" method="POST"
-                                      onsubmit="return confirm('Remove this signatory from the clearance?')">
+                                <form action="<?= BASE_URL ?>admin/clearances/signatories/remove"
+                                      method="POST" onsubmit="return confirm('Remove this signatory?')">
                                     <input type="hidden" name="clearance_id" value="<?= $cid ?>">
                                     <input type="hidden" name="signatory_id" value="<?= $s['id'] ?>">
                                     <button type="submit" class="btn btn-danger btn-sm">Remove</button>
@@ -68,27 +76,23 @@ $cid = $clearance['id'];
     <?php endif; ?>
 </div>
 
-<!-- ===== TAB: Enrollment Committee ===== -->
+<!-- ===== TAB: Enrollment Committee / Advisers ===== -->
 <div id="tab-adv" class="tab-content" style="display:none">
     <div class="section-header">
-        <h3>Assigned Enrollment Committee Members</h3>
+        <h3>Assigned Enrollment Committee</h3>
         <?php if (!empty($unassignedAdvisers)): ?>
-            <button class="btn btn-primary btn-sm" onclick="document.getElementById('assignAdvModal').style.display='flex'">
+            <button class="btn btn-primary btn-sm"
+                    onclick="document.getElementById('assignAdvModal').style.display='flex'">
                 + Assign Member
             </button>
-        <?php else: ?>
-            <span class="text-muted" style="font-size:.85rem">All enrollment committee members are assigned</span>
         <?php endif; ?>
     </div>
-
     <?php if (empty($assignedAdvisers)): ?>
-        <p class="text-muted">No enrollment committee members assigned yet.</p>
+        <p class="text-muted">No enrollment committee members assigned yet (optional).</p>
     <?php else: ?>
         <div class="table-container">
             <table class="data-table">
-                <thead>
-                    <tr><th>Name</th><th>Department</th><th>Email</th><th>Action</th></tr>
-                </thead>
+                <thead><tr><th>Name</th><th>Department</th><th>Email</th><th>Action</th></tr></thead>
                 <tbody>
                     <?php foreach ($assignedAdvisers as $a): ?>
                         <tr>
@@ -96,8 +100,8 @@ $cid = $clearance['id'];
                             <td><?= htmlspecialchars($a['department']) ?></td>
                             <td><?= htmlspecialchars($a['email']) ?></td>
                             <td>
-                                <form action="<?= BASE_URL ?>admin/clearances/advisers/remove" method="POST"
-                                      onsubmit="return confirm('Remove this enrollment committee member from the clearance?')">
+                                <form action="<?= BASE_URL ?>admin/clearances/advisers/remove"
+                                      method="POST" onsubmit="return confirm('Remove this member?')">
                                     <input type="hidden" name="clearance_id" value="<?= $cid ?>">
                                     <input type="hidden" name="adviser_id"   value="<?= $a['id'] ?>">
                                     <button type="submit" class="btn btn-danger btn-sm">Remove</button>
@@ -116,19 +120,19 @@ $cid = $clearance['id'];
     <div class="section-header">
         <h3>Enrolled Students</h3>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
-            <button class="btn btn-primary btn-sm" onclick="document.getElementById('uploadCSVModal').style.display='flex'">
+            <button class="btn btn-primary btn-sm"
+                    onclick="document.getElementById('uploadCSVModal').style.display='flex'">
                 📤 Upload CSV
             </button>
             <form action="<?= BASE_URL ?>admin/clearances/students/dummies" method="POST" style="display:inline">
                 <input type="hidden" name="clearance_id" value="<?= $cid ?>">
                 <button type="submit" class="btn btn-secondary btn-sm"
-                        onclick="return confirm('Insert 10 dummy students and enroll them in this clearance?')">
+                        onclick="return confirm('Insert 10 dummy students and enroll them?')">
                     🧪 Insert Dummies
                 </button>
             </form>
         </div>
     </div>
-
     <?php if (empty($students)): ?>
         <div class="empty-state" style="padding:2rem">
             <div class="empty-icon">👥</div>
@@ -142,21 +146,16 @@ $cid = $clearance['id'];
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Student ID</th>
-                        <th>Full Name</th>
-                        <th>Course</th>
-                        <th>Year / Section</th>
-                        <th>Clearance Progress</th>
-                        <th>Status</th>
-                        <th>Action</th>
+                        <th>Student ID</th><th>Full Name</th><th>Course</th>
+                        <th>Year / Section</th><th>Progress</th><th>Status</th><th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($students as $s):
-                        $total  = (int) $s['total_count'];
-                        $signed = (int) $s['signed_count'];
-                        $pct    = $total > 0 ? round(($signed / $total) * 100) : 0;
-                        $isCleared = ($total > 0 && $signed === $total);
+                        $total   = (int) $s['total_count'];
+                        $signed  = (int) $s['signed_count'];
+                        $pct     = $total > 0 ? round(($signed / $total) * 100) : 0;
+                        $cleared = ($total > 0 && $signed === $total);
                     ?>
                         <tr>
                             <td><?= htmlspecialchars($s['student_number']) ?></td>
@@ -170,13 +169,13 @@ $cid = $clearance['id'];
                                 <small><?= $signed ?>/<?= $total ?> signed</small>
                             </td>
                             <td>
-                                <span class="badge <?= $isCleared ? 'badge-success' : 'badge-warning' ?>">
-                                    <?= $isCleared ? 'Cleared' : 'Pending' ?>
+                                <span class="badge <?= $cleared ? 'badge-success' : 'badge-warning' ?>">
+                                    <?= $cleared ? 'Cleared' : 'Pending' ?>
                                 </span>
                             </td>
                             <td>
-                                <form action="<?= BASE_URL ?>admin/clearances/students/remove" method="POST"
-                                      onsubmit="return confirm('Remove this student from the clearance?')">
+                                <form action="<?= BASE_URL ?>admin/clearances/students/remove"
+                                      method="POST" onsubmit="return confirm('Remove student from clearance?')">
                                     <input type="hidden" name="clearance_id" value="<?= $cid ?>">
                                     <input type="hidden" name="student_id"   value="<?= $s['id'] ?>">
                                     <button type="submit" class="btn btn-danger btn-sm">Remove</button>
@@ -260,7 +259,7 @@ $cid = $clearance['id'];
         <form action="<?= BASE_URL ?>admin/clearances/advisers/assign" method="POST" class="modal-form">
             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
             <div class="form-group">
-                <label>Select Enrollment Committee Member</label>
+                <label>Select Member</label>
                 <select name="adviser_id" required>
                     <option value="">-- Choose Member --</option>
                     <?php foreach ($unassignedAdvisers as $ua): ?>
@@ -294,25 +293,28 @@ $cid = $clearance['id'];
                 <input type="file" name="csv_file" accept=".csv,.txt" required>
                 <small class="text-muted">
                     Required columns: <code>student_id, full_name, email, course, year_level, section</code><br>
-                    First row must be the header. Default password = student ID.
+                    First row = header. Default password = student ID.
                 </small>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
                         onclick="document.getElementById('uploadCSVModal').style.display='none'">Cancel</button>
-                <button type="submit" class="btn btn-primary">Upload & Enroll</button>
+                <button type="submit" class="btn btn-primary">Upload &amp; Enroll</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
+/* ---- Tab switching ---- */
 function showTab(id, btn) {
     document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(id).style.display = 'block';
     btn.classList.add('active');
 }
+
+/* ---- Edit clearance prefill ---- */
 function openEditClearanceDetail(id, name, desc, year) {
     document.getElementById('editDetailId').value   = id;
     document.getElementById('editDetailName').value = name;

@@ -16,7 +16,7 @@ $routes = [
     // ---- Admin: Dashboard ----
     'GET /admin/dashboard'                        => ['AdminController', 'dashboard'],
 
-    // ---- Admin: Students ----
+    // ---- Admin: Students (global page kept for direct URL access) ----
     'GET /admin/students'                         => ['AdminController', 'students'],
     'POST /admin/students/add'                    => ['AdminController', 'addStudent'],
     'POST /admin/students/delete'                 => ['AdminController', 'deleteStudent'],
@@ -45,12 +45,14 @@ $routes = [
     'GET /admin/clearances/detail'                => ['AdminController', 'clearanceDetail'],
 
     // ---- Admin: Clearance – Signatory assignment ----
-    'POST /admin/clearances/signatories/assign'   => ['AdminController', 'assignSignatory'],
-    'POST /admin/clearances/signatories/remove'   => ['AdminController', 'removeSignatory'],
+    'POST /admin/clearances/signatories/assign'        => ['AdminController', 'assignSignatory'],
+    'POST /admin/clearances/signatories/bulk-assign'   => ['AdminController', 'bulkAssignSignatories'],
+    'POST /admin/clearances/signatories/remove'        => ['AdminController', 'removeSignatory'],
 
     // ---- Admin: Clearance – Adviser assignment ----
-    'POST /admin/clearances/advisers/assign'      => ['AdminController', 'assignAdviser'],
-    'POST /admin/clearances/advisers/remove'      => ['AdminController', 'removeAdviser'],
+    'POST /admin/clearances/advisers/assign'           => ['AdminController', 'assignAdviser'],
+    'POST /admin/clearances/advisers/bulk-assign'      => ['AdminController', 'bulkAssignAdvisers'],
+    'POST /admin/clearances/advisers/remove'           => ['AdminController', 'removeAdviser'],
 
     // ---- Admin: Clearance – Student management ----
     'POST /admin/clearances/students/upload'      => ['AdminController', 'uploadStudents'],
@@ -67,6 +69,7 @@ $routes = [
     'GET /signatory/clearances'                   => ['SignatoryController', 'clearances'],
     'POST /signatory/students/flag'               => ['SignatoryController', 'flagStudent'],
     'POST /signatory/students/clear'              => ['SignatoryController', 'clearStudent'],
+    'POST /signatory/students/clear-all'          => ['SignatoryController', 'clearAll'],
     'GET /signatory/confirm'                      => ['SignatoryController', 'confirmFlags'],
     'POST /signatory/confirm/submit'              => ['SignatoryController', 'submitConfirm'],
 

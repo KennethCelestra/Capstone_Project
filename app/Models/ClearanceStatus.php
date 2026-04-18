@@ -121,17 +121,27 @@ class ClearanceStatus extends Model
     // ----------------------------------------------------------------
 
     /**
-     * Returns true if the student has NO flagged rows in the given clearance.
-     * A student is "fully cleared" when no signatory has flagged them.
+     * Returns true if the student has been marked 'cleared' by ALL signatories
+     * assigned to this clearance.
      */
     public function isStudentFullyCleared(int $clearanceId, int $studentId): bool
     {
-        $stmt = $this->db->prepare("
+        // Count assigned signatories
+        $stmtSig = $this->db->prepare("SELECT COUNT(*) FROM clearance_signatories WHERE clearance_id = ?");
+        $stmtSig->execute([$clearanceId]);
+        $totalAssigned = (int)$stmtSig->fetchColumn();
+
+        if ($totalAssigned === 0) return false;
+
+        // Count cleared statuses for this student
+        $stmtCleared = $this->db->prepare("
             SELECT COUNT(*) FROM clearance_status
-            WHERE clearance_id = ? AND student_id = ? AND status = 'flagged'
+            WHERE clearance_id = ? AND student_id = ? AND status = 'cleared'
         ");
-        $stmt->execute([$clearanceId, $studentId]);
-        return (int)$stmt->fetchColumn() === 0;
+        $stmtCleared->execute([$clearanceId, $studentId]);
+        $totalCleared = (int)$stmtCleared->fetchColumn();
+
+        return ($totalCleared === $totalAssigned);
     }
 
     /**
@@ -231,5 +241,52 @@ class ClearanceStatus extends Model
     public function getForSignatory(int $clearanceId, int $signatoryId): array
     {
         return $this->getStudentsForSignatory($clearanceId, $signatoryId);
+    }
+
+    // ----------------------------------------------------------------
+    // SIGNATORY: Bulk clear all pending (non-flagged) students
+    // ----------------------------------------------------------------
+
+    /**
+     * Mark every student who is currently 'pending' (no row, or status=pending)
+     * as 'cleared' for this signatory within the given clearance.
+     * Students with status='flagged' are intentionally skipped.
+     * Returns an array of student IDs that were successfully cleared.
+     */
+    public function clearAllPending(int $clearanceId, int $signatoryId): array
+    {
+        // Step 1: Get all students in this clearance that are NOT flagged for this signatory
+        $stmt = $this->db->prepare("
+            SELECT st.id
+            FROM clearance_students cst
+            JOIN students st ON st.id = cst.student_id
+            LEFT JOIN clearance_status cs
+                ON cs.student_id   = st.id
+               AND cs.clearance_id = ?
+               AND cs.signatory_id = ?
+            WHERE cst.clearance_id = ?
+              AND (cs.status IS NULL OR cs.status = 'pending')
+        ");
+        $stmt->execute([$clearanceId, $signatoryId, $clearanceId]);
+        $studentIds = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
+        if (empty($studentIds)) {
+            return [];
+        }
+
+        // Step 2: Bulk upsert to 'cleared'
+        $clearStmt = $this->db->prepare("
+            INSERT INTO clearance_status (clearance_id, student_id, signatory_id, status, flag_note, signed_at)
+            VALUES (?, ?, ?, 'cleared', NULL, NOW())
+            ON DUPLICATE KEY UPDATE status = 'cleared', flag_note = NULL, signed_at = NOW()
+        ");
+
+        $clearedIds = [];
+        foreach ($studentIds as $sId) {
+            if ($clearStmt->execute([$clearanceId, (int)$sId, $signatoryId])) {
+                $clearedIds[] = (int)$sId;
+            }
+        }
+        return $clearedIds;
     }
 }
