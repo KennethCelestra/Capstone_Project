@@ -6,10 +6,12 @@ require_once ROOT_PATH . '/app/Helpers/Mailer.php';
 class SignatoryController extends Controller
 {
     private ClearanceStatus $statusModel;
+    private Signatory       $signatoryModel;
 
     public function __construct()
     {
-        $this->statusModel = new ClearanceStatus();
+        $this->statusModel     = new ClearanceStatus();
+        $this->signatoryModel  = new Signatory();
     }
 
     // ----------------------------------------------------------------
@@ -217,8 +219,7 @@ class SignatoryController extends Controller
         $this->requireLogin('signatory');
         $signatoryId = (int) $_SESSION['user_id'];
 
-        $signatoryModel  = new Signatory();
-        $signatoryRecord = $signatoryModel->findById($signatoryId);
+        $signatoryRecord = $this->signatoryModel->findById($signatoryId);
         $officeName      = $signatoryRecord ? $signatoryRecord['office'] : 'Office';
 
         $clearanceId = (int) $this->getPost('clearance_id', 0);

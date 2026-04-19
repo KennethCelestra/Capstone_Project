@@ -3,7 +3,7 @@ require_once ROOT_PATH . '/app/Models/Student.php';
 require_once ROOT_PATH . '/app/Models/Adviser.php';
 require_once ROOT_PATH . '/app/Models/Signatory.php';
 require_once ROOT_PATH . '/app/Models/Clearance.php';
-require_once ROOT_PATH . '/app/Models/ClearanceStatus.php';
+require_once ROOT_PATH . '/app/Models/Admin.php';
 
 class AdminController extends Controller
 {
@@ -11,6 +11,7 @@ class AdminController extends Controller
     private Adviser   $adviserModel;
     private Signatory $signatoryModel;
     private Clearance $clearanceModel;
+    private Admin     $adminModel;
 
     public function __construct()
     {
@@ -18,6 +19,7 @@ class AdminController extends Controller
         $this->adviserModel   = new Adviser();
         $this->signatoryModel = new Signatory();
         $this->clearanceModel = new Clearance();
+        $this->adminModel     = new Admin();
     }
 
     // ================================================================
@@ -39,7 +41,7 @@ class AdminController extends Controller
     }
 
     // ================================================================
-    //  STUDENTS (global list + CSV upload + dummies)
+    //  STUDENTS
     // ================================================================
 
     public function students(): void

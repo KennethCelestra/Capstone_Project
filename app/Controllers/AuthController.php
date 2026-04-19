@@ -1,7 +1,20 @@
 <?php
+require_once ROOT_PATH . '/app/Models/Admin.php';
+require_once ROOT_PATH . '/app/Models/Adviser.php';
+require_once ROOT_PATH . '/app/Models/Signatory.php';
 
 class AuthController extends Controller
 {
+    private Admin     $adminModel;
+    private Adviser   $adviserModel;
+    private Signatory $signatoryModel;
+
+    public function __construct()
+    {
+        $this->adminModel     = new Admin();
+        $this->adviserModel   = new Adviser();
+        $this->signatoryModel = new Signatory();
+    }
 
     // --------------------------------------------------------
     //  Regular login (Adviser / Signatory)
@@ -32,16 +45,17 @@ class AuthController extends Controller
             return;
         }
 
-        // Try adviser first, then signatory
+        // Try adviser first, then signatory — using models instead of raw SQL
         $user = null;
         $role = null;
 
-        $db = Database::getInstance();
+        $candidates = [
+            'adviser'   => $this->adviserModel,
+            'signatory' => $this->signatoryModel,
+        ];
 
-        foreach (['adviser' => 'advisers', 'signatory' => 'signatories'] as $r => $table) {
-            $stmt = $db->prepare("SELECT * FROM {$table} WHERE email = ?");
-            $stmt->execute([$email]);
-            $found = $stmt->fetch();
+        foreach ($candidates as $r => $model) {
+            $found = $model->findByEmail($email);
             if ($found && password_verify($password, $found['password'])) {
                 $user = $found;
                 $role = $r;
@@ -84,10 +98,7 @@ class AuthController extends Controller
             return;
         }
 
-        $db   = Database::getInstance();
-        $stmt = $db->prepare("SELECT * FROM admins WHERE email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
+        $user = $this->adminModel->findByEmail($email);
 
         if ($user && password_verify($password, $user['password'])) {
             $_SESSION['user_id']   = $user['id'];

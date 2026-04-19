@@ -68,4 +68,17 @@ class Signatory extends Model
         $stmt->execute([$clearanceId]);
         return $stmt->fetchAll();
     }
+
+    /**
+     * Find a signatory by their email address.
+     *
+     * @param string $email
+     * @return array|false
+     */
+    public function findByEmail(string $email): array|false
+    {
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE email = ?");
+        $stmt->execute([$email]);
+        return $stmt->fetch();
+    }
 }
