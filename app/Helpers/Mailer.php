@@ -8,11 +8,10 @@ class Mailer
 {
     private static function headers(string $fromName = 'Clearance System'): string
     {
-        $fromEmail = defined('MAIL_FROM') ? MAIL_FROM : 'no-reply@school.edu';
         return implode("\r\n", [
             'MIME-Version: 1.0',
             'Content-Type: text/html; charset=UTF-8',
-            "From: {$fromName} <{$fromEmail}>",
+            "From: {$fromName} <" . MAIL_FROM . ">",
             'X-Mailer: PHP/' . phpversion(),
         ]);
     }

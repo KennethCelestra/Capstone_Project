@@ -88,13 +88,11 @@ class AdminController extends Controller
     public function uploadStudents(): void
     {
         $this->requireLogin('admin');
-        $clearanceId  = (int) $this->getPost('clearance_id');
-        $returnWizard = (int) $this->getPost('return_wizard', 0); // 0 = no wizard
+        $clearanceId = (int) $this->getPost('clearance_id');
 
         if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
             $this->setFlash('error', 'Please select a valid CSV file.');
-            $qs = $returnWizard ? "?wizard={$returnWizard}" : '';
-            $this->redirect("admin/clearances/detail?id={$clearanceId}{$qs}");
+            $this->redirect("admin/clearances/detail?id={$clearanceId}");
             return;
         }
 
@@ -131,8 +129,7 @@ class AdminController extends Controller
         }
 
         $this->setFlash('success', "Import complete: {$inserted} inserted, {$skipped} skipped.");
-        $qs = $returnWizard ? "&wizard={$returnWizard}" : '';
-        $this->redirect("admin/clearances/detail?id={$clearanceId}{$qs}");
+        $this->redirect("admin/clearances/detail?id={$clearanceId}");
     }
 
 
@@ -377,7 +374,6 @@ class AdminController extends Controller
         $this->requireLogin('admin');
         $clearanceId  = (int) $this->getPost('clearance_id');
         $signatoryIds = $this->getPost('signatory_ids', []);
-        $returnWizard = (int) $this->getPost('return_wizard', 0);
 
         if (!empty($signatoryIds)) {
             foreach ((array) $signatoryIds as $sid) {
@@ -388,8 +384,7 @@ class AdminController extends Controller
         } else {
             $this->setFlash('error', 'No signatories selected.');
         }
-        $qs = $returnWizard ? "&wizard={$returnWizard}" : '';
-        $this->redirect("admin/clearances/detail?id={$clearanceId}{$qs}");
+        $this->redirect("admin/clearances/detail?id={$clearanceId}");
     }
 
     public function removeSignatory(): void

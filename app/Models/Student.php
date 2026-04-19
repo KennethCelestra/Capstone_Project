@@ -59,8 +59,6 @@ class Student extends Model
         return [$inserted, $skipped];
     }
 
-
-
     public function findAll(): array
     {
         $stmt = $this->db->query("SELECT * FROM students ORDER BY full_name ASC");

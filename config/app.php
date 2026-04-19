@@ -1,9 +1,9 @@
 <?php
 // Application Configuration
 
-define('APP_NAME', 'Clearance System');
-define('BASE_URL', 'http://localhost/clearance_system/public/');
-define('ROOT_PATH', dirname(__DIR__));
+define('APP_NAME',   'Clearance System');
+define('BASE_URL',   'http://localhost/clearance_system/public/');
+define('ROOT_PATH',  dirname(__DIR__));
 
 // Database Configuration
 define('DB_HOST', 'localhost');
@@ -13,3 +13,6 @@ define('DB_NAME', 'clearance_system');
 
 // Session Configuration
 define('SESSION_NAME', 'clearance_sess');
+
+// Mail Configuration
+define('MAIL_FROM', 'no-reply@school.edu');

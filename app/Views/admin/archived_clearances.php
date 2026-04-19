@@ -1,4 +1,3 @@
-
 <div class="page-header">
     <div>
         <a href="<?= BASE_URL ?>admin/clearances" class="back-link">← Active Clearances</a>
