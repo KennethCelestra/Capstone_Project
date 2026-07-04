@@ -10,24 +10,28 @@
         <thead>
             <tr>
                 <th>Student ID</th>
-                <th>Full Name</th>
+                <th>Last Name</th>
+                <th>First Name</th>
+                <th>College</th>
                 <th>Course</th>
                 <th>Year / Section</th>
-                <th>Email</th>
-                <th>Actions</th>
+                <th>Status</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
             <?php if (empty($students)): ?>
-                <tr><td colspan="6" class="text-center">No students found. Add manually or upload via a clearance.</td></tr>
+                <tr><td colspan="8" class="text-center">No students found. Add manually or upload via a clearance.</td></tr>
             <?php else: ?>
                 <?php foreach ($students as $s): ?>
                     <tr>
                         <td><?= htmlspecialchars($s['student_id']) ?></td>
-                        <td><?= htmlspecialchars($s['full_name']) ?></td>
+                        <td><?= htmlspecialchars($s['last_name']) ?></td>
+                        <td><?= htmlspecialchars($s['first_name']) ?></td>
+                        <td><?= htmlspecialchars($s['college']) ?></td>
                         <td><?= htmlspecialchars($s['course']) ?></td>
                         <td><?= htmlspecialchars($s['year_level']) ?> – <?= htmlspecialchars($s['section']) ?></td>
-                        <td><?= htmlspecialchars($s['email']) ?></td>
+                        <td><span class="text-muted">N/A</span></td>
                         <td>
                             <form action="<?= BASE_URL ?>admin/students/delete" method="POST" style="display:inline"
                                   onsubmit="return confirm('Delete this student?')">
@@ -61,8 +65,30 @@
                     <input type="text" name="student_id" required placeholder="e.g. 2024-00001">
                 </div>
                 <div class="form-group">
-                    <label>Full Name *</label>
-                    <input type="text" name="full_name" required placeholder="Juan Dela Cruz">
+                    <label>Last Name *</label>
+                    <input type="text" name="last_name" required placeholder="Dela Cruz">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>First Name *</label>
+                    <input type="text" name="first_name" required placeholder="Juan">
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" required placeholder="student@school.edu">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>College *</label>
+                    <select name="college" required>
+                        <option value="CAS">CAS</option>
+                        <option value="CEA">CEA</option>
+                        <option value="COE">COE</option>
+                        <option value="CCI">CCI</option>
+                        <option value="CIT">CIT</option>
+                    </select>
                 </div>
             </div>
             <div class="form-row">

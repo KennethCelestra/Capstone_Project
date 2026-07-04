@@ -111,7 +111,7 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
                placeholder="Search by name or ID…" class="form-control search-input" id="adv-search">
     </div>
     <div class="filter-group">
-        <select name="status" class="form-control" id="adv-status-filter">
+        <select name="status" class="form-control" id="adv-status-filter" onchange="this.form.submit()">
             <option value="all"     <?= $filterStatus === 'all'     ? 'selected' : '' ?>>All Statuses</option>
             <option value="flagged" <?= $filterStatus === 'flagged' ? 'selected' : '' ?>>Has Deficiency</option>
             <option value="cleared" <?= $filterStatus === 'cleared' ? 'selected' : '' ?>>Fully Cleared</option>
@@ -120,7 +120,7 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
     </div>
     <?php if (!empty($courses)): ?>
     <div class="filter-group">
-        <select name="course" class="form-control" id="adv-course-filter">
+        <select name="course" class="form-control" id="adv-course-filter" onchange="this.form.submit()">
             <option value="">All Courses</option>
             <?php foreach ($courses as $course): ?>
                 <option value="<?= htmlspecialchars($course) ?>"
@@ -133,7 +133,7 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
     <?php endif; ?>
     <?php if (!empty($yearLevels)): ?>
     <div class="filter-group">
-        <select name="year" class="form-control" id="adv-year-filter">
+        <select name="year" class="form-control" id="adv-year-filter" onchange="this.form.submit()">
             <option value="">All Year Levels</option>
             <?php foreach ($yearLevels as $yr): ?>
                 <option value="<?= $yr ?>" <?= $filterYear === (string)$yr ? 'selected' : '' ?>>
@@ -143,8 +143,7 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
         </select>
     </div>
     <?php endif; ?>
-    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-    <a href="<?= BASE_URL ?>adviser/clearances?cid=<?= $selectedCid ?>" class="btn btn-secondary btn-sm">Reset</a>
+    <button type="submit" style="display:none"></button>
 </form>
 
 <?php if (empty($students)): ?>
@@ -154,31 +153,35 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
         <table class="data-table enrollment-table">
             <thead>
                 <tr>
-                    <th>#</th>
                     <th>Student ID</th>
-                    <th>Full Name</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>College</th>
                     <th>Course</th>
                     <th>Year / Section</th>
-                    <th>Email</th>
-                    <th>Clearance Standing</th>
-                    <th>Deficiency Notes</th>
-                    <th>Detail</th>
+                    <th>Status</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                <?php $rowNum = 1; foreach ($students as $s): ?>
-                    <?php $rowId = 'detail-' . $selectedCid . '-' . $s['id']; ?>
-                    <tr class="<?= $s['display_status'] === 'flagged' ? 'row-flagged' : ($s['display_status'] === 'cleared' ? 'row-cleared' : '') ?>">
-                        <td class="text-muted"><?= $rowNum++ ?></td>
+                <?php foreach ($students as $s): ?>
+                    <?php 
+                    $rowId = 'detail-' . $selectedCid . '-' . $s['id'];
+                    $flagged = array_sum(array_map(fn($sg) => $sg['status'] === 'flagged' ? 1 : 0, $s['signatory_detail']));
+                    $totalSig = count($s['signatory_detail']);
+                    $cleared = array_sum(array_map(fn($sg) => $sg['status'] === 'cleared' ? 1 : 0, $s['signatory_detail']));
+                    ?>
+                    <tr class="<?= $flagged > 0 ? 'row-flagged' : ($cleared === $totalSig && $totalSig > 0 ? 'row-cleared' : '') ?>">
                         <td><?= htmlspecialchars($s['student_number']) ?></td>
-                        <td><strong><?= htmlspecialchars($s['full_name']) ?></strong></td>
+                        <td><?= htmlspecialchars($s['last_name']) ?></td>
+                        <td><?= htmlspecialchars($s['first_name']) ?></td>
+                        <td><?= htmlspecialchars($s['college']) ?></td>
                         <td><?= htmlspecialchars($s['course']) ?></td>
-                        <td>Year <?= $s['year_level'] ?> – <?= htmlspecialchars($s['section']) ?></td>
-                        <td><a href="mailto:<?= htmlspecialchars($s['email']) ?>" class="email-link"><?= htmlspecialchars($s['email']) ?></a></td>
+                        <td><?= $s['year_level'] ?> – <?= htmlspecialchars($s['section']) ?></td>
                         <td>
-                            <?php if ($s['display_status'] === 'flagged'): ?>
+                            <?php if ($flagged > 0): ?>
                                 <span class="standing-badge standing-flagged">NOT CLEARED</span>
-                            <?php elseif ($s['display_status'] === 'cleared'): ?>
+                            <?php elseif ($cleared === $totalSig && $totalSig > 0): ?>
                                 <span class="standing-badge standing-cleared">CLEARED</span>
                             <?php else: ?>
                                 <span class="standing-badge standing-pending">PENDING</span>

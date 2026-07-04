@@ -127,7 +127,7 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
                placeholder="Search by name or ID…" class="form-control search-input" id="sig-search">
     </div>
     <div class="filter-group">
-        <select name="status" class="form-control" id="sig-status-filter">
+        <select name="status" class="form-control" id="sig-status-filter" onchange="this.form.submit()">
             <option value="all"    <?= $filterStatus === 'all'     ? 'selected' : '' ?>>All Statuses</option>
             <option value="flagged" <?= $filterStatus === 'flagged' ? 'selected' : '' ?>>Flagged</option>
             <option value="cleared" <?= $filterStatus === 'cleared' ? 'selected' : '' ?>>Cleared</option>
@@ -136,7 +136,7 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
     </div>
     <?php if (!empty($courses)): ?>
     <div class="filter-group">
-        <select name="course" class="form-control" id="sig-course-filter">
+        <select name="course" class="form-control" id="sig-course-filter" onchange="this.form.submit()">
             <option value="">All Courses</option>
             <?php foreach ($courses as $course): ?>
                 <option value="<?= htmlspecialchars($course) ?>"
@@ -149,7 +149,7 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
     <?php endif; ?>
     <?php if (!empty($yearLevels)): ?>
     <div class="filter-group">
-        <select name="year" class="form-control" id="sig-year-filter">
+        <select name="year" class="form-control" id="sig-year-filter" onchange="this.form.submit()">
             <option value="">All Year Levels</option>
             <?php foreach ($yearLevels as $yr): ?>
                 <option value="<?= $yr ?>" <?= $filterYear === (string)$yr ? 'selected' : '' ?>>
@@ -159,8 +159,7 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
         </select>
     </div>
     <?php endif; ?>
-    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-    <a href="<?= BASE_URL ?>signatory/clearances?cid=<?= $selectedCid ?>" class="btn btn-secondary btn-sm">Reset</a>
+    <button type="submit" style="display:none"></button>
 </form>
 
 <?php if (empty($students)): ?>
@@ -170,22 +169,27 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
     <table class="data-table">
         <thead>
             <tr>
-                <th>Student ID</th>
-                <th>Full Name</th>
+                <th style="width: 100px;">Student ID</th>
+                <th>Last Name</th>
+                <th>First Name</th>
+                <th>College</th>
                 <th>Course</th>
                 <th>Year / Section</th>
-                <th>Status</th>
-                <th>Flag Note</th>
-                <th>Actions</th>
+                <th>Standing</th>
+                <th>Deficiency Note</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
             <?php foreach ($students as $s): ?>
-                <tr class="<?= $s['status'] === 'flagged' ? 'row-flagged' : ($s['status'] === 'cleared' ? 'row-cleared' : '') ?>">
+                <?php $rowClass = $s['status'] === 'flagged' ? 'row-flagged' : ($s['status'] === 'cleared' ? 'row-cleared' : ''); ?>
+                <tr class="<?= $rowClass ?>">
                     <td><?= htmlspecialchars($s['student_number']) ?></td>
-                    <td><strong><?= htmlspecialchars($s['full_name']) ?></strong></td>
+                    <td><?= htmlspecialchars($s['last_name']) ?></td>
+                    <td><?= htmlspecialchars($s['first_name']) ?></td>
+                    <td><?= htmlspecialchars($s['college']) ?></td>
                     <td><?= htmlspecialchars($s['course']) ?></td>
-                    <td>Year <?= $s['year_level'] ?> – <?= htmlspecialchars($s['section']) ?></td>
+                    <td><?= $s['year_level'] ?> – <?= htmlspecialchars($s['section']) ?></td>
                     <td>
                         <?php if ($s['status'] === 'flagged'): ?>
                             <span class="badge badge-danger">Flagged</span>
@@ -209,7 +213,7 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
                         <?php if ($s['status'] === 'flagged'): ?>
                             <!-- Unflag — resolves deficiency, moves to cleared -->
                             <form action="<?= BASE_URL ?>signatory/students/clear" method="POST"
-                                  onsubmit="return confirm('Clear deficiency for <?= htmlspecialchars(addslashes($s['full_name'])) ?>?')">
+                                  onsubmit="return confirm('Clear deficiency for <?= htmlspecialchars(addslashes($s['first_name'] . ' ' . $s['last_name'])) ?>?')">
                                 <input type="hidden" name="clearance_id" value="<?= $selectedCid ?>">
                                 <input type="hidden" name="student_id"   value="<?= $s['id'] ?>">
                                 <button type="submit" class="btn btn-success btn-sm">Unflag</button>
@@ -219,7 +223,7 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
                         <?php else: ?>
                             <!-- Pending: can only Flag (bulk clear via Confirm All) -->
                             <button type="button" class="btn btn-danger btn-sm"
-                                    onclick="openFlagModal(<?= $selectedCid ?>, <?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['full_name'])) ?>')">
+                                    onclick="openFlagModal(<?= $selectedCid ?>, <?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['first_name'] . ' ' . $s['last_name'])) ?>')">
                                 Flag
                             </button>
                         <?php endif; ?>

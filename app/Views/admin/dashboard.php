@@ -122,7 +122,7 @@ $pendingPct = $total > 0 ? ($pending / $total) * 100 : 0;
                             </div>
                         </td>
                         <td>
-                            <a href="<?= BASE_URL ?>admin/clearances/detail?id=<?= $c['clearance_id'] ?>" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Manage &rarr;</a>
+                            <a href="<?= BASE_URL ?>admin/clearances/detail?id=<?= $c['clearance_id'] ?>" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Manage</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>

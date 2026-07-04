@@ -53,8 +53,10 @@ CREATE TABLE IF NOT EXISTS `signatories` (
 CREATE TABLE IF NOT EXISTS `students` (
     `id`          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `student_id`  VARCHAR(50)  NOT NULL UNIQUE,
-    `full_name`   VARCHAR(150) NOT NULL,
+    `last_name`   VARCHAR(150) NOT NULL,
+    `first_name`  VARCHAR(150) NOT NULL,
     `email`       VARCHAR(150) NOT NULL UNIQUE,
+    `college`     VARCHAR(50)  NOT NULL,
     `course`      VARCHAR(100) NOT NULL,
     `year_level`  TINYINT UNSIGNED NOT NULL DEFAULT 1,
     `section`     VARCHAR(20)  NOT NULL,

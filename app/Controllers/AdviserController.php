@@ -98,7 +98,7 @@ class AdviserController extends Controller
                 $selectedClearance['students'],
                 function ($s) use ($search, $filterStatus, $filterCourse, $filterYear) {
                     if ($search !== '') {
-                        $haystack = strtolower($s['full_name'] . ' ' . $s['student_number']);
+                        $haystack = strtolower($s['last_name'] . ' ' . $s['first_name'] . ' ' . $s['student_number']);
                         if (strpos($haystack, strtolower($search)) === false) return false;
                     }
                     if ($filterStatus !== 'all' && $s['display_status'] !== $filterStatus) return false;

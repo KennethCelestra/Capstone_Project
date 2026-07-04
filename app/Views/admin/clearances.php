@@ -40,7 +40,7 @@
                         <td><span class="badge badge-info"><?= $c['student_count'] ?></span></td>
                         <td class="action-cell">
                             <a href="<?= BASE_URL ?>admin/clearances/detail?id=<?= $c['id'] ?>"
-                               class="btn btn-primary btn-sm">Manage →</a>
+                               class="btn btn-primary btn-sm">Manage</a>
                             <button class="btn btn-secondary btn-sm"
                                     onclick="openEditClearance(<?= $c['id'] ?>, '<?= htmlspecialchars(addslashes($c['name'])) ?>', '<?= htmlspecialchars(addslashes($c['description'])) ?>', '<?= htmlspecialchars($c['school_year']) ?>')">
                                 Edit

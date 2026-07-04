@@ -128,7 +128,7 @@ $cid = $clearance['id'];
         <div class="empty-state" style="padding:2rem">
             <p>No students enrolled yet. Please upload a CSV file to enroll students.</p>
             <p class="text-muted" style="font-size:.8rem">
-                CSV format: <code>student_id, full_name, email, course, year_level, section</code>
+                CSV format: <code>student_id, last_name, first_name, email, college, course, year_level, section</code>
             </p>
         </div>
     <?php else: ?>
@@ -136,8 +136,17 @@ $cid = $clearance['id'];
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Student ID</th><th>Full Name</th><th>Course</th>
-                        <th>Year / Section</th><th>Cleared</th><th>Flagged</th><th>Pending</th><th>Overall</th><th>Action</th>
+                        <th>Student ID</th>
+                        <th>Last Name</th>
+                        <th>First Name</th>
+                        <th>College</th>
+                        <th>Course</th>
+                        <th>Year / Section</th>
+                        <th>Cleared</th>
+                        <th>Flagged</th>
+                        <th>Pending</th>
+                        <th>Status</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -157,7 +166,9 @@ $cid = $clearance['id'];
                     ?>
                         <tr class="<?= $flagged > 0 ? 'row-flagged' : ($cleared === $totalSig && $totalSig > 0 ? 'row-cleared' : '') ?>">
                             <td><?= htmlspecialchars($s['student_number']) ?></td>
-                            <td><strong><?= htmlspecialchars($s['full_name']) ?></strong></td>
+                            <td><?= htmlspecialchars($s['last_name']) ?></td>
+                            <td><?= htmlspecialchars($s['first_name']) ?></td>
+                            <td><?= htmlspecialchars($s['college']) ?></td>
                             <td><?= htmlspecialchars($s['course']) ?></td>
                             <td><?= $s['year_level'] ?> – <?= htmlspecialchars($s['section']) ?></td>
                             <td><span class="badge badge-success"><?= $cleared ?></span></td>
@@ -297,7 +308,7 @@ $cid = $clearance['id'];
                 <label>CSV File</label>
                 <input type="file" name="csv_file" accept=".csv,.txt" required>
                 <small class="text-muted">
-                    Required columns: <code>student_id, full_name, email, course, year_level, section</code><br>
+                    Required columns: <code>student_id, last_name, first_name, email, college, course, year_level, section</code><br>
                     First row = header. Default password = student ID.
                 </small>
             </div>

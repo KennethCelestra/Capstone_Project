@@ -15,8 +15,8 @@ class ClearanceStatus extends Model
     public function getStudentsForSignatory(int $clearanceId, int $signatoryId): array
     {
         $stmt = $this->db->prepare("
-            SELECT st.id, st.student_id AS student_number, st.full_name,
-                   st.email, st.course, st.year_level, st.section,
+            SELECT st.id, st.student_id AS student_number, CONCAT(st.first_name, ' ', st.last_name) AS full_name,
+                   st.last_name, st.first_name, st.college, st.email, st.course, st.year_level, st.section,
                    COALESCE(cs.status, 'pending') AS status,
                    cs.flag_note, cs.signed_at, cs.updated_at
             FROM clearance_students cst
@@ -26,7 +26,7 @@ class ClearanceStatus extends Model
                AND cs.clearance_id = cst.clearance_id
                AND cs.signatory_id = ?
             WHERE cst.clearance_id = ?
-            ORDER BY cs.status ASC, st.full_name ASC
+            ORDER BY cs.status ASC, st.last_name ASC, st.first_name ASC
         ");
         $stmt->execute([$signatoryId, $clearanceId]);
         return $stmt->fetchAll();
@@ -67,7 +67,7 @@ class ClearanceStatus extends Model
         $sql = "
             SELECT cs.clearance_id, c.name AS clearance_name,
                    st.id AS student_db_id, st.student_id AS student_number,
-                   st.full_name, st.email, st.course, st.year_level, st.section,
+                   CONCAT(st.first_name, ' ', st.last_name) AS full_name, st.last_name, st.first_name, st.college, st.email, st.course, st.year_level, st.section,
                    cs.flag_note, cs.updated_at
             FROM clearance_status cs
             JOIN clearances c  ON c.id  = cs.clearance_id
@@ -81,7 +81,7 @@ class ClearanceStatus extends Model
             $params[] = $clearanceId;
         }
 
-        $sql .= " ORDER BY c.name ASC, st.full_name ASC";
+        $sql .= " ORDER BY c.name ASC, st.last_name ASC, st.first_name ASC";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
@@ -153,7 +153,7 @@ class ClearanceStatus extends Model
     public function getStudentClearanceInfo(int $clearanceId, int $studentId): array|false
     {
         $stmt = $this->db->prepare("
-            SELECT st.full_name, st.email, c.name AS clearance_name
+            SELECT CONCAT(st.first_name, ' ', st.last_name) AS full_name, st.email, c.name AS clearance_name
             FROM students   st
             JOIN clearances c  ON c.id = ?
             WHERE st.id = ?
@@ -202,7 +202,7 @@ class ClearanceStatus extends Model
         
         $placeholders = str_repeat('?,', count($studentIds) - 1) . '?';
         $sql = "
-            SELECT st.id AS student_id, st.full_name, st.email, c.name AS clearance_name
+            SELECT st.id AS student_id, CONCAT(st.first_name, ' ', st.last_name) AS full_name, st.email, c.name AS clearance_name
             FROM students st
             JOIN clearances c ON c.id = ?
             WHERE st.id IN ($placeholders)
@@ -230,7 +230,10 @@ class ClearanceStatus extends Model
                 c.school_year,
                 st.id,
                 st.student_id AS student_number,
-                st.full_name,
+                CONCAT(st.first_name, ' ', st.last_name) AS full_name,
+                st.last_name,
+                st.first_name,
+                st.college,
                 st.email,
                 st.course,
                 st.year_level,
@@ -249,9 +252,9 @@ class ClearanceStatus extends Model
                AND cs.signatory_id = csig.signatory_id
             WHERE ca.adviser_id = ?
             GROUP BY c.id, c.name, c.school_year,
-                     st.id, st.student_id, st.full_name, st.email,
+                     st.id, st.student_id, st.last_name, st.first_name, st.college, st.email,
                      st.course, st.year_level, st.section
-            ORDER BY c.name ASC, st.full_name ASC
+            ORDER BY c.name ASC, st.last_name ASC, st.first_name ASC
         ");
         $stmt->execute([$adviserId]);
         return $stmt->fetchAll();

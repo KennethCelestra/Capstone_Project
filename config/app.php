@@ -8,7 +8,7 @@ define('ROOT_PATH',  dirname(__DIR__));
 // Database Configuration
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
-define('DB_PASS', '12345');
+define('DB_PASS', '1234');
 define('DB_NAME', 'clearance_system');
 
 // Session Configuration

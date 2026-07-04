@@ -62,8 +62,10 @@ class AdminController extends Controller
         $this->requireLogin('admin');
         $data = [
             'student_id' => $this->getPost('student_id'),
-            'full_name'  => $this->getPost('full_name'),
+            'last_name'  => $this->getPost('last_name'),
+            'first_name' => $this->getPost('first_name'),
             'email'      => $this->getPost('email'),
+            'college'    => $this->getPost('college'),
             'course'     => $this->getPost('course'),
             'year_level' => $this->getPost('year_level'),
             'section'    => $this->getPost('section'),

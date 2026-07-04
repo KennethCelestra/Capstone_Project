@@ -167,7 +167,10 @@ class Clearance extends Model
             SELECT
                 st.id,
                 st.student_id AS student_number,
-                st.full_name,
+                st.last_name,
+                st.first_name,
+                st.email,
+                st.college,
                 st.course,
                 st.year_level,
                 st.section,
@@ -182,8 +185,8 @@ class Clearance extends Model
                AND cs.clearance_id = cst.clearance_id
                AND cs.signatory_id = csig.signatory_id
             WHERE cst.clearance_id = ?
-            GROUP BY st.id, st.student_id, st.full_name, st.course, st.year_level, st.section
-            ORDER BY st.full_name ASC
+            GROUP BY st.id, st.student_id, st.last_name, st.first_name, st.email, st.college, st.course, st.year_level, st.section
+            ORDER BY st.last_name ASC, st.first_name ASC
         ");
         $stmt->execute([$clearanceId]);
         $rows = $stmt->fetchAll();
