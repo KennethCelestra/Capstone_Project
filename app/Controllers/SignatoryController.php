@@ -125,7 +125,23 @@ class SignatoryController extends Controller
 
         if ($clearanceId && $studentId && $note !== '') {
             $this->statusModel->flagStudent($clearanceId, $studentId, $signatoryId, $note);
-            $this->setFlash('warning', 'Student has been flagged for a deficiency.');
+            
+            // Send deficiency email immediately
+            $signatoryRecord = $this->signatoryModel->findById($signatoryId);
+            $officeName      = $signatoryRecord ? $signatoryRecord['office'] : 'Office';
+            $info            = $this->statusModel->getStudentClearanceInfo($clearanceId, $studentId);
+            
+            if ($info) {
+                Mailer::sendDeficiencyEmail(
+                    $info['email'],
+                    $info['full_name'],
+                    $officeName,
+                    $note,
+                    $info['clearance_name']
+                );
+            }
+
+            $this->setFlash('warning', 'Student has been flagged and notified via email.');
         } else {
             $this->setFlash('error', 'Please provide a reason for flagging.');
         }
@@ -230,10 +246,11 @@ class SignatoryController extends Controller
         $clearCount = count($clearedIds);
 
         $fullyClearedCount = 0;
-        foreach ($clearedIds as $studentId) {
-            if ($this->statusModel->isStudentFullyCleared($clearanceId, $studentId)) {
-                $info = $this->statusModel->getStudentClearanceInfo($clearanceId, $studentId);
-                if ($info) {
+        if ($clearCount > 0) {
+            $fullyClearedIds = $this->statusModel->getFullyClearedStudents($clearanceId, $clearedIds);
+            if (!empty($fullyClearedIds)) {
+                $infos = $this->statusModel->getBulkStudentClearanceInfo($clearanceId, $fullyClearedIds);
+                foreach ($infos as $info) {
                     Mailer::sendClearedEmail(
                         $info['email'],
                         $info['full_name'],

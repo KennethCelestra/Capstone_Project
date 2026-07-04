@@ -52,14 +52,66 @@ $totalPending = $totalStudents - $totalFlagged - $totalCleared;
     </div>
 </div>
 
-<div class="quick-actions">
-    <h3>Quick Actions</h3>
-    <div class="action-buttons">
-        <a href="<?= BASE_URL ?>adviser/clearances" class="btn btn-primary">View Clearance Status</a>
-        <?php if ($totalFlagged > 0): ?>
-            <a href="<?= BASE_URL ?>adviser/clearances?status=flagged" class="btn btn-danger">
-                View Flagged Students (<?= $totalFlagged ?>)
-            </a>
-        <?php endif; ?>
+<?php if ($totalFlagged > 0): ?>
+    <div class="alert-banner alert-warning">
+        <strong>Attention:</strong> You have <?= $totalFlagged ?> student(s) with deficiencies across your assigned clearances.
     </div>
+<?php endif; ?>
+
+<div class="dashboard-section">
+    <h3>Your Assigned Clearances</h3>
+    <?php if (empty($clearances)): ?>
+        <p class="text-muted">No clearances assigned.</p>
+    <?php else: ?>
+        <table class="mini-table">
+            <thead>
+                <tr>
+                    <th>Clearance Name</th>
+                    <th>School Year</th>
+                    <th>Students</th>
+                    <th>Progress</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($clearances as $c): ?>
+                    <?php
+                    $cTotal = count($c['students']);
+                    $cCleared = (int)$c['cleared_total'];
+                    $cFlagged = (int)$c['flagged_total'];
+                    $cPending = (int)$c['pending_total'];
+                    $cClearedPct = $cTotal > 0 ? ($cCleared / $cTotal) * 100 : 0;
+                    $cFlaggedPct = $cTotal > 0 ? ($cFlagged / $cTotal) * 100 : 0;
+                    $cPendingPct = $cTotal > 0 ? ($cPending / $cTotal) * 100 : 0;
+                    ?>
+                    <tr>
+                        <td><strong><?= htmlspecialchars($c['clearance_name']) ?></strong></td>
+                        <td><?= htmlspecialchars($c['school_year']) ?></td>
+                        <td><?= $cTotal ?></td>
+                        <td style="min-width: 200px;">
+                            <div class="progress-bar-stacked">
+                                <?php if ($cCleared > 0): ?>
+                                    <div class="progress-segment segment-cleared" style="width: <?= $cClearedPct ?>%" title="<?= $cCleared ?> Cleared"></div>
+                                <?php endif; ?>
+                                <?php if ($cFlagged > 0): ?>
+                                    <div class="progress-segment segment-flagged" style="width: <?= $cFlaggedPct ?>%" title="<?= $cFlagged ?> Flagged"></div>
+                                <?php endif; ?>
+                                <?php if ($cPending > 0): ?>
+                                    <div class="progress-segment segment-pending" style="width: <?= $cPendingPct ?>%" title="<?= $cPending ?> Pending"></div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="mini-stats">
+                                <span title="Fully Cleared">C: <?= $cCleared ?></span>
+                                <span title="With Deficiency">F: <?= $cFlagged ?></span>
+                                <span title="In Progress">P: <?= $cPending ?></span>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="<?= BASE_URL ?>adviser/clearances?cid=<?= $c['clearance_id'] ?>" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">View &rarr;</a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
 </div>

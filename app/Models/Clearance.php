@@ -176,7 +176,7 @@ class Clearance extends Model
                 COALESCE(SUM(cs.status = 'flagged'), 0)             AS flagged_count
             FROM clearance_students cst
             JOIN students st ON st.id = cst.student_id
-            JOIN clearance_signatories csig ON csig.clearance_id = cst.clearance_id
+            LEFT JOIN clearance_signatories csig ON csig.clearance_id = cst.clearance_id
             LEFT JOIN clearance_status cs
                 ON cs.student_id   = st.id
                AND cs.clearance_id = cst.clearance_id
@@ -223,4 +223,71 @@ class Clearance extends Model
         ")->execute([$clearanceId, $studentDbId]);
     }
 
+    public function getActiveClearancesWithProgress(): array
+    {
+        $stmt = $this->db->query("
+            SELECT
+                c.id AS clearance_id,
+                c.name AS clearance_name,
+                c.school_year,
+                COUNT(DISTINCT csig.signatory_id) AS signatory_count,
+                COUNT(DISTINCT cst.student_id) AS student_count
+            FROM clearances c
+            LEFT JOIN clearance_signatories csig ON csig.clearance_id = c.id
+            LEFT JOIN clearance_students cst ON cst.clearance_id = c.id
+            WHERE c.archived = 0
+            GROUP BY c.id
+            ORDER BY c.created_at DESC
+        ");
+        $clearances = $stmt->fetchAll();
+
+        foreach ($clearances as &$c) {
+            $cid = (int)$c['clearance_id'];
+            $students = $this->getStudentsWithStatus($cid);
+
+            $cleared = 0;
+            $flagged = 0;
+            $pending = 0;
+
+            foreach ($students as $s) {
+                if ((int)$s['flagged_count'] > 0) {
+                    $flagged++;
+                } elseif ((int)$s['total_signatories'] > 0 && (int)$s['cleared_count'] === (int)$s['total_signatories']) {
+                    $cleared++;
+                } else {
+                    $pending++;
+                }
+            }
+
+            $c['cleared_total'] = $cleared;
+            $c['flagged_total'] = $flagged;
+            $c['pending_total'] = $pending;
+        }
+        unset($c);
+
+        return $clearances;
+    }
+
+    public function getOverallProgress(): array
+    {
+        $clearances = $this->getActiveClearancesWithProgress();
+        $totalStudents = 0;
+        $totalCleared = 0;
+        $totalFlagged = 0;
+        $totalPending = 0;
+
+        foreach ($clearances as $c) {
+            $totalStudents += $c['student_count'];
+            $totalCleared += $c['cleared_total'];
+            $totalFlagged += $c['flagged_total'];
+            $totalPending += $c['pending_total'];
+        }
+
+        return [
+            'total_students' => $totalStudents,
+            'cleared_total'  => $totalCleared,
+            'flagged_total'  => $totalFlagged,
+            'pending_total'  => $totalPending,
+        ];
+    }
 }

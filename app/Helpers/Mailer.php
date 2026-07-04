@@ -6,14 +6,56 @@
  */
 class Mailer
 {
-    private static function headers(string $fromName = 'Clearance System'): string
+    private static function sendBrevoEmail(string $toEmail, string $toName, string $subject, string $htmlContent): bool
     {
-        return implode("\r\n", [
-            'MIME-Version: 1.0',
-            'Content-Type: text/html; charset=UTF-8',
-            "From: {$fromName} <" . MAIL_FROM . ">",
-            'X-Mailer: PHP/' . phpversion(),
+        $apiKey = defined('BREVO_API_KEY') ? BREVO_API_KEY : '';
+        
+        if (empty($apiKey) || $apiKey === 'YOUR_BREVO_API_KEY_HERE') {
+            // Fallback to logging if no API key is set
+            $logFile = ROOT_PATH . '/logs/emails.txt';
+            if (!is_dir(dirname($logFile))) {
+                mkdir(dirname($logFile), 0777, true);
+            }
+            $logEntry = "[" . date('Y-m-d H:i:s') . "] MISSING_API_KEY | To: {$toEmail} | Subject: {$subject}\n";
+            file_put_contents($logFile, $logEntry, FILE_APPEND);
+            return false;
+        }
+
+        $data = [
+            'sender' => ['name' => APP_NAME, 'email' => MAIL_FROM],
+            'to' => [
+                ['email' => $toEmail, 'name' => $toName]
+            ],
+            'subject' => $subject,
+            'htmlContent' => $htmlContent
+        ];
+
+        $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'accept: application/json',
+            'api-key: ' . $apiKey,
+            'content-type: application/json'
         ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode === 201) {
+            return true;
+        } else {
+            // Log API errors for debugging
+            $logFile = ROOT_PATH . '/logs/emails.txt';
+            if (!is_dir(dirname($logFile))) {
+                mkdir(dirname($logFile), 0777, true);
+            }
+            $logEntry = "[" . date('Y-m-d H:i:s') . "] BREVO_ERROR | Code: {$httpCode} | Response: {$response}\n";
+            file_put_contents($logFile, $logEntry, FILE_APPEND);
+            return false;
+        }
     }
 
     /**
@@ -55,7 +97,7 @@ class Mailer
           </div>
         </div>";
 
-        return mail($studentEmail, $subject, $body, self::headers());
+        return self::sendBrevoEmail($studentEmail, $studentName, $subject, $body);
     }
 
     /**
@@ -94,6 +136,6 @@ class Mailer
           </div>
         </div>";
 
-        return mail($studentEmail, $subject, $body, self::headers());
+        return self::sendBrevoEmail($studentEmail, $studentName, $subject, $body);
     }
 }

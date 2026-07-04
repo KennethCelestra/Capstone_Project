@@ -45,9 +45,66 @@ foreach ($clearances as $c) {
     </div>
 </div>
 
-<div class="quick-actions">
-    <h3>Quick Actions</h3>
-    <div class="action-buttons">
-        <a href="<?= BASE_URL ?>signatory/clearances" class="btn btn-primary">Manage Student Clearances</a>
+<?php if ($totalPending > 0): ?>
+    <div class="alert-banner alert-info">
+        <strong>Pending Actions:</strong> You have <?= $totalPending ?> student(s) awaiting your review.
     </div>
+<?php endif; ?>
+
+<div class="dashboard-section">
+    <h3>Your Assigned Clearances</h3>
+    <?php if (empty($clearances)): ?>
+        <p class="text-muted">No clearances assigned.</p>
+    <?php else: ?>
+        <table class="mini-table">
+            <thead>
+                <tr>
+                    <th>Clearance Name</th>
+                    <th>School Year</th>
+                    <th>Students</th>
+                    <th>Progress</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($clearances as $c): ?>
+                    <?php
+                    $cTotal = (int)$c['total_students'];
+                    $cCleared = (int)$c['cleared_count'];
+                    $cFlagged = (int)$c['flagged_count'];
+                    $cPending = (int)$c['pending_count'];
+                    $cClearedPct = $cTotal > 0 ? ($cCleared / $cTotal) * 100 : 0;
+                    $cFlaggedPct = $cTotal > 0 ? ($cFlagged / $cTotal) * 100 : 0;
+                    $cPendingPct = $cTotal > 0 ? ($cPending / $cTotal) * 100 : 0;
+                    ?>
+                    <tr>
+                        <td><strong><?= htmlspecialchars($c['clearance_name']) ?></strong></td>
+                        <td><?= htmlspecialchars($c['school_year']) ?></td>
+                        <td><?= $cTotal ?></td>
+                        <td style="min-width: 200px;">
+                            <div class="progress-bar-stacked">
+                                <?php if ($cCleared > 0): ?>
+                                    <div class="progress-segment segment-cleared" style="width: <?= $cClearedPct ?>%" title="<?= $cCleared ?> Cleared"></div>
+                                <?php endif; ?>
+                                <?php if ($cFlagged > 0): ?>
+                                    <div class="progress-segment segment-flagged" style="width: <?= $cFlaggedPct ?>%" title="<?= $cFlagged ?> Flagged"></div>
+                                <?php endif; ?>
+                                <?php if ($cPending > 0): ?>
+                                    <div class="progress-segment segment-pending" style="width: <?= $cPendingPct ?>%" title="<?= $cPending ?> Pending"></div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="mini-stats">
+                                <span title="Cleared">C: <?= $cCleared ?></span>
+                                <span title="Flagged">F: <?= $cFlagged ?></span>
+                                <span title="Pending">P: <?= $cPending ?></span>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="<?= BASE_URL ?>signatory/clearances?cid=<?= $c['clearance_id'] ?>" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Open &rarr;</a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
 </div>

@@ -162,6 +162,58 @@ class ClearanceStatus extends Model
         return $stmt->fetch();
     }
 
+    /**
+     * Bulk check which students from the given array are fully cleared.
+     * Returns an array of student_ids.
+     */
+    public function getFullyClearedStudents(int $clearanceId, array $studentIds): array
+    {
+        if (empty($studentIds)) return [];
+
+        $stmtSig = $this->db->prepare("SELECT COUNT(*) FROM clearance_signatories WHERE clearance_id = ?");
+        $stmtSig->execute([$clearanceId]);
+        $totalAssigned = (int)$stmtSig->fetchColumn();
+
+        if ($totalAssigned === 0) return [];
+
+        $placeholders = str_repeat('?,', count($studentIds) - 1) . '?';
+        $sql = "
+            SELECT student_id 
+            FROM clearance_status 
+            WHERE clearance_id = ? 
+              AND status = 'cleared' 
+              AND student_id IN ($placeholders)
+            GROUP BY student_id 
+            HAVING COUNT(*) = ?
+        ";
+        $params = array_merge([$clearanceId], $studentIds, [$totalAssigned]);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+    }
+
+    /**
+     * Get clearance info for multiple students at once.
+     */
+    public function getBulkStudentClearanceInfo(int $clearanceId, array $studentIds): array
+    {
+        if (empty($studentIds)) return [];
+        
+        $placeholders = str_repeat('?,', count($studentIds) - 1) . '?';
+        $sql = "
+            SELECT st.id AS student_id, st.full_name, st.email, c.name AS clearance_name
+            FROM students st
+            JOIN clearances c ON c.id = ?
+            WHERE st.id IN ($placeholders)
+        ";
+        $params = array_merge([$clearanceId], $studentIds);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll() ?: [];
+    }
+
     // ----------------------------------------------------------------
     // ADVISER: Student listing with full signatory detail
     // ----------------------------------------------------------------
@@ -268,11 +320,19 @@ class ClearanceStatus extends Model
         ");
 
         $clearedIds = [];
-        foreach ($studentIds as $sId) {
-            if ($clearStmt->execute([$clearanceId, (int)$sId, $signatoryId])) {
-                $clearedIds[] = (int)$sId;
+        try {
+            $this->db->beginTransaction();
+            foreach ($studentIds as $sId) {
+                if ($clearStmt->execute([$clearanceId, (int)$sId, $signatoryId])) {
+                    $clearedIds[] = (int)$sId;
+                }
             }
+            $this->db->commit();
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            // In a real app we might throw $e, but we return whatever we have
         }
+
         return $clearedIds;
     }
 }

@@ -30,12 +30,14 @@ class AdminController extends Controller
     {
         $this->requireLogin('admin');
         $data = [
-            'studentCount'   => $this->studentModel->count(),
-            'adviserCount'   => $this->adviserModel->count(),
-            'signatoryCount' => $this->signatoryModel->count(),
-            'clearanceCount' => $this->clearanceModel->count(),
-            'flash'          => $this->getFlash(),
-            'userName'       => $_SESSION['user_name'],
+            'studentCount'    => $this->studentModel->count(),
+            'adviserCount'    => $this->adviserModel->count(),
+            'signatoryCount'  => $this->signatoryModel->count(),
+            'clearanceCount'  => $this->clearanceModel->count(),
+            'overallProgress' => $this->clearanceModel->getOverallProgress(),
+            'clearances'      => $this->clearanceModel->getActiveClearancesWithProgress(),
+            'flash'           => $this->getFlash(),
+            'userName'        => $_SESSION['user_name'],
         ];
         $this->view('layouts/main', array_merge($data, ['content' => 'admin/dashboard']));
     }
@@ -118,17 +120,19 @@ class AdminController extends Controller
 
         [$inserted, $skipped] = $this->studentModel->bulkInsertFromCSV($rows);
 
+        $enrolledCount = 0;
         if ($clearanceId > 0) {
             $csvIds     = array_column($rows, 'student_id');
             $unEnrolled = $this->studentModel->findNotInClearance($clearanceId);
             foreach ($unEnrolled as $st) {
-                if (in_array($st['student_id'], $csvIds, true)) {
+                if (in_array($st['student_id'], $csvIds)) {
                     $this->clearanceModel->enrollStudent($clearanceId, (int) $st['id']);
+                    $enrolledCount++;
                 }
             }
         }
 
-        $this->setFlash('success', "Import complete: {$inserted} inserted, {$skipped} skipped.");
+        $this->setFlash('success', "Import complete: {$inserted} new student accounts created, {$skipped} existing accounts skipped. Enrolled {$enrolledCount} students into the clearance.");
         if ($clearanceId > 0) {
             $this->redirect("admin/clearances/detail?id={$clearanceId}");
         } else {

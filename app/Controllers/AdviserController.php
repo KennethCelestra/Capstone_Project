@@ -20,6 +20,19 @@ class AdviserController extends Controller
         $rows       = $this->statusModel->getClearancesForAdviser($_SESSION['user_id']);
         $clearances = $this->groupClearances($rows);
 
+        foreach ($clearances as &$c) {
+            $flagged = $cleared = 0;
+            foreach ($c['students'] as $s) {
+                $status = $this->resolveDisplayStatus($s);
+                if ($status === 'flagged') $flagged++;
+                elseif ($status === 'cleared') $cleared++;
+            }
+            $c['flagged_total'] = $flagged;
+            $c['cleared_total'] = $cleared;
+            $c['pending_total'] = count($c['students']) - $flagged - $cleared;
+        }
+        unset($c);
+
         $data = [
             'clearances' => $clearances,
             'flash'      => $this->getFlash(),

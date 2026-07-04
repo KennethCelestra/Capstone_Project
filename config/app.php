@@ -15,4 +15,6 @@ define('DB_NAME', 'clearance_system');
 define('SESSION_NAME', 'clearance_sess');
 
 // Mail Configuration
-define('MAIL_FROM', 'no-reply@school.edu');
+define('MAIL_FROM', 'kenneth.celestra@students.isatu.edu.ph');
+define('BREVO_API_KEY', 'your_brevo_api_key_here'); // Get this from your Brevo account > SMTP & API
+
