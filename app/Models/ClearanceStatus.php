@@ -183,14 +183,18 @@ class ClearanceStatus extends Model
                 st.course,
                 st.year_level,
                 st.section,
-                COALESCE(SUM(cs.status = 'cleared'), 0)                          AS cleared_count,
-                COALESCE(SUM(cs.status = 'flagged'), 0)                          AS flagged_count,
-                COALESCE(COUNT(cs.id), 0)                                         AS total_count
+                COALESCE(SUM(cs.status = 'cleared'), 0)              AS cleared_count,
+                COALESCE(SUM(cs.status = 'flagged'), 0)              AS flagged_count,
+                COUNT(DISTINCT csig.signatory_id)                     AS total_signatories
             FROM clearance_advisers ca
             JOIN clearances c  ON c.id  = ca.clearance_id
             JOIN clearance_students cst ON cst.clearance_id = c.id
             JOIN students   st ON st.id = cst.student_id
-            LEFT JOIN clearance_status cs ON cs.clearance_id = c.id AND cs.student_id = st.id
+            JOIN clearance_signatories csig ON csig.clearance_id = c.id
+            LEFT JOIN clearance_status cs
+                ON cs.clearance_id = c.id
+               AND cs.student_id   = st.id
+               AND cs.signatory_id = csig.signatory_id
             WHERE ca.adviser_id = ?
             GROUP BY c.id, c.name, c.school_year,
                      st.id, st.student_id, st.full_name, st.email,

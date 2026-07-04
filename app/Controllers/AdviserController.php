@@ -176,7 +176,7 @@ class AdviserController extends Controller
     private function resolveDisplayStatus(array $s): string
     {
         if ((int) $s['flagged_count'] > 0) return 'flagged';
-        $total   = (int) $s['total_count'];
+        $total   = (int) $s['total_signatories'];
         $cleared = (int) $s['cleared_count'];
         if ($total > 0 && $cleared === $total) return 'cleared';
         return 'pending';

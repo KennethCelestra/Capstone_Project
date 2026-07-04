@@ -129,7 +129,11 @@ class AdminController extends Controller
         }
 
         $this->setFlash('success', "Import complete: {$inserted} inserted, {$skipped} skipped.");
-        $this->redirect("admin/clearances/detail?id={$clearanceId}");
+        if ($clearanceId > 0) {
+            $this->redirect("admin/clearances/detail?id={$clearanceId}");
+        } else {
+            $this->redirect('admin/students');
+        }
     }
 
 

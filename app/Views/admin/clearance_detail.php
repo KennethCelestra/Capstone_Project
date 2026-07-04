@@ -19,7 +19,7 @@ $cid = $clearance['id'];
     <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
         <button class="btn btn-secondary btn-sm"
                 onclick="openEditClearanceDetail(<?= $cid ?>, '<?= htmlspecialchars(addslashes($clearance['name'])) ?>', '<?= htmlspecialchars(addslashes($clearance['description'])) ?>', '<?= htmlspecialchars($clearance['school_year']) ?>')">
-            ✏️ Edit Info
+            Edit Info
         </button>
     </div>
 </div>
@@ -27,13 +27,13 @@ $cid = $clearance['id'];
 <!-- ===== TABS ===== -->
 <div class="tabs">
     <button class="tab-btn active" onclick="showTab('tab-sig', this)">
-        ✍️ Signatories (<?= count($assignedSignatories) ?>)
+        Signatories (<?= count($assignedSignatories) ?>)
     </button>
     <button class="tab-btn" onclick="showTab('tab-adv', this)">
-        👨‍🏫 Enrollment Committee (<?= count($assignedAdvisers) ?>)
+        Enrollment Committee (<?= count($assignedAdvisers) ?>)
     </button>
     <button class="tab-btn" onclick="showTab('tab-stu', this)">
-        👥 Students (<?= count($students) ?>)
+        Students (<?= count($students) ?>)
     </button>
 </div>
 
@@ -121,12 +121,11 @@ $cid = $clearance['id'];
         <h3>Enrolled Students</h3>
         <button class="btn btn-primary btn-sm"
                 onclick="document.getElementById('uploadCSVModal').style.display='flex'">
-            📤 Upload CSV
+            Upload CSV
         </button>
     </div>
     <?php if (empty($students)): ?>
         <div class="empty-state" style="padding:2rem">
-            <div class="empty-icon">👥</div>
             <p>No students enrolled yet. Please upload a CSV file to enroll students.</p>
             <p class="text-muted" style="font-size:.8rem">
                 CSV format: <code>student_id, full_name, email, course, year_level, section</code>
@@ -149,11 +148,11 @@ $cid = $clearance['id'];
                         $pending  = (int) $s['pending_count'];
 
                         if ($flagged > 0) {
-                            $overallBadge = '<span class="badge badge-danger">🚩 Has Deficiency</span>';
+                            $overallBadge = '<span class="badge badge-danger">Has Deficiency</span>';
                         } elseif ($totalSig > 0 && $cleared === $totalSig) {
-                            $overallBadge = '<span class="badge badge-success">✅ Fully Cleared</span>';
+                            $overallBadge = '<span class="badge badge-success">Fully Cleared</span>';
                         } else {
-                            $overallBadge = '<span class="badge badge-warning">⏳ In Progress</span>';
+                            $overallBadge = '<span class="badge badge-warning">In Progress</span>';
                         }
                     ?>
                         <tr class="<?= $flagged > 0 ? 'row-flagged' : ($cleared === $totalSig && $totalSig > 0 ? 'row-cleared' : '') ?>">
@@ -161,17 +160,17 @@ $cid = $clearance['id'];
                             <td><strong><?= htmlspecialchars($s['full_name']) ?></strong></td>
                             <td><?= htmlspecialchars($s['course']) ?></td>
                             <td><?= $s['year_level'] ?> – <?= htmlspecialchars($s['section']) ?></td>
-                            <td><span class="badge badge-success">✅ <?= $cleared ?></span></td>
+                            <td><span class="badge badge-success"><?= $cleared ?></span></td>
                             <td>
                                 <?php if ($flagged > 0): ?>
-                                    <span class="badge badge-danger">🚩 <?= $flagged ?></span>
+                                    <span class="badge badge-danger"><?= $flagged ?></span>
                                 <?php else: ?>
                                     <span class="text-muted">—</span>
                                 <?php endif; ?>
                             </td>
                             <td>
                                 <?php if ($pending > 0): ?>
-                                    <span class="badge badge-warning">⏳ <?= $pending ?></span>
+                                    <span class="badge badge-warning"><?= $pending ?></span>
                                 <?php else: ?>
                                     <span class="text-muted">—</span>
                                 <?php endif; ?>

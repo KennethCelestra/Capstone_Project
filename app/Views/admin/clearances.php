@@ -7,7 +7,6 @@
 
 <?php if (empty($clearances)): ?>
     <div class="empty-state">
-        <div class="empty-icon">📋</div>
         <h3>No clearances yet</h3>
         <p>Create your first clearance to get started.</p>
         <button class="btn btn-primary" onclick="document.getElementById('createClearanceModal').style.display='flex'">
@@ -49,7 +48,7 @@
                             <form action="<?= BASE_URL ?>admin/clearances/archive" method="POST" style="display:inline"
                                   onsubmit="return confirm('Archive this clearance? It will be hidden from active list but all data is preserved.')">
                                 <input type="hidden" name="id" value="<?= $c['id'] ?>">
-                                <button type="submit" class="btn btn-warning btn-sm">🗄️ Archive</button>
+                                <button type="submit" class="btn btn-warning btn-sm">Archive</button>
                             </form>
                         </td>
 

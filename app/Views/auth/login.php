@@ -14,7 +14,7 @@
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <div class="login-logo">🎓</div>
+                <div class="login-logo">CS</div>
                 <h1><?= APP_NAME ?></h1>
                 <p>Sign in to your account</p>
             </div>

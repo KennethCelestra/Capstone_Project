@@ -9,9 +9,8 @@ $routes = [
     'POST /login'                                 => ['AuthController', 'login'],
     'GET /logout'                                 => ['AuthController', 'logout'],
 
-    // ---- Auth (Admin - separate page) ----
+    // ---- Auth (Admin) — redirects to shared login ----
     'GET /admin/login'                            => ['AuthController', 'adminLogin'],
-    'POST /admin/login'                           => ['AuthController', 'adminLoginPost'],
 
     // ---- Admin: Dashboard ----
     'GET /admin/dashboard'                        => ['AdminController', 'dashboard'],
@@ -71,4 +70,5 @@ $routes = [
     'POST /signatory/students/clear'              => ['SignatoryController', 'clearStudent'],
     'POST /signatory/students/clear-all'          => ['SignatoryController', 'clearAll'],
     'POST /signatory/confirm/submit'              => ['SignatoryController', 'submitConfirm'],
+    'POST /signatory/confirm-all'                 => ['SignatoryController', 'confirmAll'],
 ];

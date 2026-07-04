@@ -1,14 +1,13 @@
 <div class="page-header">
     <div>
         <a href="<?= BASE_URL ?>admin/clearances" class="back-link">← Active Clearances</a>
-        <h2>🗄️ Archived Clearances</h2>
+        <h2>Archived Clearances</h2>
         <p class="text-muted">These clearances are archived and hidden from active use. All data is preserved.</p>
     </div>
 </div>
 
 <?php if (empty($clearances)): ?>
     <div class="empty-state">
-        <div class="empty-icon">🗄️</div>
         <h3>No archived clearances</h3>
         <p>Clearances you archive will appear here. You can restore them at any time.</p>
         <a href="<?= BASE_URL ?>admin/clearances" class="btn btn-primary">← Back to Active Clearances</a>
@@ -34,7 +33,7 @@
                             <?php if (!empty($c['description'])): ?>
                                 <br><small class="text-muted"><?= htmlspecialchars($c['description']) ?></small>
                             <?php endif; ?>
-                            <br><span class="badge badge-archived">🗄️ Archived</span>
+                            <br><span class="badge badge-archived">Archived</span>
                         </td>
                         <td><?= htmlspecialchars($c['school_year']) ?></td>
                         <td><span class="badge badge-info"><?= $c['signatory_count'] ?></span></td>
@@ -50,13 +49,13 @@
                             <form action="<?= BASE_URL ?>admin/clearances/unarchive" method="POST" style="display:inline"
                                   onsubmit="return confirm('Restore this clearance to active?')">
                                 <input type="hidden" name="id" value="<?= $c['id'] ?>">
-                                <button type="submit" class="btn btn-success btn-sm">↩️ Restore</button>
+                                <button type="submit" class="btn btn-success btn-sm">Restore</button>
                             </form>
                             <!-- Permanent delete -->
                             <form action="<?= BASE_URL ?>admin/clearances/delete" method="POST" style="display:inline"
                                   onsubmit="return confirm('PERMANENTLY delete this clearance? All student data, flags, and statuses will be gone forever. This cannot be undone.')">
                                 <input type="hidden" name="id" value="<?= $c['id'] ?>">
-                                <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete Forever</button>
+                                <button type="submit" class="btn btn-danger btn-sm">Delete Forever</button>
                             </form>
                         </td>
                     </tr>

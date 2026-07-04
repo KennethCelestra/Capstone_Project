@@ -173,11 +173,10 @@ class Clearance extends Model
                 st.section,
                 COUNT(DISTINCT csig.signatory_id)                   AS total_signatories,
                 COALESCE(SUM(cs.status = 'cleared'), 0)             AS cleared_count,
-                COALESCE(SUM(cs.status = 'flagged'), 0)             AS flagged_count,
-                COALESCE(SUM(cs.status = 'pending' OR cs.status IS NULL OR cs.status = 'signed'), 0) AS pending_count
+                COALESCE(SUM(cs.status = 'flagged'), 0)             AS flagged_count
             FROM clearance_students cst
             JOIN students st ON st.id = cst.student_id
-            LEFT JOIN clearance_signatories csig ON csig.clearance_id = cst.clearance_id
+            JOIN clearance_signatories csig ON csig.clearance_id = cst.clearance_id
             LEFT JOIN clearance_status cs
                 ON cs.student_id   = st.id
                AND cs.clearance_id = cst.clearance_id
@@ -187,7 +186,16 @@ class Clearance extends Model
             ORDER BY st.full_name ASC
         ");
         $stmt->execute([$clearanceId]);
-        return $stmt->fetchAll();
+        $rows = $stmt->fetchAll();
+
+        // Derive pending_count in PHP to avoid SQL ambiguity
+        foreach ($rows as &$row) {
+            $row['pending_count'] = (int)$row['total_signatories']
+                                  - (int)$row['cleared_count']
+                                  - (int)$row['flagged_count'];
+        }
+        unset($row);
+        return $rows;
     }
 
     public function enrollStudent(int $clearanceId, int $studentDbId): void

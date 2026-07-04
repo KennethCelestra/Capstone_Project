@@ -1,7 +1,7 @@
 <?php
 // Application Configuration
 
-define('APP_NAME',   'Clearance System');
+define('APP_NAME',   'ISAT U Clearance System');
 define('BASE_URL',   'http://localhost/clearance_system/public/');
 define('ROOT_PATH',  dirname(__DIR__));
 

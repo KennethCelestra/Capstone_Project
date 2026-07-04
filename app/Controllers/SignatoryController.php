@@ -210,6 +210,81 @@ class SignatoryController extends Controller
     }
 
     // ----------------------------------------------------------------
+    // Confirm All — bulk clear pending + send deficiency emails to flagged
+    // ----------------------------------------------------------------
+
+    public function confirmAll(): void
+    {
+        $this->requireLogin('signatory');
+        $signatoryId = (int) $_SESSION['user_id'];
+        $clearanceId = (int) $this->getPost('clearance_id', 0);
+
+        if (!$clearanceId) {
+            $this->setFlash('error', 'Invalid clearance.');
+            $this->redirect('signatory/clearances');
+            return;
+        }
+
+        // 1) Clear all pending students
+        $clearedIds = $this->statusModel->clearAllPending($clearanceId, $signatoryId);
+        $clearCount = count($clearedIds);
+
+        $fullyClearedCount = 0;
+        foreach ($clearedIds as $studentId) {
+            if ($this->statusModel->isStudentFullyCleared($clearanceId, $studentId)) {
+                $info = $this->statusModel->getStudentClearanceInfo($clearanceId, $studentId);
+                if ($info) {
+                    Mailer::sendClearedEmail(
+                        $info['email'],
+                        $info['full_name'],
+                        $info['clearance_name']
+                    );
+                    $fullyClearedCount++;
+                }
+            }
+        }
+
+        // 2) Send deficiency emails to all flagged students
+        $signatoryRecord = $this->signatoryModel->findById($signatoryId);
+        $officeName      = $signatoryRecord ? $signatoryRecord['office'] : 'Office';
+        $flagged         = $this->statusModel->getFlaggedStudentsForConfirmation($signatoryId, $clearanceId);
+        $sent   = 0;
+        $errors = 0;
+
+        foreach ($flagged as $f) {
+            $ok = Mailer::sendDeficiencyEmail(
+                $f['email'],
+                $f['full_name'],
+                $officeName,
+                $f['flag_note'],
+                $f['clearance_name']
+            );
+            $ok ? $sent++ : $errors++;
+        }
+
+        // Build flash message
+        $parts = [];
+        if ($clearCount > 0) {
+            $parts[] = "{$clearCount} student(s) cleared.";
+        }
+        if ($fullyClearedCount > 0) {
+            $parts[] = "{$fullyClearedCount} student(s) fully cleared and notified.";
+        }
+        if ($sent > 0) {
+            $parts[] = "Deficiency emails sent to {$sent} student(s).";
+        }
+        if ($errors > 0) {
+            $parts[] = "{$errors} email(s) failed — check mail config.";
+        }
+
+        $msg = implode(' ', $parts) ?: 'No pending or flagged students to process.';
+        $type = $errors > 0 ? 'warning' : 'success';
+        $this->setFlash($type, $msg);
+
+        $this->redirect("signatory/clearances?cid={$clearanceId}");
+    }
+
+    // ----------------------------------------------------------------
     // Confirmation screen (inline confirm — kept for email sending)
     // ----------------------------------------------------------------
 

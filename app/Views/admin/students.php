@@ -43,7 +43,7 @@
 </div>
 
 <div class="info-box" style="margin-top:1.5rem">
-    <strong>💡 Tip:</strong> To enroll students into a specific clearance (and generate their clearance status),
+    <strong>Tip:</strong> To enroll students into a specific clearance (and generate their clearance status),
     go to <a href="<?= BASE_URL ?>admin/clearances">Clearances</a> → Manage → Students tab and upload a CSV file.
 </div>
 

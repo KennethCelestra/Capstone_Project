@@ -1,5 +1,5 @@
 -- ================================================
--- Clearance System Database Schema (v2)
+-- Clearance System Database Schema (v3 — current)
 -- Database: clearance_system
 -- Run this in phpMyAdmin: SQL tab
 -- ================================================
@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS `clearances` (
     `name`        VARCHAR(200) NOT NULL,
     `description` TEXT,
     `school_year` VARCHAR(20)  NOT NULL DEFAULT '',
+    `archived`    TINYINT(1)   NOT NULL DEFAULT 0,
     `created_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -122,8 +123,10 @@ CREATE TABLE IF NOT EXISTS `clearance_status` (
     `clearance_id` INT UNSIGNED NOT NULL,
     `student_id`   INT UNSIGNED NOT NULL,
     `signatory_id` INT UNSIGNED NOT NULL,
-    `status`       ENUM('pending','signed') NOT NULL DEFAULT 'pending',
+    `status`       ENUM('pending','signed','cleared','flagged') NOT NULL DEFAULT 'pending',
+    `flag_note`    TEXT NULL,
     `signed_at`    DATETIME DEFAULT NULL,
+    `updated_at`   TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
     `created_at`   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY `uq_clearance_student_signatory` (`clearance_id`, `student_id`, `signatory_id`),
     CONSTRAINT `fk_cstatus_clearance`

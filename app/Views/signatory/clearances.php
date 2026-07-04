@@ -19,7 +19,6 @@
 
 <?php if (empty($clearances)): ?>
     <div class="empty-state">
-        <div class="empty-icon">✍️</div>
         <h3>No clearances assigned</h3>
         <p>You haven't been assigned to any clearance yet. Contact the administrator.</p>
     </div>
@@ -35,7 +34,6 @@
             <a href="<?= BASE_URL ?>signatory/clearances?cid=<?= $c['clearance_id'] ?>"
                class="clearance-card <?= $flagged > 0 ? 'card-has-flags' : '' ?>">
                 <div class="cc-header">
-                    <div class="cc-icon">📋</div>
                     <div class="cc-title">
                         <strong><?= htmlspecialchars($c['clearance_name']) ?></strong>
                         <?php if (!empty($c['school_year'])): ?>
@@ -50,16 +48,16 @@
                     </div>
                     <?php if ($flagged > 0): ?>
                     <div class="cc-stat cc-stat-flagged">
-                        <span class="cc-stat-num">🚩 <?= $flagged ?></span>
+                        <span class="cc-stat-num"><?= $flagged ?></span>
                         <span class="cc-stat-lbl">Flagged</span>
                     </div>
                     <?php endif; ?>
                     <div class="cc-stat cc-stat-cleared">
-                        <span class="cc-stat-num">✅ <?= $cleared ?></span>
+                        <span class="cc-stat-num"><?= $cleared ?></span>
                         <span class="cc-stat-lbl">Cleared</span>
                     </div>
                     <div class="cc-stat cc-stat-pending">
-                        <span class="cc-stat-num">⏳ <?= $pending ?></span>
+                        <span class="cc-stat-num"><?= $pending ?></span>
                         <span class="cc-stat-lbl">Pending</span>
                     </div>
                 </div>
@@ -94,40 +92,31 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
         <?php endif; ?>
     </div>
     <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
-        <?php if ($totalFlagged > 0): ?>
-            <form action="<?= BASE_URL ?>signatory/confirm/submit" method="POST" id="direct-email-form"
-                  onsubmit="return confirm('Send deficiency emails to all <?= $totalFlagged ?> flagged student(s)?')">
-                <input type="hidden" name="clearance_id" value="<?= $selectedCid ?>">
-                <button type="submit" class="btn btn-danger" id="send-emails-btn">
-                    🚩 Send Deficiency Emails <span class="badge-count"><?= $totalFlagged ?></span>
-                </button>
-            </form>
-            <script>
-            document.getElementById('direct-email-form').addEventListener('submit', function() {
-                const btn = document.getElementById('send-emails-btn');
-                btn.disabled = true;
-                btn.innerHTML = '📧 Sending…';
-            });
-            </script>
-        <?php endif; ?>
-        <!-- Clear All pending students (skips flagged) -->
-        <form action="<?= BASE_URL ?>signatory/students/clear-all" method="POST"
-              onsubmit="return confirm('Clear all pending students for this clearance? Flagged students will not be affected.')">
+        <!-- Confirm All: clears all pending + sends deficiency emails to flagged -->
+        <form action="<?= BASE_URL ?>signatory/confirm-all" method="POST" id="confirm-all-form"
+              onsubmit="return confirm('This will clear all pending students and send deficiency emails to <?= $totalFlagged ?> flagged student(s). Continue?')">
             <input type="hidden" name="clearance_id" value="<?= $selectedCid ?>">
-            <button type="submit" class="btn btn-success" id="clear-all-btn">
-                ✅ Clear All Pending
+            <button type="submit" class="btn btn-primary" id="confirm-all-btn">
+                Confirm All
             </button>
         </form>
+        <script>
+        document.getElementById('confirm-all-form').addEventListener('submit', function() {
+            const btn = document.getElementById('confirm-all-btn');
+            btn.disabled = true;
+            btn.innerHTML = 'Processing…';
+        });
+        </script>
     </div>
 </div>
 
 <!-- Summary badges -->
 <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin-bottom:1.25rem;">
     <?php if ($cFlagged > 0): ?>
-        <span class="badge badge-danger">🚩 <?= $cFlagged ?> flagged</span>
+        <span class="badge badge-danger"><?= $cFlagged ?> flagged</span>
     <?php endif; ?>
-    <span class="badge badge-success">✅ <?= $cCleared ?> cleared</span>
-    <span class="badge badge-warning">⏳ <?= $cPending ?> pending</span>
+    <span class="badge badge-success"><?= $cCleared ?> cleared</span>
+    <span class="badge badge-warning"><?= $cPending ?> pending</span>
 </div>
 
 <!-- ===== Filter Bar ===== -->
@@ -140,9 +129,9 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
     <div class="filter-group">
         <select name="status" class="form-control" id="sig-status-filter">
             <option value="all"    <?= $filterStatus === 'all'     ? 'selected' : '' ?>>All Statuses</option>
-            <option value="flagged" <?= $filterStatus === 'flagged' ? 'selected' : '' ?>>🚩 Flagged</option>
-            <option value="cleared" <?= $filterStatus === 'cleared' ? 'selected' : '' ?>>✅ Cleared</option>
-            <option value="pending" <?= $filterStatus === 'pending' ? 'selected' : '' ?>>⏳ Pending</option>
+            <option value="flagged" <?= $filterStatus === 'flagged' ? 'selected' : '' ?>>Flagged</option>
+            <option value="cleared" <?= $filterStatus === 'cleared' ? 'selected' : '' ?>>Cleared</option>
+            <option value="pending" <?= $filterStatus === 'pending' ? 'selected' : '' ?>>Pending</option>
         </select>
     </div>
     <?php if (!empty($courses)): ?>
@@ -199,11 +188,11 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
                     <td>Year <?= $s['year_level'] ?> – <?= htmlspecialchars($s['section']) ?></td>
                     <td>
                         <?php if ($s['status'] === 'flagged'): ?>
-                            <span class="badge badge-danger">🚩 Flagged</span>
+                            <span class="badge badge-danger">Flagged</span>
                         <?php elseif ($s['status'] === 'cleared'): ?>
-                            <span class="badge badge-success">✅ Cleared</span>
+                            <span class="badge badge-success">Cleared</span>
                         <?php else: ?>
-                            <span class="badge badge-warning">⏳ Pending</span>
+                            <span class="badge badge-warning">Pending</span>
                         <?php endif; ?>
                     </td>
                     <td>
@@ -223,24 +212,16 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
                                   onsubmit="return confirm('Clear deficiency for <?= htmlspecialchars(addslashes($s['full_name'])) ?>?')">
                                 <input type="hidden" name="clearance_id" value="<?= $selectedCid ?>">
                                 <input type="hidden" name="student_id"   value="<?= $s['id'] ?>">
-                                <button type="submit" class="btn btn-success btn-sm">✅ Unflag</button>
+                                <button type="submit" class="btn btn-success btn-sm">Unflag</button>
                             </form>
                         <?php elseif ($s['status'] === 'cleared'): ?>
                             <span class="text-muted" style="font-size:.8rem">Done</span>
                         <?php else: ?>
-                            <!-- Pending: can Flag or Clear -->
-                            <div style="display:flex; gap:.4rem; flex-wrap:wrap;">
-                                <form action="<?= BASE_URL ?>signatory/students/clear" method="POST"
-                                      onsubmit="return confirm('Clear <?= htmlspecialchars(addslashes($s['full_name'])) ?>?')">
-                                    <input type="hidden" name="clearance_id" value="<?= $selectedCid ?>">
-                                    <input type="hidden" name="student_id"   value="<?= $s['id'] ?>">
-                                    <button type="submit" class="btn btn-success btn-sm">✅ Clear</button>
-                                </form>
-                                <button type="button" class="btn btn-danger btn-sm"
-                                        onclick="openFlagModal(<?= $selectedCid ?>, <?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['full_name'])) ?>')">
-                                    🚩 Flag
-                                </button>
-                            </div>
+                            <!-- Pending: can only Flag (bulk clear via Confirm All) -->
+                            <button type="button" class="btn btn-danger btn-sm"
+                                    onclick="openFlagModal(<?= $selectedCid ?>, <?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['full_name'])) ?>')">
+                                Flag
+                            </button>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -256,7 +237,7 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
 <div id="flag-modal" class="modal-overlay" style="display:none;" onclick="closeFlagModalOnOverlay(event)">
     <div class="modal-box">
         <div class="modal-header">
-            <h3>🚩 Flag Student for Deficiency</h3>
+            <h3>Flag Student for Deficiency</h3>
             <button type="button" class="modal-close" onclick="closeFlagModal()">✕</button>
         </div>
         <form action="<?= BASE_URL ?>signatory/students/flag" method="POST" id="flag-form">
@@ -264,14 +245,14 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
             <input type="hidden" name="student_id"   id="modal-student-id">
             <div class="modal-body">
                 <p>You are flagging: <strong id="modal-student-name"></strong></p>
-                <label for="flag-note-input" class="form-label">Deficiency Reason <span style="color:#ef4444">*</span></label>
+                <label for="flag-note-input" class="form-label">Deficiency Reason <span style="color:var(--danger, #b91c1c)">*</span></label>
                 <textarea id="flag-note-input" name="flag_note" class="form-control" rows="4"
                           placeholder="Describe the deficiency or requirement the student needs to fulfill…"
                           required></textarea>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeFlagModal()">Cancel</button>
-                <button type="submit" class="btn btn-danger">🚩 Confirm Flag</button>
+                <button type="submit" class="btn btn-danger">Confirm Flag</button>
             </div>
         </form>
     </div>

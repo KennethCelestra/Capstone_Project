@@ -12,14 +12,13 @@
      ===================================================== -->
 <div class="page-header">
     <div>
-        <h2>🎓 My Clearances</h2>
+        <h2>My Clearances</h2>
         <p class="text-muted">Select a clearance to view student clearance standing.</p>
     </div>
 </div>
 
 <?php if (empty($clearances)): ?>
     <div class="empty-state">
-        <div class="empty-icon">🎓</div>
         <h3>No clearances assigned</h3>
         <p>You haven't been assigned to any clearance yet. Contact your administrator.</p>
     </div>
@@ -35,7 +34,6 @@
             <a href="<?= BASE_URL ?>adviser/clearances?cid=<?= $c['clearance_id'] ?>"
                class="clearance-card <?= $flagged > 0 ? 'card-has-flags' : '' ?>">
                 <div class="cc-header">
-                    <div class="cc-icon">📋</div>
                     <div class="cc-title">
                         <strong><?= htmlspecialchars($c['clearance_name']) ?></strong>
                         <?php if (!empty($c['school_year'])): ?>
@@ -50,16 +48,16 @@
                     </div>
                     <?php if ($flagged > 0): ?>
                     <div class="cc-stat cc-stat-flagged">
-                        <span class="cc-stat-num">🚩 <?= $flagged ?></span>
+                        <span class="cc-stat-num"><?= $flagged ?></span>
                         <span class="cc-stat-lbl">Deficiency</span>
                     </div>
                     <?php endif; ?>
                     <div class="cc-stat cc-stat-cleared">
-                        <span class="cc-stat-num">✅ <?= $cleared ?></span>
+                        <span class="cc-stat-num"><?= $cleared ?></span>
                         <span class="cc-stat-lbl">Cleared</span>
                     </div>
                     <div class="cc-stat cc-stat-pending">
-                        <span class="cc-stat-num">⏳ <?= $pending ?></span>
+                        <span class="cc-stat-num"><?= $pending ?></span>
                         <span class="cc-stat-lbl">Pending</span>
                     </div>
                 </div>
@@ -88,7 +86,7 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
 <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
     <div>
         <a href="<?= BASE_URL ?>adviser/clearances" class="back-link">← My Clearances</a>
-        <h2>🎓 <?= htmlspecialchars($c['clearance_name']) ?></h2>
+        <h2><?= htmlspecialchars($c['clearance_name']) ?></h2>
         <?php if (!empty($c['school_year'])): ?>
             <p class="text-muted" style="margin-top:.25rem"><?= htmlspecialchars($c['school_year']) ?></p>
         <?php endif; ?>
@@ -99,10 +97,10 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
 <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin-bottom:1.25rem;">
     <span class="badge badge-info"><?= $totalHere ?> students</span>
     <?php if ($cFlagged > 0): ?>
-        <span class="badge badge-danger">🚩 <?= $cFlagged ?> with deficiency</span>
+        <span class="badge badge-danger"><?= $cFlagged ?> with deficiency</span>
     <?php endif; ?>
-    <span class="badge badge-success">✅ <?= $cCleared ?> cleared</span>
-    <span class="badge badge-warning">⏳ <?= $cPending ?> pending</span>
+    <span class="badge badge-success"><?= $cCleared ?> cleared</span>
+    <span class="badge badge-warning"><?= $cPending ?> pending</span>
 </div>
 
 <!-- ===== Filter Bar ===== -->
@@ -115,9 +113,9 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
     <div class="filter-group">
         <select name="status" class="form-control" id="adv-status-filter">
             <option value="all"     <?= $filterStatus === 'all'     ? 'selected' : '' ?>>All Statuses</option>
-            <option value="flagged" <?= $filterStatus === 'flagged' ? 'selected' : '' ?>>🚩 Has Deficiency</option>
-            <option value="cleared" <?= $filterStatus === 'cleared' ? 'selected' : '' ?>>✅ Fully Cleared</option>
-            <option value="pending" <?= $filterStatus === 'pending' ? 'selected' : '' ?>>⏳ In Progress</option>
+            <option value="flagged" <?= $filterStatus === 'flagged' ? 'selected' : '' ?>>Has Deficiency</option>
+            <option value="cleared" <?= $filterStatus === 'cleared' ? 'selected' : '' ?>>Fully Cleared</option>
+            <option value="pending" <?= $filterStatus === 'pending' ? 'selected' : '' ?>>In Progress</option>
         </select>
     </div>
     <?php if (!empty($courses)): ?>
@@ -179,11 +177,11 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
                         <td><a href="mailto:<?= htmlspecialchars($s['email']) ?>" class="email-link"><?= htmlspecialchars($s['email']) ?></a></td>
                         <td>
                             <?php if ($s['display_status'] === 'flagged'): ?>
-                                <span class="standing-badge standing-flagged">🚩 NOT CLEARED</span>
+                                <span class="standing-badge standing-flagged">NOT CLEARED</span>
                             <?php elseif ($s['display_status'] === 'cleared'): ?>
-                                <span class="standing-badge standing-cleared">✅ CLEARED</span>
+                                <span class="standing-badge standing-cleared">CLEARED</span>
                             <?php else: ?>
-                                <span class="standing-badge standing-pending">⏳ PENDING</span>
+                                <span class="standing-badge standing-pending">PENDING</span>
                             <?php endif; ?>
                         </td>
                         <td>
@@ -222,14 +220,14 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
                                         </div>
                                         <div class="sd-status">
                                             <?php if ($sg['status'] === 'flagged'): ?>
-                                                <span class="badge badge-danger">🚩 Flagged</span>
+                                                <span class="badge badge-danger">Flagged</span>
                                                 <?php if (!empty($sg['flag_note'])): ?>
                                                     <p class="sd-note"><?= nl2br(htmlspecialchars($sg['flag_note'])) ?></p>
                                                 <?php endif; ?>
                                             <?php elseif ($sg['status'] === 'cleared'): ?>
-                                                <span class="badge badge-success">✅ Cleared</span>
+                                                <span class="badge badge-success">Cleared</span>
                                             <?php else: ?>
-                                                <span class="badge badge-warning">⏳ Pending</span>
+                                                <span class="badge badge-warning">Pending</span>
                                             <?php endif; ?>
                                         </div>
                                     </div>
