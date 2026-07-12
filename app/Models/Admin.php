@@ -17,5 +17,12 @@ class Admin extends Model
         return $stmt->fetch();
     }
 
-    // count(), findAll(), findById(), delete() are all inherited from Model
+    public function updatePassword(int $id, string $hashedPassword): bool
+    {
+        $stmt = $this->db->prepare("UPDATE {$this->table} SET password = :password WHERE id = :id");
+        return $stmt->execute([
+            ':password' => $hashedPassword,
+            ':id'       => $id,
+        ]);
+    }
 }

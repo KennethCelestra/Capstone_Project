@@ -31,7 +31,7 @@ class Mailer
         return self::$mailInstance;
     }
 
-    private static function sendEmail(string $toEmail, string $toName, string $subject, string $htmlContent): bool
+    public static function sendEmail(string $toEmail, string $toName, string $subject, string $htmlContent): bool
     {
         // Give the script more time when sending emails
         set_time_limit(300);

@@ -1,49 +1,56 @@
-<div class="page-header">
-    <h2>Manage Signatories</h2>
+<div class="page-header mb-4 d-flex justify-content-between align-items-center">
+    <div>
+        <h2>Manage Signatories</h2>
+        <p class="text-muted">Add or edit signatory accounts.</p>
+    </div>
     <button class="btn btn-primary" onclick="document.getElementById('addSignatoryModal').style.display='flex'">
-        + Add Signatory
+        <i class="bi bi-person-plus"></i> Add Signatory
     </button>
 </div>
 
-<div class="table-container">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Full Name</th>
-                <th>Email</th>
-                <th>Office</th>
-                <th>Password</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (empty($signatories)): ?>
-                <tr><td colspan="5" class="text-center">No signatories found.</td></tr>
-            <?php else: ?>
-                <?php foreach ($signatories as $s): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($s['full_name']) ?></td>
-                        <td><?= htmlspecialchars($s['email']) ?></td>
-                        <td><?= htmlspecialchars($s['office']) ?></td>
-                        <td>
-                            <span class="password-pill"><?= htmlspecialchars($s['plain_password']) ?></span>
-                        </td>
-                        <td class="action-cell">
-                            <button class="btn btn-secondary btn-sm"
-                                    onclick="openEditSignatory(<?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['full_name'])) ?>', '<?= htmlspecialchars(addslashes($s['email'])) ?>', '<?= htmlspecialchars(addslashes($s['office'])) ?>')">
-                                Edit
-                            </button>
-                            <form action="<?= BASE_URL ?>admin/signatories/delete" method="POST" style="display:inline"
-                                  onsubmit="return confirm('Delete this signatory?')">
-                                <input type="hidden" name="id" value="<?= $s['id'] ?>">
-                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </tbody>
-    </table>
+<div class="blue-card" style="background:#fff; border-radius:8px; overflow:hidden;">
+    <div class="table-responsive">
+        <table class="data-table" style="width: 100%;">
+            <thead>
+                <tr style="background: var(--surface2);">
+                    <th class="py-3 px-4">Full Name</th>
+                    <th class="py-3 px-4">Email</th>
+                    <th class="py-3 px-4">Office</th>
+                    <th class="py-3 px-4">Password</th>
+                    <th class="py-3 px-4 text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($signatories)): ?>
+                    <tr><td colspan="5" class="text-center py-4 text-muted">No signatories found.</td></tr>
+                <?php else: ?>
+                    <?php foreach ($signatories as $s): ?>
+                        <tr class="border-bottom">
+                            <td class="py-3 px-4"><strong><i class="bi bi-person-circle text-muted me-2"></i> <?= htmlspecialchars($s['full_name']) ?></strong></td>
+                            <td class="py-3 px-4"><?= htmlspecialchars($s['email']) ?></td>
+                            <td class="py-3 px-4"><span class="badge badge-info"><?= htmlspecialchars($s['office']) ?></span></td>
+                            <td class="py-3 px-4">
+                                <span class="password-pill">********</span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <div style="display:flex; gap:.5rem; justify-content:flex-end; align-items:center;">
+                                    <button class="btn btn-secondary btn-sm"
+                                            onclick="openEditSignatory(<?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['full_name'])) ?>', '<?= htmlspecialchars(addslashes($s['email'])) ?>', '<?= htmlspecialchars(addslashes($s['office'])) ?>')">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </button>
+                                    <form action="<?= BASE_URL ?>admin/signatories/delete" method="POST" style="margin:0;"
+                                          onsubmit="return confirmAction(this, 'Delete this signatory?', 'Delete', 'btn-danger')">
+                                        <input type="hidden" name="id" value="<?= $s['id'] ?>">
+                                        <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <!-- ====== Add Signatory Modal ====== -->

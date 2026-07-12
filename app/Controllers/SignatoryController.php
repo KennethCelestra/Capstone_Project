@@ -60,19 +60,22 @@ class SignatoryController extends Controller
             // Filters from GET
             $search       = trim($this->getGet('search', ''));
             $filterStatus = $this->getGet('status', 'all');
+            $filterCollege= $this->getGet('college', '');
             $filterCourse = $this->getGet('course', '');
             $filterYear   = $this->getGet('year', '');
 
             $students = $this->statusModel->getStudentsForSignatory($selectedCid, $signatoryId);
 
-            // Collect unique courses / year levels before filtering
+            // Collect unique colleges / courses / year levels before filtering
+            $colleges   = array_unique(array_column($students, 'college'));
             $courses    = array_unique(array_column($students, 'course'));
             $yearLevels = array_unique(array_column($students, 'year_level'));
+            sort($colleges);
             sort($courses);
             sort($yearLevels);
 
             // Apply filters
-            $students = $this->applyFilters($students, $search, $filterStatus, $filterCourse, $filterYear);
+            $students = $this->applyFilters($students, $search, $filterStatus, $filterCollege, $filterCourse, $filterYear);
 
             // Find the selected clearance summary record
             $selectedClearance = null;
@@ -92,8 +95,10 @@ class SignatoryController extends Controller
                 'userName'          => $_SESSION['user_name'],
                 'search'            => $search,
                 'filterStatus'      => $filterStatus,
+                'filterCollege'     => $filterCollege,
                 'filterCourse'      => $filterCourse,
                 'filterYear'        => $filterYear,
+                'colleges'          => $colleges,
                 'courses'           => $courses,
                 'yearLevels'        => $yearLevels,
             ];
@@ -404,10 +409,11 @@ class SignatoryController extends Controller
         array  $students,
         string $search,
         string $status,
+        string $college,
         string $course,
         string $year
     ): array {
-        return array_values(array_filter($students, function ($s) use ($search, $status, $course, $year) {
+        return array_values(array_filter($students, function ($s) use ($search, $status, $college, $course, $year) {
             if ($search !== '') {
                 $haystack = strtolower($s['full_name'] . ' ' . $s['student_number']);
                 if (strpos($haystack, strtolower($search)) === false) {
@@ -415,6 +421,9 @@ class SignatoryController extends Controller
                 }
             }
             if ($status !== 'all' && $s['status'] !== $status) {
+                return false;
+            }
+            if ($college !== '' && $s['college'] !== $college) {
                 return false;
             }
             if ($course !== '' && $s['course'] !== $course) {

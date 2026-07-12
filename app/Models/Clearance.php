@@ -41,11 +41,11 @@ class Clearance extends Model
         $stmt = $this->db->query("
             SELECT c.*,
                    COUNT(DISTINCT cs2.signatory_id) AS signatory_count,
-                   COUNT(DISTINCT ca.adviser_id)    AS adviser_count,
+                   COUNT(DISTINCT ca.enrollment_committee_id)    AS enrollment_committee_count,
                    COUNT(DISTINCT cst.student_id)   AS student_count
             FROM clearances c
             LEFT JOIN clearance_signatories cs2 ON cs2.clearance_id = c.id
-            LEFT JOIN clearance_advisers    ca  ON ca.clearance_id  = c.id
+            LEFT JOIN clearance_enrollment_committees    ca  ON ca.clearance_id  = c.id
             LEFT JOIN clearance_students    cst ON cst.clearance_id = c.id
             WHERE c.archived = 0
             GROUP BY c.id
@@ -59,11 +59,11 @@ class Clearance extends Model
         $stmt = $this->db->query("
             SELECT c.*,
                    COUNT(DISTINCT cs2.signatory_id) AS signatory_count,
-                   COUNT(DISTINCT ca.adviser_id)    AS adviser_count,
+                   COUNT(DISTINCT ca.enrollment_committee_id)    AS enrollment_committee_count,
                    COUNT(DISTINCT cst.student_id)   AS student_count
             FROM clearances c
             LEFT JOIN clearance_signatories cs2 ON cs2.clearance_id = c.id
-            LEFT JOIN clearance_advisers    ca  ON ca.clearance_id  = c.id
+            LEFT JOIN clearance_enrollment_committees    ca  ON ca.clearance_id  = c.id
             LEFT JOIN clearance_students    cst ON cst.clearance_id = c.id
             WHERE c.archived = 1
             GROUP BY c.id
@@ -123,13 +123,13 @@ class Clearance extends Model
         ")->execute([$clearanceId, $signatoryId]);
     }
 
-    // ---- ADVISERS ----
+    // ---- ENROLLMENT COMMITTEE ----
 
-    public function getAdvisers(int $clearanceId): array
+    public function getEnrollmentCommittees(int $clearanceId): array
     {
         $stmt = $this->db->prepare("
-            SELECT a.* FROM advisers a
-            JOIN clearance_advisers ca ON ca.adviser_id = a.id
+            SELECT a.* FROM enrollment_committees a
+            JOIN clearance_enrollment_committees ca ON ca.enrollment_committee_id = a.id
             WHERE ca.clearance_id = ?
             ORDER BY a.full_name ASC
         ");
@@ -137,18 +137,18 @@ class Clearance extends Model
         return $stmt->fetchAll();
     }
 
-    public function assignAdviser(int $clearanceId, int $adviserId): void
+    public function assignEnrollmentCommittee(int $clearanceId, int $adviserId): void
     {
         $stmt = $this->db->prepare("
-            INSERT IGNORE INTO clearance_advisers (clearance_id, adviser_id) VALUES (?, ?)
+            INSERT IGNORE INTO clearance_enrollment_committees (clearance_id, enrollment_committee_id) VALUES (?, ?)
         ");
         $stmt->execute([$clearanceId, $adviserId]);
     }
 
-    public function removeAdviser(int $clearanceId, int $adviserId): void
+    public function removeEnrollmentCommittee(int $clearanceId, int $adviserId): void
     {
         $this->db->prepare("
-            DELETE FROM clearance_advisers WHERE clearance_id = ? AND adviser_id = ?
+            DELETE FROM clearance_enrollment_committees WHERE clearance_id = ? AND enrollment_committee_id = ?
         ")->execute([$clearanceId, $adviserId]);
     }
 

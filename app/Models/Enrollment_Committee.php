@@ -1,21 +1,20 @@
 <?php
 
-class Adviser extends Model
+class Enrollment_Committee extends Model
 {
-    protected string $table = 'advisers';
+    protected string $table = 'enrollment_committees';
 
     public function create(array $data): bool
     {
         $stmt = $this->db->prepare("
-            INSERT INTO advisers (full_name, email, department, password, plain_password)
-            VALUES (:full_name, :email, :department, :password, :plain_password)
+            INSERT INTO enrollment_committees (full_name, email, department, password)
+            VALUES (:full_name, :email, :department, :password)
         ");
         return $stmt->execute([
             ':full_name'      => $data['full_name'],
             ':email'          => $data['email'],
             ':department'     => $data['department'],
             ':password'       => password_hash($data['password'], PASSWORD_DEFAULT),
-            ':plain_password' => $data['password'],
         ]);
     }
 
@@ -23,9 +22,9 @@ class Adviser extends Model
     {
         if (!empty($data['password'])) {
             $stmt = $this->db->prepare("
-                UPDATE advisers
+                UPDATE enrollment_committees
                 SET full_name = :full_name, email = :email, department = :department,
-                    password = :password, plain_password = :plain_password
+                    password = :password
                 WHERE id = :id
             ");
             return $stmt->execute([
@@ -33,12 +32,11 @@ class Adviser extends Model
                 ':email'          => $data['email'],
                 ':department'     => $data['department'],
                 ':password'       => password_hash($data['password'], PASSWORD_DEFAULT),
-                ':plain_password' => $data['password'],
                 ':id'             => $id,
             ]);
         } else {
             $stmt = $this->db->prepare("
-                UPDATE advisers
+                UPDATE enrollment_committees
                 SET full_name = :full_name, email = :email, department = :department
                 WHERE id = :id
             ");
@@ -51,16 +49,25 @@ class Adviser extends Model
         }
     }
 
+    public function updatePassword(int $id, string $hashedPassword): bool
+    {
+        $stmt = $this->db->prepare("UPDATE enrollment_committees SET password = :password WHERE id = :id");
+        return $stmt->execute([
+            ':password' => $hashedPassword,
+            ':id'       => $id,
+        ]);
+    }
+
 
     /**
-     * Get all advisers NOT yet assigned to the given clearance.
+     * Get all enrollment committee members NOT yet assigned to the given clearance.
      */
     public function findUnassigned(int $clearanceId): array
     {
         $stmt = $this->db->prepare("
-            SELECT * FROM advisers
+            SELECT * FROM enrollment_committees
             WHERE id NOT IN (
-                SELECT adviser_id FROM clearance_advisers WHERE clearance_id = ?
+                SELECT enrollment_committee_id FROM clearance_enrollment_committees WHERE clearance_id = ?
             )
             ORDER BY full_name ASC
         ");
@@ -69,7 +76,7 @@ class Adviser extends Model
     }
 
     /**
-     * Find an adviser by their email address.
+     * Find an enrollment committee member by their email address.
      *
      * @param string $email
      * @return array|false

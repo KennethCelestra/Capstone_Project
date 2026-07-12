@@ -1,23 +1,23 @@
 <?php
 require_once ROOT_PATH . '/app/Models/Admin.php';
-require_once ROOT_PATH . '/app/Models/Adviser.php';
+require_once ROOT_PATH . '/app/Models/Enrollment_Committee.php';
 require_once ROOT_PATH . '/app/Models/Signatory.php';
 
 class AuthController extends Controller
 {
-    private Admin     $adminModel;
-    private Adviser   $adviserModel;
-    private Signatory $signatoryModel;
+    private Admin                $adminModel;
+    private Enrollment_Committee $enrollmentCommitteeModel;
+    private Signatory            $signatoryModel;
 
     public function __construct()
     {
-        $this->adminModel     = new Admin();
-        $this->adviserModel   = new Adviser();
-        $this->signatoryModel = new Signatory();
+        $this->adminModel               = new Admin();
+        $this->enrollmentCommitteeModel = new Enrollment_Committee();
+        $this->signatoryModel           = new Signatory();
     }
 
     // --------------------------------------------------------
-    //  Regular login (Adviser / Signatory)
+    //  Regular login (Enrollment Committee / Signatory)
     // --------------------------------------------------------
 
     public function index(): void
@@ -27,7 +27,7 @@ class AuthController extends Controller
             if ($role === 'admin') {
                 $this->redirect('admin/dashboard');
             } else {
-                $this->redirect($role . '/dashboard');
+                $this->redirect(str_replace('_', '-', $role) . '/dashboard');
             }
         }
         $flash = $this->getFlash();
@@ -45,14 +45,14 @@ class AuthController extends Controller
             return;
         }
 
-        // Try admin first, then adviser, then signatory
+        // Try admin first, then enrollment committee, then signatory
         $user = null;
         $role = null;
 
         $candidates = [
-            'admin'     => $this->adminModel,
-            'adviser'   => $this->adviserModel,
-            'signatory' => $this->signatoryModel,
+            'admin'                => $this->adminModel,
+            'enrollment_committee' => $this->enrollmentCommitteeModel,
+            'signatory'            => $this->signatoryModel,
         ];
 
         foreach ($candidates as $r => $model) {
@@ -68,7 +68,7 @@ class AuthController extends Controller
             $_SESSION['user_id']   = $user['id'];
             $_SESSION['user_role'] = $role;
             $_SESSION['user_name'] = $user['full_name'];
-            $this->redirect($role . '/dashboard');
+            $this->redirect(str_replace('_', '-', $role) . '/dashboard');
         } else {
             $this->setFlash('error', 'Invalid credentials. Please try again.');
             $this->redirect('login');

@@ -1,16 +1,23 @@
 <?php
-// Compute totals across all clearances for the dashboard
 $totalStudents = 0;
 $totalFlagged  = 0;
 $totalCleared  = 0;
-$totalPending  = 0;
 
 foreach ($clearances as $c) {
-    $totalStudents += (int)$c['total_students'];
-    $totalFlagged  += (int)$c['flagged_count'];
-    $totalCleared  += (int)$c['cleared_count'];
-    $totalPending  += (int)$c['pending_count'];
+    foreach ($c['students'] as $s) {
+        $totalStudents++;
+        $flaggedCount = (int)($s['flagged_count'] ?? 0);
+        $clearedCount = (int)($s['cleared_count'] ?? 0);
+        $totalCount   = (int)($s['total_count']   ?? 0);
+
+        if ($flaggedCount > 0) {
+            $totalFlagged++;
+        } elseif ($totalCount > 0 && $clearedCount === $totalCount) {
+            $totalCleared++;
+        }
+    }
 }
+$totalPending = $totalStudents - $totalFlagged - $totalCleared;
 ?>
 
 <div class="page-header mb-4">
@@ -24,7 +31,7 @@ foreach ($clearances as $c) {
             <span class="stat-value text-darkblue"><?= count($clearances) ?></span>
             <span class="stat-label">Assigned Clearances</span>
         </div>
-        <i class="bi bi-folder-check text-muted opacity-50 display-6 ms-auto" style="margin-left: auto;"></i>
+        <i class="bi bi-folder text-muted opacity-50 display-6 ms-auto" style="margin-left: auto;"></i>
     </div>
     <div class="stat-card gold-card">
         <div class="stat-info">
@@ -36,30 +43,30 @@ foreach ($clearances as $c) {
     <div class="stat-card" style="border-top: 6px solid var(--danger); background:#fff; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
         <div class="stat-info">
             <span class="stat-value" style="color: var(--danger);"><?= $totalFlagged ?></span>
-            <span class="stat-label">Flagged</span>
+            <span class="stat-label">With Deficiency</span>
         </div>
-        <i class="bi bi-exclamation-octagon text-muted opacity-50 display-6 ms-auto" style="margin-left: auto;"></i>
+        <i class="bi bi-exclamation-triangle text-muted opacity-50 display-6 ms-auto" style="margin-left: auto;"></i>
     </div>
     <div class="stat-card" style="border-top: 6px solid var(--success); background:#fff; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
         <div class="stat-info">
             <span class="stat-value" style="color: var(--success);"><?= $totalCleared ?></span>
-            <span class="stat-label">Cleared</span>
+            <span class="stat-label">Fully Cleared</span>
         </div>
-        <i class="bi bi-check-all text-muted opacity-50 display-6 ms-auto" style="margin-left: auto;"></i>
+        <i class="bi bi-check-circle text-muted opacity-50 display-6 ms-auto" style="margin-left: auto;"></i>
     </div>
 </div>
 
-<?php if ($totalPending > 0): ?>
-    <div class="alert alert-info d-flex align-items-center gap-3">
-        <i class="bi bi-info-circle-fill display-6 text-info"></i>
+<?php if ($totalFlagged > 0): ?>
+    <div class="alert alert-warning d-flex align-items-center gap-3">
+        <i class="bi bi-exclamation-triangle-fill display-6 text-warning"></i>
         <div>
-            <h5 class="mb-0">Pending Actions</h5>
-            <span>You have <strong><?= $totalPending ?></strong> student(s) awaiting your review.</span>
+            <h5 class="mb-0">Attention Needed</h5>
+            <span>You have <strong><?= $totalFlagged ?></strong> student(s) with deficiencies across your assigned clearances.</span>
         </div>
     </div>
 <?php endif; ?>
 
-<div class="dashboard-section gold-card" style="background:#fff; border-radius:8px; overflow:hidden;">
+<div class="dashboard-section blue-card" style="background:#fff; border-radius:8px; overflow:hidden;">
     <div class="p-4 border-bottom">
         <h3 class="mb-0">Your Assigned Clearances</h3>
     </div>
@@ -82,10 +89,10 @@ foreach ($clearances as $c) {
                 <tbody>
                     <?php foreach ($clearances as $c): ?>
                         <?php
-                        $cTotal = (int)$c['total_students'];
-                        $cCleared = (int)$c['cleared_count'];
-                        $cFlagged = (int)$c['flagged_count'];
-                        $cPending = (int)$c['pending_count'];
+                        $cTotal = count($c['students']);
+                        $cCleared = (int)$c['cleared_total'];
+                        $cFlagged = (int)$c['flagged_total'];
+                        $cPending = (int)$c['pending_total'];
                         $cClearedPct = $cTotal > 0 ? ($cCleared / $cTotal) * 100 : 0;
                         $cFlaggedPct = $cTotal > 0 ? ($cFlagged / $cTotal) * 100 : 0;
                         $cPendingPct = $cTotal > 0 ? ($cPending / $cTotal) * 100 : 0;
@@ -107,14 +114,14 @@ foreach ($clearances as $c) {
                                     <?php endif; ?>
                                 </div>
                                 <div class="mini-stats d-flex gap-2" style="font-size: 0.75rem;">
-                                    <span title="Cleared" class="text-success"><i class="bi bi-check-circle-fill"></i> <?= $cCleared ?></span>
-                                    <span title="Flagged" class="text-danger"><i class="bi bi-exclamation-circle-fill"></i> <?= $cFlagged ?></span>
-                                    <span title="Pending" class="text-warning"><i class="bi bi-clock-fill"></i> <?= $cPending ?></span>
+                                    <span title="Fully Cleared" class="text-success"><i class="bi bi-check-circle-fill"></i> <?= $cCleared ?></span>
+                                    <span title="With Deficiency" class="text-danger"><i class="bi bi-exclamation-circle-fill"></i> <?= $cFlagged ?></span>
+                                    <span title="In Progress" class="text-warning"><i class="bi bi-clock-fill"></i> <?= $cPending ?></span>
                                 </div>
                             </td>
                             <td class="py-3 px-4 text-end">
-                                <a href="<?= BASE_URL ?>signatory/clearances?cid=<?= $c['clearance_id'] ?>" class="btn btn-primary btn-sm">
-                                    <i class="bi bi-folder2-open"></i> Open
+                                <a href="<?= BASE_URL ?>enrollment-committee/clearances?cid=<?= $c['clearance_id'] ?>" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-eye"></i> View
                                 </a>
                             </td>
                         </tr>

@@ -1,64 +1,71 @@
-<div class="page-header">
-    <h2>Clearances</h2>
+<div class="page-header mb-4 d-flex justify-content-between align-items-center">
+    <div>
+        <h2>Clearances</h2>
+        <p class="text-muted">Manage all active clearances.</p>
+    </div>
     <button class="btn btn-primary" onclick="document.getElementById('createClearanceModal').style.display='flex'">
-        + New Clearance
+        <i class="bi bi-plus-lg"></i> New Clearance
     </button>
 </div>
 
 <?php if (empty($clearances)): ?>
-    <div class="empty-state">
+    <div class="empty-state text-center p-5 gold-card" style="background:#fff; border-radius:8px;">
+        <i class="bi bi-folder2-open display-1 text-muted mb-3 opacity-50"></i>
         <h3>No clearances yet</h3>
-        <p>Create your first clearance to get started.</p>
-        <button class="btn btn-primary" onclick="document.getElementById('createClearanceModal').style.display='flex'">
-            Create Clearance
+        <p class="text-muted">Create your first clearance to get started.</p>
+        <button class="btn btn-primary mt-3" onclick="document.getElementById('createClearanceModal').style.display='flex'">
+            <i class="bi bi-plus-lg"></i> Create Clearance
         </button>
     </div>
 <?php else: ?>
-    <div class="table-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Clearance Name</th>
-                    <th>School Year</th>
-                    <th>Signatories</th>
-                    <th>Advisers</th>
-                    <th>Students</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($clearances as $c): ?>
-                    <tr>
-                        <td><strong><?= htmlspecialchars($c['name']) ?></strong>
-                            <?php if (!empty($c['description'])): ?>
-                                <br><small class="text-muted"><?= htmlspecialchars($c['description']) ?></small>
-                            <?php endif; ?>
-                        </td>
-                        <td><?= htmlspecialchars($c['school_year']) ?></td>
-                        <td><span class="badge badge-info"><?= $c['signatory_count'] ?></span></td>
-                        <td><span class="badge badge-info"><?= $c['adviser_count'] ?></span></td>
-                        <td><span class="badge badge-info"><?= $c['student_count'] ?></span></td>
-                        <td class="action-cell">
-                            <a href="<?= BASE_URL ?>admin/clearances/detail?id=<?= $c['id'] ?>"
-                               class="btn btn-primary btn-sm">Manage</a>
-                            <button class="btn btn-secondary btn-sm"
-                                    onclick="openEditClearance(<?= $c['id'] ?>, '<?= htmlspecialchars(addslashes($c['name'])) ?>', '<?= htmlspecialchars(addslashes($c['description'])) ?>', '<?= htmlspecialchars($c['school_year']) ?>')">
-                                Edit
-                            </button>
-                            <form action="<?= BASE_URL ?>admin/clearances/archive" method="POST" style="display:inline"
-                                  onsubmit="return confirm('Archive this clearance? It will be hidden from active list but all data is preserved.')">
-                                <input type="hidden" name="id" value="<?= $c['id'] ?>">
-                                <button type="submit" class="btn btn-warning btn-sm">Archive</button>
-                            </form>
-                        </td>
-
+    <div class="gold-card" style="background:#fff; border-radius:8px; overflow:hidden;">
+        <div class="table-responsive">
+            <table class="data-table" style="width: 100%;">
+                <thead>
+                    <tr style="background: var(--surface2);">
+                        <th class="py-3 px-4">Clearance Name</th>
+                        <th class="py-3 px-4">School Year</th>
+                        <th class="py-3 px-4 text-center">Signatories</th>
+                        <th class="py-3 px-4 text-center">Enrollment Committee</th>
+                        <th class="py-3 px-4 text-center">Students</th>
+                        <th class="py-3 px-4 text-end" style="white-space: nowrap;">Actions</th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php foreach ($clearances as $c): ?>
+                        <tr class="border-bottom">
+                            <td class="py-3 px-4">
+                                <strong><?= htmlspecialchars($c['name']) ?></strong>
+                                <?php if (!empty($c['description'])): ?>
+                                    <br><small class="text-muted"><?= htmlspecialchars($c['description']) ?></small>
+                                <?php endif; ?>
+                            </td>
+                            <td class="py-3 px-4"><?= htmlspecialchars($c['school_year']) ?></td>
+                            <td class="py-3 px-4 text-center"><span class="badge badge-info"><i class="bi bi-pen"></i> <?= $c['signatory_count'] ?></span></td>
+                            <td class="py-3 px-4 text-center"><span class="badge badge-info"><i class="bi bi-people"></i> <?= $c['enrollment_committee_count'] ?></span></td>
+                            <td class="py-3 px-4 text-center"><span class="badge badge-info"><i class="bi bi-mortarboard"></i> <?= $c['student_count'] ?></span></td>
+                            <td class="py-3 px-4">
+                                <div style="display:flex; gap:.5rem; justify-content:flex-end; align-items:center;">
+                                    <a href="<?= BASE_URL ?>admin/clearances/detail?id=<?= $c['id'] ?>"
+                                       class="btn btn-primary btn-sm"><i class="bi bi-gear"></i> Manage</a>
+                                    <button class="btn btn-secondary btn-sm"
+                                            onclick="openEditClearance(<?= $c['id'] ?>, '<?= htmlspecialchars(addslashes($c['name'])) ?>', '<?= htmlspecialchars(addslashes($c['description'])) ?>', '<?= htmlspecialchars($c['school_year']) ?>')">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </button>
+                                    <form action="<?= BASE_URL ?>admin/clearances/archive" method="POST" style="margin:0;"
+                                          onsubmit="return confirmAction(this, 'Archive this clearance? It will be hidden from active list but all data is preserved.', 'Archive', 'btn-warning')">
+                                        <input type="hidden" name="id" value="<?= $c['id'] ?>">
+                                        <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-archive"></i> Archive</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 <?php endif; ?>
-
 
 <!-- ====== Create Clearance Modal ====== -->
 <div id="createClearanceModal" class="modal" style="display:none;">

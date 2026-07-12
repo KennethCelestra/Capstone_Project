@@ -30,7 +30,6 @@ CREATE TABLE IF NOT EXISTS `advisers` (
     `email`          VARCHAR(150) NOT NULL UNIQUE,
     `department`     VARCHAR(150) NOT NULL,
     `password`       VARCHAR(255) NOT NULL,
-    `plain_password` VARCHAR(255) NOT NULL,
     `created_at`     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -43,8 +42,17 @@ CREATE TABLE IF NOT EXISTS `signatories` (
     `email`          VARCHAR(150) NOT NULL UNIQUE,
     `office`         VARCHAR(150) NOT NULL,
     `password`       VARCHAR(255) NOT NULL,
-    `plain_password` VARCHAR(255) NOT NULL,
     `created_at`     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------
+-- Table: password_resets
+-- ------------------------------------------------
+CREATE TABLE IF NOT EXISTS `password_resets` (
+    `email`      VARCHAR(150) NOT NULL,
+    `token`      VARCHAR(64) NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX(`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------

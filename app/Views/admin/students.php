@@ -31,8 +31,8 @@
                         <td><?= htmlspecialchars($s['course']) ?></td>
                         <td><?= htmlspecialchars($s['year_level']) ?> – <?= htmlspecialchars($s['section']) ?></td>
                         <td>
-                            <form action="<?= BASE_URL ?>admin/students/delete" method="POST" style="display:inline"
-                                  onsubmit="return confirm('Delete this student?')">
+                              <form action="<?= BASE_URL ?>admin/students/delete" method="POST" class="d-inline"
+                                  onsubmit="return confirmAction(this, 'Delete this student?', 'Delete', 'btn-danger')">
                                 <input type="hidden" name="id" value="<?= $s['id'] ?>">
                                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                             </form>

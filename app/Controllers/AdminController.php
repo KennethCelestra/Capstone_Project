@@ -1,25 +1,25 @@
 <?php
 require_once ROOT_PATH . '/app/Models/Student.php';
-require_once ROOT_PATH . '/app/Models/Adviser.php';
+require_once ROOT_PATH . '/app/Models/Enrollment_Committee.php';
 require_once ROOT_PATH . '/app/Models/Signatory.php';
 require_once ROOT_PATH . '/app/Models/Clearance.php';
 require_once ROOT_PATH . '/app/Models/Admin.php';
 
 class AdminController extends Controller
 {
-    private Student   $studentModel;
-    private Adviser   $adviserModel;
-    private Signatory $signatoryModel;
-    private Clearance $clearanceModel;
-    private Admin     $adminModel;
+    private Student              $studentModel;
+    private Enrollment_Committee $enrollmentCommitteeModel;
+    private Signatory            $signatoryModel;
+    private Clearance            $clearanceModel;
+    private Admin                $adminModel;
 
     public function __construct()
     {
-        $this->studentModel   = new Student();
-        $this->adviserModel   = new Adviser();
-        $this->signatoryModel = new Signatory();
-        $this->clearanceModel = new Clearance();
-        $this->adminModel     = new Admin();
+        $this->studentModel             = new Student();
+        $this->enrollmentCommitteeModel = new Enrollment_Committee();
+        $this->signatoryModel           = new Signatory();
+        $this->clearanceModel           = new Clearance();
+        $this->adminModel               = new Admin();
     }
 
     // ================================================================
@@ -30,8 +30,8 @@ class AdminController extends Controller
     {
         $this->requireLogin('admin');
         $data = [
-            'studentCount'    => $this->studentModel->count(),
-            'adviserCount'    => $this->adviserModel->count(),
+            'studentCount'             => $this->studentModel->count(),
+            'enrollmentCommitteeCount' => $this->enrollmentCommitteeModel->count(),
             'signatoryCount'  => $this->signatoryModel->count(),
             'clearanceCount'  => $this->clearanceModel->count(),
             'overallProgress' => $this->clearanceModel->getOverallProgress(),
@@ -151,21 +151,21 @@ class AdminController extends Controller
 
 
     // ================================================================
-    //  ADVISERS
+    //  ENROLLMENT COMMITTEE
     // ================================================================
 
-    public function advisers(): void
+    public function enrollmentCommittees(): void
     {
         $this->requireLogin('admin');
         $data = [
-            'advisers' => $this->adviserModel->findAll(),
-            'flash'    => $this->getFlash(),
-            'userName' => $_SESSION['user_name'],
+            'enrollment_committees' => $this->enrollmentCommitteeModel->findAll(),
+            'flash'                 => $this->getFlash(),
+            'userName'              => $_SESSION['user_name'],
         ];
-        $this->view('layouts/main', array_merge($data, ['content' => 'admin/advisers']));
+        $this->view('layouts/main', array_merge($data, ['content' => 'admin/enrollment_committees']));
     }
 
-    public function addAdviser(): void
+    public function addEnrollmentCommittee(): void
     {
         $this->requireLogin('admin');
         $data = [
@@ -177,13 +177,13 @@ class AdminController extends Controller
         if (in_array('', $data, true)) {
             $this->setFlash('error', 'All fields are required.');
         } else {
-            $this->adviserModel->create($data);
-            $this->setFlash('success', 'Adviser added. Credentials: ' . $data['email'] . ' / ' . $data['password']);
+            $this->enrollmentCommitteeModel->create($data);
+            $this->setFlash('success', 'Enrollment Committee member added. Credentials: ' . $data['email'] . ' / ' . $data['password']);
         }
-        $this->redirect('admin/advisers');
+        $this->redirect('admin/enrollment-committees');
     }
 
-    public function editAdviser(): void
+    public function editEnrollmentCommittee(): void
     {
         $this->requireLogin('admin');
         $id = (int) $this->getPost('id');
@@ -193,23 +193,23 @@ class AdminController extends Controller
             'department' => $this->getPost('department'),
             'password'   => $this->getPost('password', ''),
         ];
-        $this->adviserModel->update($id, $data);
-        $this->setFlash('success', 'Adviser updated successfully.');
-        $this->redirect('admin/advisers');
+        $this->enrollmentCommitteeModel->update($id, $data);
+        $this->setFlash('success', 'Enrollment Committee member updated successfully.');
+        $this->redirect('admin/enrollment-committees');
     }
 
-    public function deleteAdviser(): void
+    public function deleteEnrollmentCommittee(): void
     {
         $this->requireLogin('admin');
         $id = (int) $this->getPost('id');
         if ($id <= 0) {
-            $this->setFlash('error', 'Invalid adviser ID.');
-            $this->redirect('admin/advisers');
+            $this->setFlash('error', 'Invalid member ID.');
+            $this->redirect('admin/enrollment-committees');
             return;
         }
-        $this->adviserModel->delete($id);
-        $this->setFlash('success', 'Adviser deleted.');
-        $this->redirect('admin/advisers');
+        $this->enrollmentCommitteeModel->delete($id);
+        $this->setFlash('success', 'Enrollment Committee member deleted.');
+        $this->redirect('admin/enrollment-committees');
     }
 
     // ================================================================
@@ -380,8 +380,8 @@ class AdminController extends Controller
             'clearance'           => $clearance,
             'assignedSignatories' => $this->clearanceModel->getSignatories($id),
             'unassignedSignatories' => $this->signatoryModel->findUnassigned($id),
-            'assignedAdvisers'    => $this->clearanceModel->getAdvisers($id),
-            'unassignedAdvisers'  => $this->adviserModel->findUnassigned($id),
+            'assignedAdvisers'    => $this->clearanceModel->getEnrollmentCommittees($id),
+            'unassignedAdvisers'  => $this->enrollmentCommitteeModel->findUnassigned($id),
             'students'            => $this->clearanceModel->getStudentsWithStatus($id),
             'flash'               => $this->getFlash(),
             'userName'            => $_SESSION['user_name'],
@@ -429,43 +429,43 @@ class AdminController extends Controller
         $this->redirect("admin/clearances/detail?id={$clearanceId}");
     }
 
-    // ---- Adviser assignment ----
+    // ---- Enrollment Committee assignment ----
 
-    public function assignAdviser(): void
+    public function assignEnrollmentCommittee(): void
     {
         $this->requireLogin('admin');
         $clearanceId = (int) $this->getPost('clearance_id');
-        $adviserId   = (int) $this->getPost('adviser_id');
-        $this->clearanceModel->assignAdviser($clearanceId, $adviserId);
-        $this->setFlash('success', 'Adviser assigned to clearance.');
+        $adviserId   = (int) $this->getPost('enrollment_committee_id');
+        $this->clearanceModel->assignEnrollmentCommittee($clearanceId, $adviserId);
+        $this->setFlash('success', 'Enrollment Committee member assigned to clearance.');
         $this->redirect("admin/clearances/detail?id={$clearanceId}");
     }
 
-    public function bulkAssignAdvisers(): void
+    public function bulkAssignEnrollmentCommittees(): void
     {
         $this->requireLogin('admin');
         $clearanceId = (int) $this->getPost('clearance_id');
-        $adviserIds  = $this->getPost('adviser_ids', []);
-        // adviser assignment is optional — no error if empty
+        $adviserIds  = $this->getPost('enrollment_committee_ids', []);
+        
         if (!empty($adviserIds)) {
             foreach ((array) $adviserIds as $aid) {
-                $this->clearanceModel->assignAdviser($clearanceId, (int) $aid);
+                $this->clearanceModel->assignEnrollmentCommittee($clearanceId, (int) $aid);
             }
             $count = count($adviserIds);
-            $this->setFlash('success', "{$count} adviser" . ($count === 1 ? '' : 's') . " assigned.");
+            $this->setFlash('success', "{$count} enrollment committee member" . ($count === 1 ? '' : 's') . " assigned.");
         } else {
-            $this->setFlash('success', 'Clearance setup complete. No advisers assigned (optional).');
+            $this->setFlash('success', 'Clearance setup complete. No enrollment committee assigned.');
         }
         $this->redirect("admin/clearances/detail?id={$clearanceId}");
     }
 
-    public function removeAdviser(): void
+    public function removeEnrollmentCommittee(): void
     {
         $this->requireLogin('admin');
         $clearanceId = (int) $this->getPost('clearance_id');
-        $adviserId   = (int) $this->getPost('adviser_id');
-        $this->clearanceModel->removeAdviser($clearanceId, $adviserId);
-        $this->setFlash('success', 'Adviser removed from clearance.');
+        $adviserId   = (int) $this->getPost('enrollment_committee_id');
+        $this->clearanceModel->removeEnrollmentCommittee($clearanceId, $adviserId);
+        $this->setFlash('success', 'Enrollment Committee member removed from clearance.');
         $this->redirect("admin/clearances/detail?id={$clearanceId}");
     }
 

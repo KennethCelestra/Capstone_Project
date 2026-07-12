@@ -215,13 +215,13 @@ class ClearanceStatus extends Model
     }
 
     // ----------------------------------------------------------------
-    // ADVISER: Student listing with full signatory detail
+    // ENROLLMENT COMMITTEE: Student listing with full signatory detail
     // ----------------------------------------------------------------
 
     /**
-     * Get clearances an adviser is assigned to, with per-student flag detail.
+     * Get clearances an enrollment committee member is assigned to, with per-student flag detail.
      */
-    public function getClearancesForAdviser(int $adviserId): array
+    public function getClearancesForEnrollmentCommittee(int $enrollmentCommitteeId): array
     {
         $stmt = $this->db->prepare("
             SELECT
@@ -241,7 +241,7 @@ class ClearanceStatus extends Model
                 COALESCE(SUM(cs.status = 'cleared'), 0)              AS cleared_count,
                 COALESCE(SUM(cs.status = 'flagged'), 0)              AS flagged_count,
                 COUNT(DISTINCT csig.signatory_id)                     AS total_signatories
-            FROM clearance_advisers ca
+            FROM clearance_enrollment_committees ca
             JOIN clearances c  ON c.id  = ca.clearance_id
             JOIN clearance_students cst ON cst.clearance_id = c.id
             JOIN students   st ON st.id = cst.student_id
@@ -250,13 +250,13 @@ class ClearanceStatus extends Model
                 ON cs.clearance_id = c.id
                AND cs.student_id   = st.id
                AND cs.signatory_id = csig.signatory_id
-            WHERE ca.adviser_id = ?
+            WHERE ca.enrollment_committee_id = ?
             GROUP BY c.id, c.name, c.school_year,
                      st.id, st.student_id, st.last_name, st.first_name, st.college, st.email,
                      st.course, st.year_level, st.section
             ORDER BY c.name ASC, st.last_name ASC, st.first_name ASC
         ");
-        $stmt->execute([$adviserId]);
+        $stmt->execute([$enrollmentCommitteeId]);
         return $stmt->fetchAll();
     }
 

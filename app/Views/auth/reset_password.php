@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login – <?= APP_NAME ?></title>
+    <title>Reset Password - <?= APP_NAME ?></title>
     <link rel="stylesheet" href="<?= BASE_URL ?>css/style.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/isatu.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -28,13 +27,14 @@
         }
         .login-header h1 {
             color: var(--primary);
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             font-weight: 800;
             margin-bottom: 0.5rem;
         }
         .login-header p {
             color: var(--text-muted);
             margin-bottom: 1.25rem;
+            font-size: 0.95rem;
         }
         .form-group {
             margin-bottom: 1rem;
@@ -97,13 +97,12 @@
         }
     </style>
 </head>
-
 <body class="login-body">
     <div class="gold-card login-card text-center">
         <div class="login-header">
             <img src="<?= BASE_URL ?>ISATU%20_%20Student%20Portal%20(KIOSK)_files/logo.png" alt="ISAT-U Logo" class="school-logo">
-            <h1><?= APP_NAME ?></h1>
-            <p>Sign in to your account</p>
+            <h1>Set New Password</h1>
+            <p>Choose a strong, secure password</p>
         </div>
 
         <?php if (!empty($flash)): ?>
@@ -112,28 +111,27 @@
             </div>
         <?php endif; ?>
 
-        <form action="<?= BASE_URL ?>login" method="POST" class="login-form">
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <div class="input-group">
-                    <i class="bi bi-envelope"></i>
-                    <input type="email" id="email" name="email" class="form-control" placeholder="you@school.edu" required autofocus>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <div class="input-group">
-                    <i class="bi bi-lock"></i>
-                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
-                </div>
-            </div>
-            <button type="submit" class="btn-login"><i class="bi bi-box-arrow-in-right"></i> Sign In</button>
+        <form action="<?= BASE_URL ?>reset-password" method="POST" class="login-form">
+            <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
             
-            <div style="text-align: center; margin-top: 1.5rem;">
-                <a href="<?= BASE_URL ?>forgot-password" style="font-size: 0.9rem; color: var(--primary); text-decoration: none; font-weight: 500;">Forgot Password?</a>
+            <div class="form-group">
+                <label>New Password</label>
+                <div class="input-group">
+                    <i class="bi bi-key"></i>
+                    <input type="password" name="password" class="form-control" required placeholder="Enter new password" autofocus>
+                </div>
             </div>
+            
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <div class="input-group">
+                    <i class="bi bi-key-fill"></i>
+                    <input type="password" name="confirm_password" class="form-control" required placeholder="Confirm new password">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-login"><i class="bi bi-shield-check me-1"></i> Reset Password</button>
         </form>
     </div>
 </body>
-
 </html>

@@ -3,11 +3,21 @@
 // Format: 'METHOD /path' => ['Controller', 'method']
 
 $routes = [
-    // ---- Auth (Adviser / Signatory) ----
+    // ---- Auth (Enrollment Committee / Signatory) ----
     'GET /'                                       => ['AuthController', 'index'],
     'GET /login'                                  => ['AuthController', 'index'],
     'POST /login'                                 => ['AuthController', 'login'],
     'GET /logout'                                 => ['AuthController', 'logout'],
+    
+    // ---- Password Reset (Guest) ----
+    'GET /forgot-password'                        => ['PasswordResetController', 'forgotPassword'],
+    'POST /forgot-password'                       => ['PasswordResetController', 'sendResetLink'],
+    'GET /reset-password'                         => ['PasswordResetController', 'resetPassword'],
+    'POST /reset-password'                        => ['PasswordResetController', 'updatePassword'],
+    
+    // ---- Profile / Change Password (Auth) ----
+    'GET /profile'                                => ['ProfileController', 'index'],
+    'POST /profile/change-password'               => ['ProfileController', 'changePassword'],
 
     // ---- Auth (Admin) — redirects to shared login ----
     'GET /admin/login'                            => ['AuthController', 'adminLogin'],
@@ -21,11 +31,11 @@ $routes = [
     'POST /admin/students/delete'                 => ['AdminController', 'deleteStudent'],
     'POST /admin/students/upload'                 => ['AdminController', 'uploadStudents'],
 
-    // ---- Admin: Advisers ----
-    'GET /admin/advisers'                         => ['AdminController', 'advisers'],
-    'POST /admin/advisers/add'                    => ['AdminController', 'addAdviser'],
-    'POST /admin/advisers/edit'                   => ['AdminController', 'editAdviser'],
-    'POST /admin/advisers/delete'                 => ['AdminController', 'deleteAdviser'],
+    // ---- Admin: Enrollment Committee ----
+    'GET /admin/enrollment-committees'                         => ['AdminController', 'enrollmentCommittees'],
+    'POST /admin/enrollment-committees/add'                    => ['AdminController', 'addEnrollmentCommittee'],
+    'POST /admin/enrollment-committees/edit'                   => ['AdminController', 'editEnrollmentCommittee'],
+    'POST /admin/enrollment-committees/delete'                 => ['AdminController', 'deleteEnrollmentCommittee'],
 
     // ---- Admin: Signatories ----
     'GET /admin/signatories'                      => ['AdminController', 'signatories'],
@@ -50,18 +60,18 @@ $routes = [
     'POST /admin/clearances/signatories/bulk-assign'   => ['AdminController', 'bulkAssignSignatories'],
     'POST /admin/clearances/signatories/remove'        => ['AdminController', 'removeSignatory'],
 
-    // ---- Admin: Clearance – Adviser assignment ----
-    'POST /admin/clearances/advisers/assign'           => ['AdminController', 'assignAdviser'],
-    'POST /admin/clearances/advisers/bulk-assign'      => ['AdminController', 'bulkAssignAdvisers'],
-    'POST /admin/clearances/advisers/remove'           => ['AdminController', 'removeAdviser'],
+    // ---- Admin: Clearance – Enrollment Committee assignment ----
+    'POST /admin/clearances/enrollment-committees/assign'           => ['AdminController', 'assignEnrollmentCommittee'],
+    'POST /admin/clearances/enrollment-committees/bulk-assign'      => ['AdminController', 'bulkAssignEnrollmentCommittees'],
+    'POST /admin/clearances/enrollment-committees/remove'           => ['AdminController', 'removeEnrollmentCommittee'],
 
     // ---- Admin: Clearance – Student management ----
     'POST /admin/clearances/students/upload'      => ['AdminController', 'uploadStudents'],
     'POST /admin/clearances/students/remove'      => ['AdminController', 'removeStudentFromClearance'],
 
-    // ---- Adviser ----
-    'GET /adviser/dashboard'                      => ['AdviserController', 'dashboard'],
-    'GET /adviser/clearances'                     => ['AdviserController', 'clearances'],
+    // ---- Enrollment Committee ----
+    'GET /enrollment-committee/dashboard'                      => ['Enrollment_CommitteeController', 'dashboard'],
+    'GET /enrollment-committee/clearances'                     => ['Enrollment_CommitteeController', 'clearances'],
 
     // ---- Signatory ----
     'GET /signatory/dashboard'                    => ['SignatoryController', 'dashboard'],

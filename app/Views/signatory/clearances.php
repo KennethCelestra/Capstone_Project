@@ -10,7 +10,7 @@
 <!-- =====================================================
      PHASE 1 — Clearance Selection Cards
      ===================================================== -->
-<div class="page-header">
+<div class="page-header mb-4">
     <div>
         <h2>My Clearances</h2>
         <p class="text-muted">Select a clearance to manage student statuses.</p>
@@ -18,9 +18,10 @@
 </div>
 
 <?php if (empty($clearances)): ?>
-    <div class="empty-state">
+    <div class="empty-state text-center p-5 gold-card" style="background:#fff; border-radius:8px;">
+        <i class="bi bi-folder-x display-1 text-muted mb-3 opacity-50"></i>
         <h3>No clearances assigned</h3>
-        <p>You haven't been assigned to any clearance yet. Contact the administrator.</p>
+        <p class="text-muted">You haven't been assigned to any clearance yet. Contact the administrator.</p>
     </div>
 <?php else: ?>
     <div class="clearance-cards-grid">
@@ -32,37 +33,37 @@
             $pending = $total - $flagged - $cleared;
             ?>
             <a href="<?= BASE_URL ?>signatory/clearances?cid=<?= $c['clearance_id'] ?>"
-               class="clearance-card <?= $flagged > 0 ? 'card-has-flags' : '' ?>">
+               class="clearance-card <?= $flagged > 0 ? 'card-has-flags border-danger' : '' ?>">
                 <div class="cc-header">
                     <div class="cc-title">
                         <strong><?= htmlspecialchars($c['clearance_name']) ?></strong>
                         <?php if (!empty($c['school_year'])): ?>
-                            <span class="cc-year"><?= htmlspecialchars($c['school_year']) ?></span>
+                            <span class="cc-year badge bg-light text-dark ms-2"><?= htmlspecialchars($c['school_year']) ?></span>
                         <?php endif; ?>
                     </div>
                 </div>
-                <div class="cc-stats">
-                    <div class="cc-stat">
-                        <span class="cc-stat-num"><?= $total ?></span>
-                        <span class="cc-stat-lbl">Students</span>
+                <div class="cc-stats mt-3 d-flex justify-content-between">
+                    <div class="cc-stat text-center">
+                        <span class="cc-stat-num d-block fw-bold fs-5 text-dark"><?= $total ?></span>
+                        <span class="cc-stat-lbl text-muted small">Students</span>
                     </div>
                     <?php if ($flagged > 0): ?>
-                    <div class="cc-stat cc-stat-flagged">
-                        <span class="cc-stat-num"><?= $flagged ?></span>
-                        <span class="cc-stat-lbl">Flagged</span>
+                    <div class="cc-stat cc-stat-flagged text-center">
+                        <span class="cc-stat-num d-block fw-bold fs-5 text-danger"><?= $flagged ?></span>
+                        <span class="cc-stat-lbl text-danger small">Flagged</span>
                     </div>
                     <?php endif; ?>
-                    <div class="cc-stat cc-stat-cleared">
-                        <span class="cc-stat-num"><?= $cleared ?></span>
-                        <span class="cc-stat-lbl">Cleared</span>
+                    <div class="cc-stat cc-stat-cleared text-center">
+                        <span class="cc-stat-num d-block fw-bold fs-5 text-success"><?= $cleared ?></span>
+                        <span class="cc-stat-lbl text-success small">Cleared</span>
                     </div>
-                    <div class="cc-stat cc-stat-pending">
-                        <span class="cc-stat-num"><?= $pending ?></span>
-                        <span class="cc-stat-lbl">Pending</span>
+                    <div class="cc-stat cc-stat-pending text-center">
+                        <span class="cc-stat-num d-block fw-bold fs-5 text-warning"><?= $pending ?></span>
+                        <span class="cc-stat-lbl text-warning small">Pending</span>
                     </div>
                 </div>
-                <div class="cc-footer">
-                    <span class="cc-open">Open →</span>
+                <div class="cc-footer mt-3 pt-2 border-top text-end">
+                    <span class="cc-open text-primary"><i class="bi bi-folder2-open"></i> Open →</span>
                 </div>
             </a>
         <?php endforeach; ?>
@@ -83,161 +84,153 @@ $cPending = count($students) - $cFlagged - $cCleared;
 $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
 ?>
 
-<div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+<div class="page-header mb-4" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
     <div>
-        <a href="<?= BASE_URL ?>signatory/clearances" class="back-link">← My Clearances</a>
+        <a href="<?= BASE_URL ?>signatory/clearances" class="back-link text-decoration-none d-inline-block mb-2"><i class="bi bi-arrow-left"></i> My Clearances</a>
         <h2><?= htmlspecialchars($c['clearance_name']) ?></h2>
         <?php if (!empty($c['school_year'])): ?>
             <p class="text-muted" style="margin-top:.25rem"><?= htmlspecialchars($c['school_year']) ?></p>
         <?php endif; ?>
     </div>
     <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
-        <!-- Confirm All: clears all pending + sends deficiency emails to flagged -->
-        <form action="<?= BASE_URL ?>signatory/confirm-all" method="POST" id="confirm-all-form"
-              onsubmit="return confirm('This will clear all pending students and send deficiency emails to <?= $totalFlagged ?> flagged student(s). Continue?')">
-            <input type="hidden" name="clearance_id" value="<?= $selectedCid ?>">
-            <button type="submit" class="btn btn-primary" id="confirm-all-btn">
-                Confirm All
-            </button>
-        </form>
-        <script>
-        document.getElementById('confirm-all-form').addEventListener('submit', function() {
-            const btn = document.getElementById('confirm-all-btn');
-            btn.disabled = true;
-            btn.innerHTML = 'Processing…';
-        });
-        </script>
+        <button type="button" class="btn btn-primary" onclick="openConfirmAllModal()">
+            <i class="bi bi-check-all"></i> Confirm All Pending
+        </button>
     </div>
 </div>
 
 <!-- Summary badges -->
 <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin-bottom:1.25rem;">
     <?php if ($cFlagged > 0): ?>
-        <span class="badge badge-danger"><?= $cFlagged ?> flagged</span>
+        <span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> <?= $cFlagged ?> flagged</span>
     <?php endif; ?>
-    <span class="badge badge-success"><?= $cCleared ?> cleared</span>
-    <span class="badge badge-warning"><?= $cPending ?> pending</span>
+    <span class="badge bg-success"><i class="bi bi-check-circle"></i> <?= $cCleared ?> cleared</span>
+    <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> <?= $cPending ?> pending</span>
 </div>
 
 <!-- ===== Filter Bar ===== -->
-<form method="GET" action="<?= BASE_URL ?>signatory/clearances" class="filter-bar">
-    <input type="hidden" name="cid" value="<?= $selectedCid ?>">
-    <div class="filter-group">
-        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>"
-               placeholder="Search by name or ID…" class="form-control search-input" id="sig-search">
-    </div>
-    <div class="filter-group">
-        <select name="status" class="form-control" id="sig-status-filter" onchange="this.form.submit()">
-            <option value="all"    <?= $filterStatus === 'all'     ? 'selected' : '' ?>>All Statuses</option>
-            <option value="flagged" <?= $filterStatus === 'flagged' ? 'selected' : '' ?>>Flagged</option>
-            <option value="cleared" <?= $filterStatus === 'cleared' ? 'selected' : '' ?>>Cleared</option>
-            <option value="pending" <?= $filterStatus === 'pending' ? 'selected' : '' ?>>Pending</option>
-        </select>
-    </div>
-    <?php if (!empty($courses)): ?>
-    <div class="filter-group">
-        <select name="course" class="form-control" id="sig-course-filter" onchange="this.form.submit()">
-            <option value="">All Courses</option>
-            <?php foreach ($courses as $course): ?>
-                <option value="<?= htmlspecialchars($course) ?>"
-                    <?= $filterCourse === $course ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($course) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    <?php endif; ?>
-    <?php if (!empty($yearLevels)): ?>
-    <div class="filter-group">
-        <select name="year" class="form-control" id="sig-year-filter" onchange="this.form.submit()">
-            <option value="">All Year Levels</option>
-            <?php foreach ($yearLevels as $yr): ?>
-                <option value="<?= $yr ?>" <?= $filterYear === (string)$yr ? 'selected' : '' ?>>
-                    Year <?= $yr ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    <?php endif; ?>
-    <button type="submit" style="display:none"></button>
-</form>
+<div class="gold-card p-3 mb-4" style="background:#fff; border-radius:8px;">
+    <form method="GET" action="<?= BASE_URL ?>signatory/clearances" class="filter-bar m-0 d-flex gap-3 align-items-center flex-wrap">
+        <input type="hidden" name="cid" value="<?= $selectedCid ?>">
+        <div class="filter-group flex-grow-1" style="min-width: 200px;">
+            <input type="text" name="search" value="<?= htmlspecialchars($search) ?>"
+                   placeholder="Search by name or ID…" class="form-control" id="sig-search">
+        </div>
+        <div class="filter-group">
+            <select name="status" class="form-select" id="sig-status-filter" onchange="this.form.submit()">
+                <option value="all"    <?= $filterStatus === 'all'     ? 'selected' : '' ?>>All Statuses</option>
+                <option value="flagged" <?= $filterStatus === 'flagged' ? 'selected' : '' ?>>Flagged</option>
+                <option value="cleared" <?= $filterStatus === 'cleared' ? 'selected' : '' ?>>Cleared</option>
+                <option value="pending" <?= $filterStatus === 'pending' ? 'selected' : '' ?>>Pending</option>
+            </select>
+        </div>
+        <?php if (!empty($colleges)): ?>
+        <div class="filter-group">
+            <input type="text" list="college-list" name="college" class="form-control" placeholder="All Colleges" value="<?= htmlspecialchars($filterCollege) ?>" onchange="this.form.submit()" style="max-width: 140px;">
+            <datalist id="college-list">
+                <?php foreach ($colleges as $col): ?>
+                    <option value="<?= htmlspecialchars($col) ?>">
+                <?php endforeach; ?>
+            </datalist>
+        </div>
+        <?php endif; ?>
+        <?php if (!empty($courses)): ?>
+        <div class="filter-group">
+            <input type="text" list="course-list" name="course" class="form-control" placeholder="All Courses" value="<?= htmlspecialchars($filterCourse) ?>" onchange="this.form.submit()" style="max-width: 140px;">
+            <datalist id="course-list">
+                <?php foreach ($courses as $course): ?>
+                    <option value="<?= htmlspecialchars($course) ?>">
+                <?php endforeach; ?>
+            </datalist>
+        </div>
+        <?php endif; ?>
+        <?php if (!empty($yearLevels)): ?>
+        <div class="filter-group">
+            <input type="text" list="year-list" name="year" class="form-control" placeholder="All Years" value="<?= htmlspecialchars($filterYear) ?>" onchange="this.form.submit()" style="max-width: 110px;">
+            <datalist id="year-list">
+                <?php foreach ($yearLevels as $yr): ?>
+                    <option value="<?= $yr ?>">
+                <?php endforeach; ?>
+            </datalist>
+        </div>
+        <?php endif; ?>
+        <button type="submit" style="display:none"></button>
+    </form>
+</div>
 
 <?php if (empty($students)): ?>
-    <p class="text-muted text-center" style="padding:2rem;">No students match the current filters.</p>
+    <div class="gold-card text-center p-5" style="background:#fff; border-radius:8px;">
+        <i class="bi bi-search display-1 text-muted opacity-50 mb-3 d-block"></i>
+        <p class="text-muted fs-5">No students match the current filters.</p>
+    </div>
 <?php else: ?>
-<div class="table-container">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th style="width: 100px;">Student ID</th>
-                <th>Last Name</th>
-                <th>First Name</th>
-                <th>College</th>
-                <th>Course</th>
-                <th>Year / Section</th>
-                <th>Standing</th>
-                <th>Deficiency Note</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($students as $s): ?>
-                <?php $rowClass = $s['status'] === 'flagged' ? 'row-flagged' : ($s['status'] === 'cleared' ? 'row-cleared' : ''); ?>
-                <tr class="<?= $rowClass ?>">
-                    <td><?= htmlspecialchars($s['student_number']) ?></td>
-                    <td><?= htmlspecialchars($s['last_name']) ?></td>
-                    <td><?= htmlspecialchars($s['first_name']) ?></td>
-                    <td><?= htmlspecialchars($s['college']) ?></td>
-                    <td><?= htmlspecialchars($s['course']) ?></td>
-                    <td><?= $s['year_level'] ?> – <?= htmlspecialchars($s['section']) ?></td>
-                    <td>
-                        <?php if ($s['status'] === 'flagged'): ?>
-                            <span class="badge badge-danger">Flagged</span>
-                        <?php elseif ($s['status'] === 'cleared'): ?>
-                            <span class="badge badge-success">Cleared</span>
-                        <?php else: ?>
-                            <span class="badge badge-warning">Pending</span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php if ($s['status'] === 'flagged' && !empty($s['flag_note'])): ?>
-                            <span class="flag-note" title="<?= htmlspecialchars($s['flag_note']) ?>">
-                                <?= htmlspecialchars(mb_substr($s['flag_note'], 0, 60)) ?>
-                                <?= mb_strlen($s['flag_note']) > 60 ? '…' : '' ?>
-                            </span>
-                        <?php else: ?>
-                            <span class="text-muted">—</span>
-                        <?php endif; ?>
-                    </td>
-                    <td class="actions-cell">
-                        <?php if ($s['status'] === 'flagged'): ?>
-                            <!-- Unflag — resolves deficiency, moves to cleared -->
-                            <form action="<?= BASE_URL ?>signatory/students/clear" method="POST"
-                                  onsubmit="return confirm('Clear deficiency for <?= htmlspecialchars(addslashes($s['first_name'] . ' ' . $s['last_name'])) ?>?')">
-                                <input type="hidden" name="clearance_id" value="<?= $selectedCid ?>">
-                                <input type="hidden" name="student_id"   value="<?= $s['id'] ?>">
-                                <button type="submit" class="btn btn-success btn-sm">Unflag</button>
-                            </form>
-                        <?php elseif ($s['status'] === 'cleared'): ?>
-                            <span class="text-muted" style="font-size:.8rem">Done</span>
-                        <?php else: ?>
-                            <!-- Pending: can only Flag (bulk clear via Confirm All) -->
-                            <button type="button" class="btn btn-danger btn-sm"
-                                    onclick="openFlagModal(<?= $selectedCid ?>, <?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['first_name'] . ' ' . $s['last_name'])) ?>')">
-                                Flag
-                            </button>
-                        <?php endif; ?>
-                    </td>
+<div class="gold-card" style="background:#fff; border-radius:8px; overflow:hidden;">
+    <div class="table-responsive">
+        <table class="data-table m-0" style="width: 100%;">
+            <thead>
+                <tr style="background: var(--surface2);">
+                    <th class="py-3 px-4">Student ID</th>
+                    <th class="py-3 px-4">Name</th>
+                    <th class="py-3 px-4">College</th>
+                    <th class="py-3 px-4">Course</th>
+                    <th class="py-3 px-4">Year/Sec</th>
+                    <th class="py-3 px-4">Standing</th>
+                    <th class="py-3 px-4" style="width:25%;">Deficiency Note</th>
+                    <th class="py-3 px-4 text-end">Action</th>
                 </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <?php foreach ($students as $s): ?>
+                    <?php $rowClass = $s['status'] === 'flagged' ? 'table-danger' : ($s['status'] === 'cleared' ? 'table-success' : ''); ?>
+                    <tr class="border-bottom <?= $rowClass ?>">
+                        <td class="py-3 px-4"><strong><?= htmlspecialchars($s['student_number']) ?></strong></td>
+                        <td class="py-3 px-4"><?= htmlspecialchars($s['last_name']) ?>, <?= htmlspecialchars($s['first_name']) ?></td>
+                        <td class="py-3 px-4"><?= htmlspecialchars($s['college']) ?></td>
+                        <td class="py-3 px-4"><?= htmlspecialchars($s['course']) ?></td>
+                        <td class="py-3 px-4"><?= $s['year_level'] ?>–<?= htmlspecialchars($s['section']) ?></td>
+                        <td class="py-3 px-4">
+                            <?php if ($s['status'] === 'flagged'): ?>
+                                <span class="badge bg-danger">Flagged</span>
+                            <?php elseif ($s['status'] === 'cleared'): ?>
+                                <span class="badge bg-success">Cleared</span>
+                            <?php else: ?>
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="py-3 px-4" style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            <?php if ($s['status'] === 'flagged' && !empty($s['flag_note'])): ?>
+                                <span class="text-danger small" title="<?= htmlspecialchars($s['flag_note']) ?>">
+                                    <?= htmlspecialchars($s['flag_note']) ?>
+                                </span>
+                            <?php else: ?>
+                                <span class="text-muted small">—</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="py-3 px-4 text-end">
+                            <?php if ($s['status'] === 'flagged'): ?>
+                                <button type="button" class="btn btn-success btn-sm" onclick="openUnflagModal(<?= $selectedCid ?>, <?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['first_name'] . ' ' . $s['last_name'])) ?>')">
+                                    <i class="bi bi-check2-circle"></i> Unflag
+                                </button>
+                            <?php elseif ($s['status'] === 'cleared'): ?>
+                                <span class="text-success small fw-bold">Cleared</span>
+                            <?php else: ?>
+                                <button type="button" class="btn btn-danger btn-sm"
+                                        onclick="openFlagModal(<?= $selectedCid ?>, <?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['first_name'] . ' ' . $s['last_name'])) ?>')">
+                                    <i class="bi bi-flag"></i> Flag
+                                </button>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 <?php endif; ?>
 <?php endif; ?>
 
 <!-- ===== Flag Modal ===== -->
-<div id="flag-modal" class="modal-overlay" style="display:none;" onclick="closeFlagModalOnOverlay(event)">
+<div id="flag-modal" class="modal" style="display:none;" onclick="closeFlagModalOnOverlay(event)">
     <div class="modal-box">
         <div class="modal-header">
             <h3>Flag Student for Deficiency</h3>
@@ -261,6 +254,48 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
     </div>
 </div>
 
+<!-- ===== Unflag Modal ===== -->
+<div id="unflag-modal" class="modal" style="display:none;" onclick="closeUnflagModalOnOverlay(event)">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>Clear Deficiency</h3>
+            <button type="button" class="modal-close" onclick="closeUnflagModal()">✕</button>
+        </div>
+        <form action="<?= BASE_URL ?>signatory/students/clear" method="POST" id="unflag-form">
+            <input type="hidden" name="clearance_id" id="unflag-modal-clearance-id">
+            <input type="hidden" name="student_id"   id="unflag-modal-student-id">
+            <div class="modal-body">
+                <p>Are you sure you want to clear the deficiency for <strong id="unflag-modal-student-name"></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeUnflagModal()">Cancel</button>
+                <button type="submit" class="btn btn-success">Confirm</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== Confirm All Modal ===== -->
+<div id="confirm-all-modal" class="modal" style="display:none;" onclick="closeConfirmAllModalOnOverlay(event)">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>Confirm All Pending</h3>
+            <button type="button" class="modal-close" onclick="closeConfirmAllModal()">✕</button>
+        </div>
+        <form action="<?= BASE_URL ?>signatory/confirm-all" method="POST" id="confirm-all-form-modal">
+            <input type="hidden" name="clearance_id" value="<?= $selectedCid ?>">
+            <div class="modal-body">
+                <p>This will clear all pending students and send deficiency emails to <strong><?= $totalFlagged ?></strong> flagged student(s).</p>
+                <p>Are you sure you want to continue?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeConfirmAllModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="confirm-all-btn-modal" onclick="this.disabled=true; this.innerHTML='<span class=\'spinner-border spinner-border-sm\'></span> Processing...'; this.form.submit();">Confirm All Pending</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 
 <script>
@@ -278,7 +313,34 @@ function closeFlagModal() {
 function closeFlagModalOnOverlay(e) {
     if (e.target === document.getElementById('flag-modal')) closeFlagModal();
 }
+
+function openUnflagModal(clearanceId, studentId, studentName) {
+    document.getElementById('unflag-modal-clearance-id').value = clearanceId;
+    document.getElementById('unflag-modal-student-id').value   = studentId;
+    document.getElementById('unflag-modal-student-name').textContent = studentName;
+    document.getElementById('unflag-modal').style.display = 'flex';
+}
+function closeUnflagModal() {
+    document.getElementById('unflag-modal').style.display = 'none';
+}
+function closeUnflagModalOnOverlay(e) {
+    if (e.target === document.getElementById('unflag-modal')) closeUnflagModal();
+}
+
+function openConfirmAllModal() {
+    document.getElementById('confirm-all-modal').style.display = 'flex';
+}
+function closeConfirmAllModal() {
+    document.getElementById('confirm-all-modal').style.display = 'none';
+}
+function closeConfirmAllModalOnOverlay(e) {
+    if (e.target === document.getElementById('confirm-all-modal')) closeConfirmAllModal();
+}
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeFlagModal();
+    if (e.key === 'Escape') {
+        closeFlagModal();
+        closeUnflagModal();
+        closeConfirmAllModal();
+    }
 });
 </script>

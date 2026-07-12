@@ -60,7 +60,7 @@ $cid = $clearance['id'];
                             <td><?= htmlspecialchars($s['email']) ?></td>
                             <td>
                                 <form action="<?= BASE_URL ?>admin/clearances/signatories/remove"
-                                      method="POST" onsubmit="return confirm('Remove this signatory?')">
+                                      method="POST" onsubmit="return confirmAction(this, 'Remove this signatory?', 'Remove', 'btn-danger')">
                                     <input type="hidden" name="clearance_id" value="<?= $cid ?>">
                                     <input type="hidden" name="signatory_id" value="<?= $s['id'] ?>">
                                     <button type="submit" class="btn btn-danger btn-sm">Remove</button>
@@ -96,10 +96,10 @@ $cid = $clearance['id'];
                             <td><?= htmlspecialchars($a['department']) ?></td>
                             <td><?= htmlspecialchars($a['email']) ?></td>
                             <td>
-                                <form action="<?= BASE_URL ?>admin/clearances/advisers/remove"
-                                      method="POST" onsubmit="return confirm('Remove this member?')">
+                                <form action="<?= BASE_URL ?>admin/clearances/enrollment-committees/remove"
+                                      method="POST" onsubmit="return confirmAction(this, 'Remove this member?', 'Remove', 'btn-danger')">
                                     <input type="hidden" name="clearance_id" value="<?= $cid ?>">
-                                    <input type="hidden" name="adviser_id"   value="<?= $a['id'] ?>">
+                                    <input type="hidden" name="enrollment_committee_id"   value="<?= $a['id'] ?>">
                                     <button type="submit" class="btn btn-danger btn-sm">Remove</button>
                                 </form>
                             </td>
@@ -185,7 +185,7 @@ $cid = $clearance['id'];
                             <td><?= $overallBadge ?></td>
                             <td>
                                 <form action="<?= BASE_URL ?>admin/clearances/students/remove"
-                                      method="POST" onsubmit="return confirm('Remove student from clearance?')">
+                                      method="POST" onsubmit="return confirmAction(this, 'Remove student from clearance?', 'Remove', 'btn-danger')">
                                     <input type="hidden" name="clearance_id" value="<?= $cid ?>">
                                     <input type="hidden" name="student_id"   value="<?= $s['id'] ?>">
                                     <button type="submit" class="btn btn-danger btn-sm">Remove</button>
@@ -271,14 +271,14 @@ $cid = $clearance['id'];
             <h3>Assign Enrollment Committee Member</h3>
             <button onclick="document.getElementById('assignAdvModal').style.display='none'" class="close-btn">✕</button>
         </div>
-        <form action="<?= BASE_URL ?>admin/clearances/advisers/assign" method="POST" class="modal-form">
+        <form action="<?= BASE_URL ?>admin/clearances/enrollment-committees/assign" method="POST" class="modal-form">
             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
             <div class="form-group">
                 <label>Select Member</label>
                 <?php if (empty($unassignedAdvisers)): ?>
-                    <p class="text-muted" style="margin-top: 0;">No available enrollment committee members to assign. Please create more in the Advisers menu.</p>
+                    <p class="text-muted" style="margin-top: 0;">No available enrollment committee members to assign. Please create more in the Enrollment Committee menu.</p>
                 <?php else: ?>
-                    <select name="adviser_id" required>
+                    <select name="enrollment_committee_id" required>
                         <option value="">-- Choose Member --</option>
                         <?php foreach ($unassignedAdvisers as $ua): ?>
                             <option value="<?= $ua['id'] ?>">

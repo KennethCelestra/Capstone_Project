@@ -1,7 +1,7 @@
 <?php
 require_once ROOT_PATH . '/app/Models/ClearanceStatus.php';
 
-class AdviserController extends Controller
+class Enrollment_CommitteeController extends Controller
 {
     private ClearanceStatus $statusModel;
 
@@ -16,8 +16,8 @@ class AdviserController extends Controller
 
     public function dashboard(): void
     {
-        $this->requireLogin('adviser');
-        $rows       = $this->statusModel->getClearancesForAdviser($_SESSION['user_id']);
+        $this->requireLogin('enrollment_committee');
+        $rows       = $this->statusModel->getClearancesForEnrollmentCommittee($_SESSION['user_id']);
         $clearances = $this->groupClearances($rows);
 
         foreach ($clearances as &$c) {
@@ -38,7 +38,7 @@ class AdviserController extends Controller
             'flash'      => $this->getFlash(),
             'userName'   => $_SESSION['user_name'],
         ];
-        $this->view('layouts/main', array_merge($data, ['content' => 'adviser/dashboard']));
+        $this->view('layouts/main', array_merge($data, ['content' => 'enrollment_committee/dashboard']));
     }
 
     // ----------------------------------------------------------------
@@ -49,10 +49,10 @@ class AdviserController extends Controller
 
     public function clearances(): void
     {
-        $this->requireLogin('adviser');
+        $this->requireLogin('enrollment_committee');
         $selectedCid = (int) $this->getGet('cid', 0);
 
-        $rows            = $this->statusModel->getClearancesForAdviser($_SESSION['user_id']);
+        $rows            = $this->statusModel->getClearancesForEnrollmentCommittee($_SESSION['user_id']);
         $allClearances   = $this->groupClearances($rows);
 
         // Phase 2: a specific clearance is selected
@@ -60,13 +60,14 @@ class AdviserController extends Controller
             $validCids = array_column($allClearances, 'clearance_id');
             if (!in_array($selectedCid, $validCids)) {
                 $this->setFlash('error', 'You are not assigned to that clearance.');
-                $this->redirect('adviser/clearances');
+                $this->redirect('enrollment-committee/clearances');
                 return;
             }
 
             // Filters
             $search       = trim($this->getGet('search', ''));
             $filterStatus = $this->getGet('status', 'all');
+            $filterCollege= $this->getGet('college', '');
             $filterCourse = $this->getGet('course', '');
             $filterYear   = $this->getGet('year', '');
 
@@ -80,6 +81,7 @@ class AdviserController extends Controller
             }
 
             // Attach signatory detail + resolve display status
+            $colleges   = [];
             $courses    = [];
             $yearLevels = [];
             foreach ($selectedClearance['students'] as &$s) {
@@ -88,6 +90,7 @@ class AdviserController extends Controller
                     $selectedCid,
                     $s['id']
                 );
+                $colleges[]   = $s['college'];
                 $courses[]    = $s['course'];
                 $yearLevels[] = (string) $s['year_level'];
             }
@@ -96,20 +99,23 @@ class AdviserController extends Controller
             // Filter students
             $selectedClearance['students'] = array_values(array_filter(
                 $selectedClearance['students'],
-                function ($s) use ($search, $filterStatus, $filterCourse, $filterYear) {
+                function ($s) use ($search, $filterStatus, $filterCollege, $filterCourse, $filterYear) {
                     if ($search !== '') {
                         $haystack = strtolower($s['last_name'] . ' ' . $s['first_name'] . ' ' . $s['student_number']);
                         if (strpos($haystack, strtolower($search)) === false) return false;
                     }
                     if ($filterStatus !== 'all' && $s['display_status'] !== $filterStatus) return false;
+                    if ($filterCollege !== '' && $s['college'] !== $filterCollege) return false;
                     if ($filterCourse !== '' && $s['course'] !== $filterCourse) return false;
                     if ($filterYear !== '' && (string)$s['year_level'] !== $filterYear) return false;
                     return true;
                 }
             ));
 
+            $colleges   = array_unique($colleges);
             $courses    = array_unique($courses);
             $yearLevels = array_unique($yearLevels);
+            sort($colleges);
             sort($courses);
             sort($yearLevels);
 
@@ -121,12 +127,14 @@ class AdviserController extends Controller
                 'userName'          => $_SESSION['user_name'],
                 'search'            => $search,
                 'filterStatus'      => $filterStatus,
+                'filterCollege'     => $filterCollege,
                 'filterCourse'      => $filterCourse,
                 'filterYear'        => $filterYear,
+                'colleges'          => $colleges,
                 'courses'           => $courses,
                 'yearLevels'        => $yearLevels,
             ];
-            $this->view('layouts/main', array_merge($data, ['content' => 'adviser/clearances']));
+            $this->view('layouts/main', array_merge($data, ['content' => 'enrollment_committee/clearances']));
             return;
         }
 
@@ -151,7 +159,7 @@ class AdviserController extends Controller
             'flash'      => $this->getFlash(),
             'userName'   => $_SESSION['user_name'],
         ];
-        $this->view('layouts/main', array_merge($data, ['content' => 'adviser/clearances']));
+        $this->view('layouts/main', array_merge($data, ['content' => 'enrollment_committee/clearances']));
     }
 
 
@@ -181,7 +189,7 @@ class AdviserController extends Controller
     }
 
     /**
-     * Resolve a student's display status for adviser view.
+     * Resolve a student's display status for enrollment committee view.
      *   flagged → has at least one flagged signatory row
      *   cleared → all signatories cleared (no flags, no pending)
      *   pending → mix of cleared and pending, nothing flagged
