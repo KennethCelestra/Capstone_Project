@@ -1,9 +1,8 @@
 Options -Indexes
 
 RewriteEngine On
-RewriteBase /clearance_system/public/
 
-# Redirect requests to public/index.php
+# Redirect requests to index.php
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ index.php [QSA,L]

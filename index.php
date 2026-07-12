@@ -4,7 +4,7 @@
  */
 
 // Load configuration
-require_once dirname(__DIR__) . '/config/app.php';
+require_once __DIR__ . '/config/app.php';
 
 // Autoload core classes
 require_once ROOT_PATH . '/core/Database.php';

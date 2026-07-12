@@ -245,8 +245,6 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
 <?php endif; ?>
 <?php endif; ?>
 
-
-
 <script>
 function toggleDetail(rowId) {
     const row = document.getElementById(rowId);

@@ -236,7 +236,6 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
 <?php endif; ?>
 <?php endif; ?>
 
-
 <!-- ===== Flag Modal ===== -->
 <div id="flag-modal" class="modal-overlay" style="display:none;" onclick="closeFlagModalOnOverlay(event)">
     <div class="modal-box">

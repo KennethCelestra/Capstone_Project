@@ -132,16 +132,22 @@ class SignatoryController extends Controller
             $info            = $this->statusModel->getStudentClearanceInfo($clearanceId, $studentId);
             
             if ($info) {
-                Mailer::sendDeficiencyEmail(
-                    $info['email'],
-                    $info['full_name'],
-                    $officeName,
-                    $note,
-                    $info['clearance_name']
-                );
+                if (!isset($_SESSION['bg_emails'])) {
+                    $_SESSION['bg_emails'] = [];
+                }
+                $_SESSION['bg_emails'][] = [
+                    'type' => 'deficiency',
+                    'officeName' => $officeName,
+                    'students' => [[
+                        'email' => $info['email'],
+                        'full_name' => $info['full_name'],
+                        'clearance_name' => $info['clearance_name'],
+                        'flag_note' => $note
+                    ]]
+                ];
             }
 
-            $this->setFlash('warning', 'Student has been flagged and notified via email.');
+            $this->setFlash('warning', 'Student has been flagged. Email sending in the background.');
         } else {
             $this->setFlash('error', 'Please provide a reason for flagging.');
         }
@@ -167,11 +173,14 @@ class SignatoryController extends Controller
             if ($this->statusModel->isStudentFullyCleared($clearanceId, $studentId)) {
                 $info = $this->statusModel->getStudentClearanceInfo($clearanceId, $studentId);
                 if ($info) {
-                    Mailer::sendClearedEmail(
-                        $info['email'],
-                        $info['full_name'],
-                        $info['clearance_name']
-                    );
+                    if (!isset($_SESSION['bg_emails'])) {
+                        $_SESSION['bg_emails'] = [];
+                    }
+                    $_SESSION['bg_emails'][] = [
+                        'type' => 'cleared',
+                        'clearance_id' => $clearanceId,
+                        'students' => [$info]
+                    ];
                 }
             }
 
@@ -198,23 +207,31 @@ class SignatoryController extends Controller
             if ($count > 0) {
                 // Check each student to see if they are now fully cleared
                 $fullyClearedCount = 0;
+                $infosToBg = [];
                 foreach ($clearedIds as $studentId) {
                     if ($this->statusModel->isStudentFullyCleared($clearanceId, $studentId)) {
                         $info = $this->statusModel->getStudentClearanceInfo($clearanceId, $studentId);
                         if ($info) {
-                            Mailer::sendClearedEmail(
-                                $info['email'],
-                                $info['full_name'],
-                                $info['clearance_name']
-                            );
+                            $infosToBg[] = $info;
                             $fullyClearedCount++;
                         }
                     }
                 }
 
+                if (!empty($infosToBg)) {
+                    if (!isset($_SESSION['bg_emails'])) {
+                        $_SESSION['bg_emails'] = [];
+                    }
+                    $_SESSION['bg_emails'][] = [
+                        'type' => 'cleared',
+                        'clearance_id' => $clearanceId,
+                        'students' => $infosToBg
+                    ];
+                }
+
                 $msg = "{$count} student(s) have been cleared.";
                 if ($fullyClearedCount > 0) {
-                    $msg .= " {$fullyClearedCount} student(s) have completed their full clearance and were notified via email.";
+                    $msg .= " {$fullyClearedCount} student(s) fully cleared. Emails sending in the background.";
                 }
                 $this->setFlash('success', $msg);
             } else {
@@ -250,13 +267,16 @@ class SignatoryController extends Controller
             $fullyClearedIds = $this->statusModel->getFullyClearedStudents($clearanceId, $clearedIds);
             if (!empty($fullyClearedIds)) {
                 $infos = $this->statusModel->getBulkStudentClearanceInfo($clearanceId, $fullyClearedIds);
-                foreach ($infos as $info) {
-                    Mailer::sendClearedEmail(
-                        $info['email'],
-                        $info['full_name'],
-                        $info['clearance_name']
-                    );
-                    $fullyClearedCount++;
+                if (!empty($infos)) {
+                    if (!isset($_SESSION['bg_emails'])) {
+                        $_SESSION['bg_emails'] = [];
+                    }
+                    $_SESSION['bg_emails'][] = [
+                        'type' => 'cleared',
+                        'clearance_id' => $clearanceId,
+                        'students' => $infos
+                    ];
+                    $fullyClearedCount += count($infos);
                 }
             }
         }
@@ -265,18 +285,19 @@ class SignatoryController extends Controller
         $signatoryRecord = $this->signatoryModel->findById($signatoryId);
         $officeName      = $signatoryRecord ? $signatoryRecord['office'] : 'Office';
         $flagged         = $this->statusModel->getFlaggedStudentsForConfirmation($signatoryId, $clearanceId);
-        $sent   = 0;
+        $sent = 0;
         $errors = 0;
 
-        foreach ($flagged as $f) {
-            $ok = Mailer::sendDeficiencyEmail(
-                $f['email'],
-                $f['full_name'],
-                $officeName,
-                $f['flag_note'],
-                $f['clearance_name']
-            );
-            $ok ? $sent++ : $errors++;
+        if (!empty($flagged)) {
+            if (!isset($_SESSION['bg_emails'])) {
+                $_SESSION['bg_emails'] = [];
+            }
+            $_SESSION['bg_emails'][] = [
+                'type' => 'deficiency',
+                'officeName' => $officeName,
+                'students' => $flagged
+            ];
+            $sent = count($flagged);
         }
 
         // Build flash message
@@ -285,10 +306,10 @@ class SignatoryController extends Controller
             $parts[] = "{$clearCount} student(s) cleared.";
         }
         if ($fullyClearedCount > 0) {
-            $parts[] = "{$fullyClearedCount} student(s) fully cleared and notified.";
+            $parts[] = "{$fullyClearedCount} student(s) fully cleared. Emails are sending in the background.";
         }
         if ($sent > 0) {
-            $parts[] = "Deficiency emails sent to {$sent} student(s).";
+            $parts[] = "Deficiency emails for {$sent} student(s) are sending in the background.";
         }
         if ($errors > 0) {
             $parts[] = "{$errors} email(s) failed — check mail config.";
@@ -302,9 +323,43 @@ class SignatoryController extends Controller
     }
 
     // ----------------------------------------------------------------
-    // Confirmation screen (inline confirm — kept for email sending)
+    // Background email processor (called via fetch() from layout)
     // ----------------------------------------------------------------
 
+    public function processBgEmails(): void
+    {
+        // This endpoint is called silently from the browser after each page load
+        // when bg_emails are queued in the session. No login check needed since
+        // it only reads/clears the session and sends mail — no sensitive data exposed.
+        header('Content-Type: application/json');
+
+        if (empty($_SESSION['bg_emails'])) {
+            echo json_encode(['status' => 'nothing']);
+            return;
+        }
+
+        $queue = $_SESSION['bg_emails'];
+        unset($_SESSION['bg_emails']); // Clear queue immediately before sending
+
+        $sent   = 0;
+        $errors = 0;
+
+        foreach ($queue as $job) {
+            if ($job['type'] === 'deficiency') {
+                $ok = Mailer::sendBulkDeficiencyEmail($job['students'], $job['officeName'] ?? 'Office');
+                $ok ? $sent++ : $errors++;
+            } elseif ($job['type'] === 'cleared') {
+                $ok = Mailer::sendBulkClearedEmail($job['students']);
+                $ok ? $sent++ : $errors++;
+            }
+        }
+
+        echo json_encode(['status' => 'done', 'sent' => $sent, 'errors' => $errors]);
+    }
+
+    // ----------------------------------------------------------------
+    // Confirmation screen (inline confirm — kept for email sending)
+    // ----------------------------------------------------------------
 
     public function submitConfirm(): void
     {
@@ -316,24 +371,25 @@ class SignatoryController extends Controller
 
         $clearanceId = (int) $this->getPost('clearance_id', 0);
         $flagged     = $this->statusModel->getFlaggedStudentsForConfirmation($signatoryId, $clearanceId);
-        $sent    = 0;
-        $errors  = 0;
+        $sent = 0;
+        $errors = 0;
 
-        foreach ($flagged as $f) {
-            $ok = Mailer::sendDeficiencyEmail(
-                $f['email'],
-                $f['full_name'],
-                $officeName,
-                $f['flag_note'],
-                $f['clearance_name']
-            );
-            $ok ? $sent++ : $errors++;
+        if (!empty($flagged)) {
+            if (!isset($_SESSION['bg_emails'])) {
+                $_SESSION['bg_emails'] = [];
+            }
+            $_SESSION['bg_emails'][] = [
+                'type' => 'deficiency',
+                'officeName' => $officeName,
+                'students' => $flagged
+            ];
+            $sent = count($flagged);
         }
 
-        if ($errors === 0) {
-            $this->setFlash('success', "Deficiency emails sent to {$sent} student(s).");
+        if ($sent > 0) {
+            $this->setFlash('success', "Deficiency emails for {$sent} student(s) sending in background.");
         } else {
-            $this->setFlash('warning', "Emails sent: {$sent}. Failed: {$errors}. Check your mail configuration.");
+            $this->setFlash('warning', "No flagged students to email.");
         }
 
         $redirect = $clearanceId > 0 ? "signatory/clearances?cid={$clearanceId}" : 'signatory/clearances';

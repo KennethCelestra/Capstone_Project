@@ -84,6 +84,11 @@ class AdminController extends Controller
     {
         $this->requireLogin('admin');
         $id = (int) $this->getPost('id');
+        if ($id <= 0) {
+            $this->setFlash('error', 'Invalid student ID.');
+            $this->redirect('admin/students');
+            return;
+        }
         $this->studentModel->delete($id);
         $this->setFlash('success', 'Student deleted.');
         $this->redirect('admin/students');
@@ -115,8 +120,10 @@ class AdminController extends Controller
                 $header = array_map(fn($h) => strtolower(trim($h)), $line);
                 continue;
             }
-            if (count($line) < 2) continue;
-            $rows[] = array_combine($header, array_map('trim', $line));
+            if (count($line) < count($header)) continue; // skip malformed rows
+            $combined = array_combine($header, array_map('trim', $line));
+            if ($combined === false) continue;
+            $rows[] = $combined;
         }
         fclose($handle);
 
@@ -195,6 +202,11 @@ class AdminController extends Controller
     {
         $this->requireLogin('admin');
         $id = (int) $this->getPost('id');
+        if ($id <= 0) {
+            $this->setFlash('error', 'Invalid adviser ID.');
+            $this->redirect('admin/advisers');
+            return;
+        }
         $this->adviserModel->delete($id);
         $this->setFlash('success', 'Adviser deleted.');
         $this->redirect('admin/advisers');
@@ -252,6 +264,11 @@ class AdminController extends Controller
     {
         $this->requireLogin('admin');
         $id = (int) $this->getPost('id');
+        if ($id <= 0) {
+            $this->setFlash('error', 'Invalid signatory ID.');
+            $this->redirect('admin/signatories');
+            return;
+        }
         $this->signatoryModel->delete($id);
         $this->setFlash('success', 'Signatory deleted.');
         $this->redirect('admin/signatories');
@@ -300,6 +317,11 @@ class AdminController extends Controller
             'description' => $this->getPost('description', ''),
             'school_year' => $this->getPost('school_year', ''),
         ];
+        if (empty($data['name'])) {
+            $this->setFlash('error', 'Clearance name is required.');
+            $this->redirect("admin/clearances/detail?id={$id}");
+            return;
+        }
         $this->clearanceModel->update($id, $data);
         $this->setFlash('success', 'Clearance updated.');
         $this->redirect("admin/clearances/detail?id={$id}");

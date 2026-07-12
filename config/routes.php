@@ -71,4 +71,5 @@ $routes = [
     'POST /signatory/students/clear-all'          => ['SignatoryController', 'clearAll'],
     'POST /signatory/confirm/submit'              => ['SignatoryController', 'submitConfirm'],
     'POST /signatory/confirm-all'                 => ['SignatoryController', 'confirmAll'],
+    'POST /api/process-bg-emails'                 => ['SignatoryController', 'processBgEmails'],
 ];

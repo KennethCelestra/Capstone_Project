@@ -29,6 +29,7 @@ abstract class Controller
             $this->redirect('login');
         }
         if ($role && $_SESSION['user_role'] !== $role) {
+            $_SESSION['flash'] = ['type' => 'error', 'message' => 'Access denied. You do not have permission to view that page.'];
             $this->redirect('login');
         }
     }

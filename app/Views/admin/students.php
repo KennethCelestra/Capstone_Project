@@ -15,13 +15,12 @@
                 <th>College</th>
                 <th>Course</th>
                 <th>Year / Section</th>
-                <th>Status</th>
                 <th>Action</th>
             </tr>
         </thead>
         <tbody>
             <?php if (empty($students)): ?>
-                <tr><td colspan="8" class="text-center">No students found. Add manually or upload via a clearance.</td></tr>
+                <tr><td colspan="7" class="text-center">No students found. Add manually or upload via a clearance.</td></tr>
             <?php else: ?>
                 <?php foreach ($students as $s): ?>
                     <tr>
@@ -31,7 +30,6 @@
                         <td><?= htmlspecialchars($s['college']) ?></td>
                         <td><?= htmlspecialchars($s['course']) ?></td>
                         <td><?= htmlspecialchars($s['year_level']) ?> – <?= htmlspecialchars($s['section']) ?></td>
-                        <td><span class="text-muted">N/A</span></td>
                         <td>
                             <form action="<?= BASE_URL ?>admin/students/delete" method="POST" style="display:inline"
                                   onsubmit="return confirm('Delete this student?')">
@@ -89,12 +87,6 @@
                         <option value="CCI">CCI</option>
                         <option value="CIT">CIT</option>
                     </select>
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Email *</label>
-                    <input type="email" name="email" required placeholder="student@school.edu">
                 </div>
                 <div class="form-group">
                     <label>Course *</label>

@@ -64,5 +64,3 @@
         </table>
     </div>
 <?php endif; ?>
-
-

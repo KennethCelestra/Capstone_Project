@@ -26,7 +26,7 @@ class ClearanceStatus extends Model
                AND cs.clearance_id = cst.clearance_id
                AND cs.signatory_id = ?
             WHERE cst.clearance_id = ?
-            ORDER BY cs.status ASC, st.last_name ASC, st.first_name ASC
+            ORDER BY FIELD(COALESCE(cs.status, 'pending'), 'flagged', 'pending', 'cleared'), st.last_name ASC, st.first_name ASC
         ");
         $stmt->execute([$signatoryId, $clearanceId]);
         return $stmt->fetchAll();

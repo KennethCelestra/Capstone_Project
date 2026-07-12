@@ -41,12 +41,10 @@ $cid = $clearance['id'];
 <div id="tab-sig" class="tab-content active">
     <div class="section-header">
         <h3>Assigned Signatories</h3>
-        <?php if (!empty($unassignedSignatories)): ?>
-            <button class="btn btn-primary btn-sm"
-                    onclick="document.getElementById('assignSigModal').style.display='flex'">
-                + Assign Signatory
-            </button>
-        <?php endif; ?>
+        <button class="btn btn-primary btn-sm"
+                onclick="document.getElementById('assignSigModal').style.display='flex'">
+            + Assign Signatory
+        </button>
     </div>
     <?php if (empty($assignedSignatories)): ?>
         <p class="text-muted">No signatories assigned yet.</p>
@@ -80,12 +78,10 @@ $cid = $clearance['id'];
 <div id="tab-adv" class="tab-content" style="display:none">
     <div class="section-header">
         <h3>Assigned Enrollment Committee</h3>
-        <?php if (!empty($unassignedAdvisers)): ?>
-            <button class="btn btn-primary btn-sm"
-                    onclick="document.getElementById('assignAdvModal').style.display='flex'">
-                + Assign Member
-            </button>
-        <?php endif; ?>
+        <button class="btn btn-primary btn-sm"
+                onclick="document.getElementById('assignAdvModal').style.display='flex'">
+            + Assign Member
+        </button>
     </div>
     <?php if (empty($assignedAdvisers)): ?>
         <p class="text-muted">No enrollment committee members assigned yet (optional).</p>
@@ -203,9 +199,6 @@ $cid = $clearance['id'];
     <?php endif; ?>
 </div>
 
-
-
-
 <!-- ====== Edit Clearance Modal ====== -->
 <div id="editClearanceDetailModal" class="modal" style="display:none;">
     <div class="modal-box">
@@ -247,19 +240,25 @@ $cid = $clearance['id'];
             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
             <div class="form-group">
                 <label>Select Signatory</label>
-                <select name="signatory_id" required>
-                    <option value="">-- Choose Signatory --</option>
-                    <?php foreach ($unassignedSignatories as $us): ?>
-                        <option value="<?= $us['id'] ?>">
-                            <?= htmlspecialchars($us['full_name']) ?> — <?= htmlspecialchars($us['office']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <?php if (empty($unassignedSignatories)): ?>
+                    <p class="text-muted" style="margin-top: 0;">No available signatories to assign. Please create more in the Signatories menu.</p>
+                <?php else: ?>
+                    <select name="signatory_id" required>
+                        <option value="">-- Choose Signatory --</option>
+                        <?php foreach ($unassignedSignatories as $us): ?>
+                            <option value="<?= $us['id'] ?>">
+                                <?= htmlspecialchars($us['full_name']) ?> — <?= htmlspecialchars($us['office']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php endif; ?>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
                         onclick="document.getElementById('assignSigModal').style.display='none'">Cancel</button>
-                <button type="submit" class="btn btn-primary">Assign</button>
+                <?php if (!empty($unassignedSignatories)): ?>
+                    <button type="submit" class="btn btn-primary">Assign</button>
+                <?php endif; ?>
             </div>
         </form>
     </div>
@@ -276,19 +275,25 @@ $cid = $clearance['id'];
             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
             <div class="form-group">
                 <label>Select Member</label>
-                <select name="adviser_id" required>
-                    <option value="">-- Choose Member --</option>
-                    <?php foreach ($unassignedAdvisers as $ua): ?>
-                        <option value="<?= $ua['id'] ?>">
-                            <?= htmlspecialchars($ua['full_name']) ?> — <?= htmlspecialchars($ua['department']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <?php if (empty($unassignedAdvisers)): ?>
+                    <p class="text-muted" style="margin-top: 0;">No available enrollment committee members to assign. Please create more in the Advisers menu.</p>
+                <?php else: ?>
+                    <select name="adviser_id" required>
+                        <option value="">-- Choose Member --</option>
+                        <?php foreach ($unassignedAdvisers as $ua): ?>
+                            <option value="<?= $ua['id'] ?>">
+                                <?= htmlspecialchars($ua['full_name']) ?> — <?= htmlspecialchars($ua['department']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php endif; ?>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
                         onclick="document.getElementById('assignAdvModal').style.display='none'">Cancel</button>
-                <button type="submit" class="btn btn-primary">Assign</button>
+                <?php if (!empty($unassignedAdvisers)): ?>
+                    <button type="submit" class="btn btn-primary">Assign</button>
+                <?php endif; ?>
             </div>
         </form>
     </div>

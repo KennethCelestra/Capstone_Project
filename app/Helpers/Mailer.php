@@ -1,58 +1,66 @@
 <?php
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require_once ROOT_PATH . '/vendor/autoload.php';
+
 /**
- * Simple Mailer helper using PHP's built-in mail().
- * To use SMTP/Gmail, replace with PHPMailer.
+ * Simple Mailer helper using PHPMailer + Gmail SMTP.
  */
 class Mailer
 {
-    private static function sendBrevoEmail(string $toEmail, string $toName, string $subject, string $htmlContent): bool
+    private static ?PHPMailer $mailInstance = null;
+
+    private static function getMailer(): PHPMailer
     {
-        $apiKey = defined('BREVO_API_KEY') ? BREVO_API_KEY : '';
-        
-        if (empty($apiKey) || $apiKey === 'YOUR_BREVO_API_KEY_HERE') {
-            // Fallback to logging if no API key is set
-            $logFile = ROOT_PATH . '/logs/emails.txt';
-            if (!is_dir(dirname($logFile))) {
-                mkdir(dirname($logFile), 0777, true);
-            }
-            $logEntry = "[" . date('Y-m-d H:i:s') . "] MISSING_API_KEY | To: {$toEmail} | Subject: {$subject}\n";
-            file_put_contents($logFile, $logEntry, FILE_APPEND);
-            return false;
+        if (self::$mailInstance === null) {
+            self::$mailInstance = new PHPMailer(true);
+            self::$mailInstance->isSMTP();
+            self::$mailInstance->Host       = SMTP_HOST;
+            self::$mailInstance->SMTPAuth   = true;
+            self::$mailInstance->Username   = SMTP_USER;
+            self::$mailInstance->Password   = SMTP_PASS;
+            self::$mailInstance->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            self::$mailInstance->Port       = SMTP_PORT;
+            self::$mailInstance->CharSet    = 'UTF-8';
+            self::$mailInstance->setFrom(MAIL_FROM, APP_NAME);
+            // Crucial for bulk sending: keep the connection open to avoid Gmail rate limits & timeouts
+            self::$mailInstance->SMTPKeepAlive = true; 
         }
+        return self::$mailInstance;
+    }
 
-        $data = [
-            'sender' => ['name' => APP_NAME, 'email' => MAIL_FROM],
-            'to' => [
-                ['email' => $toEmail, 'name' => $toName]
-            ],
-            'subject' => $subject,
-            'htmlContent' => $htmlContent
-        ];
+    private static function sendEmail(string $toEmail, string $toName, string $subject, string $htmlContent): bool
+    {
+        // Give the script more time when sending emails
+        set_time_limit(300);
+        
+        try {
+            $mail = self::getMailer();
+            
+            // Reset state from previous emails
+            $mail->clearAllRecipients();
+            $mail->clearAttachments();
+            
+            // Recipients
+            $mail->addAddress($toEmail, $toName);
 
-        $ch = curl_init('https://api.brevo.com/v3/smtp/email');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'accept: application/json',
-            'api-key: ' . $apiKey,
-            'content-type: application/json'
-        ]);
+            // Content
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body    = $htmlContent;
 
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($httpCode === 201) {
+            $mail->send();
             return true;
-        } else {
+        } catch (Exception $e) {
             // Log API errors for debugging
-            $logFile = ROOT_PATH . '/logs/emails.txt';
+            $logFile = ROOT_PATH . '/storage/logs/emails.txt';
             if (!is_dir(dirname($logFile))) {
                 mkdir(dirname($logFile), 0777, true);
             }
-            $logEntry = "[" . date('Y-m-d H:i:s') . "] BREVO_ERROR | Code: {$httpCode} | Response: {$response}\n";
+            $mail = self::getMailer();
+            $logEntry = "[" . date('Y-m-d H:i:s') . "] SMTP_ERROR | " . $mail->ErrorInfo . "\n";
             file_put_contents($logFile, $logEntry, FILE_APPEND);
             return false;
         }
@@ -71,33 +79,15 @@ class Mailer
         $subject = "Clearance Deficiency Notice — {$clearanceName}";
 
         $body = "
-        <div style=\"font-family: 'Inter', Arial, sans-serif; max-width:600px; margin:0 auto; background:#f9fafb; padding:32px;\">
-          <div style=\"background:#1e293b; padding:24px; border-radius:12px 12px 0 0;\">
-            <h1 style=\"color:#fff; margin:0; font-size:20px;\">🎓 Clearance Deficiency Notice</h1>
-          </div>
-          <div style=\"background:#fff; padding:28px; border-radius:0 0 12px 12px; border:1px solid #e2e8f0;\">
-            <p style=\"color:#374151; font-size:16px;\">Dear <strong>" . htmlspecialchars($studentName) . "</strong>,</p>
-            <p style=\"color:#374151;\">
-              You have been flagged for a <strong>deficiency</strong> by the
-              <strong>" . htmlspecialchars($officeName) . "</strong> office in relation to your
-              <em>" . htmlspecialchars($clearanceName) . "</em> clearance.
-            </p>
-            <div style=\"background:#fef2f2; border-left:4px solid #ef4444; padding:16px; margin:20px 0; border-radius:4px;\">
-              <p style=\"color:#991b1b; margin:0; font-weight:600;\">Deficiency Reason:</p>
-              <p style=\"color:#7f1d1d; margin:8px 0 0;\">" . nl2br(htmlspecialchars($note)) . "</p>
-            </div>
-            <p style=\"color:#374151;\">
-              Please visit the <strong>" . htmlspecialchars($officeName) . "</strong> office at your earliest convenience
-              to resolve this deficiency and have it removed before your clearance can be completed.
-            </p>
-            <hr style=\"border:none; border-top:1px solid #e2e8f0; margin:24px 0;\">
-            <p style=\"color:#9ca3af; font-size:13px; margin:0;\">
-              This is an automated message from the Clearance System. Do not reply to this email.
-            </p>
-          </div>
-        </div>";
+            <p>Dear <strong>" . htmlspecialchars($studentName) . "</strong>,</p>
+            <p>You have been flagged for a deficiency by the <strong>" . htmlspecialchars($officeName) . "</strong> office in relation to your <em>" . htmlspecialchars($clearanceName) . "</em> clearance.</p>
+            <p><strong>Deficiency Reason:</strong><br>" . nl2br(htmlspecialchars($note)) . "</p>
+            <p>Please visit the <strong>" . htmlspecialchars($officeName) . "</strong> office at your earliest convenience to resolve this deficiency and have it removed before your clearance can be completed.</p>
+            <br>
+            <p><small>This is an automated message from the ISAT U Clearance System. Do not reply to this email.</small></p>
+        ";
 
-        return self::sendBrevoEmail($studentEmail, $studentName, $subject, $body);
+        return self::sendEmail($studentEmail, $studentName, $subject, $body);
     }
 
     /**
@@ -106,36 +96,69 @@ class Mailer
     public static function sendClearedEmail(
         string $studentEmail,
         string $studentName,
-        string $clearanceName
+        string $clearanceName,
+        array $signatoryDetails = []
     ): bool {
         $subject = "Clearance Complete — {$clearanceName}";
 
-        $body = "
-        <div style=\"font-family: 'Inter', Arial, sans-serif; max-width:600px; margin:0 auto; background:#f9fafb; padding:32px;\">
-          <div style=\"background:#065f46; padding:24px; border-radius:12px 12px 0 0;\">
-            <h1 style=\"color:#fff; margin:0; font-size:20px;\">🎉 Clearance Complete!</h1>
-          </div>
-          <div style=\"background:#fff; padding:28px; border-radius:0 0 12px 12px; border:1px solid #e2e8f0;\">
-            <p style=\"color:#374151; font-size:16px;\">Dear <strong>" . htmlspecialchars($studentName) . "</strong>,</p>
-            <p style=\"color:#374151;\">
-              Congratulations! All signatories have cleared you for the
-              <strong>" . htmlspecialchars($clearanceName) . "</strong> clearance.
-              Your clearance is now <strong>complete</strong>.
-            </p>
-            <div style=\"background:#f0fdf4; border-left:4px solid #22c55e; padding:16px; margin:20px 0; border-radius:4px;\">
-              <p style=\"color:#14532d; margin:0; font-weight:600;\">✅ Your clearance has been fully processed.</p>
-              <p style=\"color:#166534; margin:8px 0 0;\">No further action is required on your part.</p>
-            </div>
-            <p style=\"color:#374151;\">
-              Please contact your adviser or the administration office if you have any questions.
-            </p>
-            <hr style=\"border:none; border-top:1px solid #e2e8f0; margin:24px 0;\">
-            <p style=\"color:#9ca3af; font-size:13px; margin:0;\">
-              This is an automated message from the Clearance System. Do not reply to this email.
-            </p>
-          </div>
-        </div>";
+        $sigListHtml = "";
+        if (!empty($signatoryDetails)) {
+            $sigListHtml .= "<br><p><strong>Signatory Approvals:</strong></p><ul>";
+            foreach ($signatoryDetails as $sig) {
+                $office = htmlspecialchars($sig['office'] ?? 'Unknown Office');
+                $date = !empty($sig['signed_at']) ? date('M j, Y g:i A', strtotime($sig['signed_at'])) : 'Unknown Date';
+                $sigListHtml .= "<li>{$office}: Signed ({$date})</li>";
+            }
+            $sigListHtml .= "</ul><br>";
+        }
 
-        return self::sendBrevoEmail($studentEmail, $studentName, $subject, $body);
+        $body = "
+            <p>Dear <strong>" . htmlspecialchars($studentName) . "</strong>,</p>
+            <p>Congratulations! All signatories have cleared you for the <strong>" . htmlspecialchars($clearanceName) . "</strong> clearance. Your clearance is now <strong>complete</strong>.</p>
+            {$sigListHtml}
+            <p>No further action is required on your part.</p>
+            <p>Please contact your adviser or the administration office if you have any questions.</p>
+            <br>
+            <p><small>This is an automated message from the ISAT U Clearance System. Do not reply to this email.</small></p>
+        ";
+
+        return self::sendEmail($studentEmail, $studentName, $subject, $body);
+    }
+    public static function sendBulkDeficiencyEmail(array $flaggedStudents, string $officeName): bool
+    {
+        if (empty($flaggedStudents)) return true;
+
+        $allOk = true;
+        foreach ($flaggedStudents as $f) {
+            $ok = self::sendDeficiencyEmail(
+                $f['email'],
+                $f['full_name'],
+                $officeName,
+                $f['flag_note'],
+                $f['clearance_name']
+            );
+            if (!$ok) $allOk = false;
+        }
+
+        return $allOk;
+    }
+
+    public static function sendBulkClearedEmail(array $studentsData): bool
+    {
+        if (empty($studentsData)) return true;
+
+        $allOk = true;
+        foreach ($studentsData as $student) {
+            $signatoryDetails = isset($student['signatory_details']) ? $student['signatory_details'] : [];
+            $ok = self::sendClearedEmail(
+                $student['email'],
+                $student['full_name'],
+                $student['clearance_name'],
+                $signatoryDetails
+            );
+            if (!$ok) $allOk = false;
+        }
+
+        return $allOk;
     }
 }
