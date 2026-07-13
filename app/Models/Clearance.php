@@ -137,19 +137,19 @@ class Clearance extends Model
         return $stmt->fetchAll();
     }
 
-    public function assignEnrollmentCommittee(int $clearanceId, int $adviserId): void
+    public function assignEnrollmentCommittee(int $clearanceId, int $enrollmentCommitteeId): void
     {
         $stmt = $this->db->prepare("
             INSERT IGNORE INTO clearance_enrollment_committees (clearance_id, enrollment_committee_id) VALUES (?, ?)
         ");
-        $stmt->execute([$clearanceId, $adviserId]);
+        $stmt->execute([$clearanceId, $enrollmentCommitteeId]);
     }
 
-    public function removeEnrollmentCommittee(int $clearanceId, int $adviserId): void
+    public function removeEnrollmentCommittee(int $clearanceId, int $enrollmentCommitteeId): void
     {
         $this->db->prepare("
             DELETE FROM clearance_enrollment_committees WHERE clearance_id = ? AND enrollment_committee_id = ?
-        ")->execute([$clearanceId, $adviserId]);
+        ")->execute([$clearanceId, $enrollmentCommitteeId]);
     }
 
     // ---- STUDENTS ----

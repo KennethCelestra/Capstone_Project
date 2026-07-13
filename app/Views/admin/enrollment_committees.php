@@ -30,10 +30,14 @@
                             <td class="py-3 px-4"><?= htmlspecialchars($a['email']) ?></td>
                             <td class="py-3 px-4"><span class="badge badge-info"><?= htmlspecialchars($a['department']) ?></span></td>
                             <td class="py-3 px-4">
-                                <span class="password-pill">********</span>
+                                <?php if (!empty($a['temp_password'])): ?>
+                                    <span class="badge bg-warning text-dark" style="font-family: monospace;" title="Temporary Password">Temp: <?= htmlspecialchars($a['temp_password']) ?></span>
+                                <?php else: ?>
+                                    <span class="password-pill">********</span>
+                                <?php endif; ?>
                             </td>
-                            <td class="py-3 px-4">
-                                <div style="display:flex; gap:.5rem; justify-content:flex-end; align-items:center;">
+                            <td class="py-3 px-4 text-end">
+                                <div style="display:inline-flex; gap:.5rem; align-items:center;">
                                     <button class="btn btn-secondary btn-sm"
                                             onclick="openEditEnrollmentCommittee(<?= $a['id'] ?>, '<?= htmlspecialchars(addslashes($a['full_name'])) ?>', '<?= htmlspecialchars(addslashes($a['email'])) ?>', '<?= htmlspecialchars(addslashes($a['department'])) ?>')">
                                         <i class="bi bi-pencil"></i> Edit
@@ -53,7 +57,7 @@
     </div>
 </div>
 
-<!-- ====== Add Adviser Modal ====== -->
+<!-- ====== Add Enrollment Committee Modal ====== -->
 <div id="addEnrollmentCommitteeModal" class="modal" style="display:none;">
     <div class="modal-box">
         <div class="modal-header">
@@ -67,7 +71,7 @@
             </div>
             <div class="form-group">
                 <label>Email *</label>
-                <input type="email" name="email" required placeholder="adviser@school.edu">
+                <input type="email" name="email" required placeholder="committee@school.edu">
             </div>
             <div class="form-group">
                 <label>Department *</label>
@@ -86,14 +90,14 @@
     </div>
 </div>
 
-<!-- ====== Edit Adviser Modal ====== -->
+<!-- ====== Edit Enrollment Committee Modal ====== -->
 <div id="editEnrollmentCommitteeModal" class="modal" style="display:none;">
     <div class="modal-box">
         <div class="modal-header">
             <h3>Edit Enrollment Committee Member</h3>
             <button onclick="document.getElementById('editEnrollmentCommitteeModal').style.display='none'" class="close-btn">✕</button>
         </div>
-        <form action="<?= BASE_URL ?>admin/enrollment-committees/edit" method="POST" class="modal-form">
+        <form action="<?= BASE_URL ?>admin/enrollment-committees/edit" method="POST" class="modal-form" id="editAdvForm" onsubmit="return validateEditForm(event, this, 'editAdvAdminPassword')">
             <input type="hidden" name="id" id="editAdvId">
             <div class="form-group">
                 <label>Full Name *</label>
@@ -109,7 +113,11 @@
             </div>
             <div class="form-group">
                 <label>New Password <small class="text-muted">(leave blank to keep current)</small></label>
-                <input type="text" name="password" id="editAdvPassword" placeholder="Leave blank to keep">
+                <input type="text" name="password" id="editAdvPassword" placeholder="Leave blank to keep" oninput="toggleAdminPasswordReq(this, 'editAdvAdminPassword')">
+            </div>
+            <div class="form-group" id="editAdvAdminPasswordGroup" style="display:none;">
+                <label>Admin Password <small class="text-danger">*Required for password change</small></label>
+                <input type="password" name="admin_password" id="editAdvAdminPassword" placeholder="Enter your admin password">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
@@ -127,6 +135,61 @@ function openEditEnrollmentCommittee(id, name, email, dept) {
     document.getElementById('editAdvEmail').value  = email;
     document.getElementById('editAdvDept').value   = dept;
     document.getElementById('editAdvPassword').value = '';
+    document.getElementById('editAdvAdminPassword').value = '';
+    document.getElementById('editAdvAdminPassword').required = false;
+    document.getElementById('editAdvAdminPasswordGroup').style.display = 'none';
     document.getElementById('editEnrollmentCommitteeModal').style.display = 'flex';
+}
+
+function toggleAdminPasswordReq(input, adminPassId) {
+    const adminPassInput = document.getElementById(adminPassId);
+    const group = document.getElementById(adminPassId + 'Group');
+    if (input.value.trim() !== '') {
+        group.style.display = 'block';
+        adminPassInput.required = true;
+    } else {
+        group.style.display = 'none';
+        adminPassInput.required = false;
+        adminPassInput.value = '';
+        // clear errors if any
+        adminPassInput.classList.remove('border-danger');
+        const err = document.getElementById(adminPassId + 'Error');
+        if (err) err.remove();
+    }
+}
+
+async function validateEditForm(event, form, adminPassId) {
+    const adminPassInput = document.getElementById(adminPassId);
+    if (adminPassInput && adminPassInput.required && adminPassInput.value.trim() !== '') {
+        event.preventDefault();
+        try {
+            const formData = new FormData();
+            formData.append('admin_password', adminPassInput.value);
+            const response = await fetch('<?= BASE_URL ?>admin/verify-password', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if (!result.valid) {
+                const group = document.getElementById(adminPassId + 'Group');
+                let err = document.getElementById(adminPassId + 'Error');
+                if (!err) {
+                    err = document.createElement('small');
+                    err.id = adminPassId + 'Error';
+                    err.className = 'text-danger d-block mt-1';
+                    group.appendChild(err);
+                }
+                err.textContent = 'Incorrect admin password. Please try again.';
+                adminPassInput.classList.add('border-danger');
+                return false;
+            } else {
+                form.submit();
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        return false;
+    }
+    return true;
 }
 </script>

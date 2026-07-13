@@ -30,7 +30,7 @@ $cid = $clearance['id'];
         Signatories (<?= count($assignedSignatories) ?>)
     </button>
     <button class="tab-btn" onclick="showTab('tab-adv', this)">
-        Enrollment Committee (<?= count($assignedAdvisers) ?>)
+        Enrollment Committee (<?= count($assignedEnrollmentCommittees) ?>)
     </button>
     <button class="tab-btn" onclick="showTab('tab-stu', this)">
         Students (<?= count($students) ?>)
@@ -74,7 +74,7 @@ $cid = $clearance['id'];
     <?php endif; ?>
 </div>
 
-<!-- ===== TAB: Enrollment Committee / Advisers ===== -->
+<!-- ===== TAB: Enrollment Committee ===== -->
 <div id="tab-adv" class="tab-content" style="display:none">
     <div class="section-header">
         <h3>Assigned Enrollment Committee</h3>
@@ -83,14 +83,14 @@ $cid = $clearance['id'];
             + Assign Member
         </button>
     </div>
-    <?php if (empty($assignedAdvisers)): ?>
+    <?php if (empty($assignedEnrollmentCommittees)): ?>
         <p class="text-muted">No enrollment committee members assigned yet (optional).</p>
     <?php else: ?>
         <div class="table-container">
             <table class="data-table">
                 <thead><tr><th>Name</th><th>Department</th><th>Email</th><th>Action</th></tr></thead>
                 <tbody>
-                    <?php foreach ($assignedAdvisers as $a): ?>
+                    <?php foreach ($assignedEnrollmentCommittees as $a): ?>
                         <tr>
                             <td><?= htmlspecialchars($a['full_name']) ?></td>
                             <td><?= htmlspecialchars($a['department']) ?></td>
@@ -264,7 +264,7 @@ $cid = $clearance['id'];
     </div>
 </div>
 
-<!-- ====== Assign Adviser Modal ====== -->
+<!-- ====== Assign Enrollment Committee Modal ====== -->
 <div id="assignAdvModal" class="modal" style="display:none;">
     <div class="modal-box">
         <div class="modal-header">
@@ -275,12 +275,12 @@ $cid = $clearance['id'];
             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
             <div class="form-group">
                 <label>Select Member</label>
-                <?php if (empty($unassignedAdvisers)): ?>
+                <?php if (empty($unassignedEnrollmentCommittees)): ?>
                     <p class="text-muted" style="margin-top: 0;">No available enrollment committee members to assign. Please create more in the Enrollment Committee menu.</p>
                 <?php else: ?>
                     <select name="enrollment_committee_id" required>
                         <option value="">-- Choose Member --</option>
-                        <?php foreach ($unassignedAdvisers as $ua): ?>
+                        <?php foreach ($unassignedEnrollmentCommittees as $ua): ?>
                             <option value="<?= $ua['id'] ?>">
                                 <?= htmlspecialchars($ua['full_name']) ?> — <?= htmlspecialchars($ua['department']) ?>
                             </option>
@@ -291,7 +291,7 @@ $cid = $clearance['id'];
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
                         onclick="document.getElementById('assignAdvModal').style.display='none'">Cancel</button>
-                <?php if (!empty($unassignedAdvisers)): ?>
+                <?php if (!empty($unassignedEnrollmentCommittees)): ?>
                     <button type="submit" class="btn btn-primary">Assign</button>
                 <?php endif; ?>
             </div>

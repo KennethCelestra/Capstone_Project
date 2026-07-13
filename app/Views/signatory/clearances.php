@@ -24,49 +24,65 @@
         <p class="text-muted">You haven't been assigned to any clearance yet. Contact the administrator.</p>
     </div>
 <?php else: ?>
-    <div class="clearance-cards-grid">
-        <?php foreach ($clearances as $c): ?>
-            <?php
-            $total   = (int) $c['total_students'];
-            $flagged = (int) $c['flagged_count'];
-            $cleared = (int) $c['cleared_count'];
-            $pending = $total - $flagged - $cleared;
-            ?>
-            <a href="<?= BASE_URL ?>signatory/clearances?cid=<?= $c['clearance_id'] ?>"
-               class="clearance-card <?= $flagged > 0 ? 'card-has-flags border-danger' : '' ?>">
-                <div class="cc-header">
-                    <div class="cc-title">
-                        <strong><?= htmlspecialchars($c['clearance_name']) ?></strong>
-                        <?php if (!empty($c['school_year'])): ?>
-                            <span class="cc-year badge bg-light text-dark ms-2"><?= htmlspecialchars($c['school_year']) ?></span>
-                        <?php endif; ?>
-                    </div>
-                </div>
-                <div class="cc-stats mt-3 d-flex justify-content-between">
-                    <div class="cc-stat text-center">
-                        <span class="cc-stat-num d-block fw-bold fs-5 text-dark"><?= $total ?></span>
-                        <span class="cc-stat-lbl text-muted small">Students</span>
-                    </div>
-                    <?php if ($flagged > 0): ?>
-                    <div class="cc-stat cc-stat-flagged text-center">
-                        <span class="cc-stat-num d-block fw-bold fs-5 text-danger"><?= $flagged ?></span>
-                        <span class="cc-stat-lbl text-danger small">Flagged</span>
-                    </div>
-                    <?php endif; ?>
-                    <div class="cc-stat cc-stat-cleared text-center">
-                        <span class="cc-stat-num d-block fw-bold fs-5 text-success"><?= $cleared ?></span>
-                        <span class="cc-stat-lbl text-success small">Cleared</span>
-                    </div>
-                    <div class="cc-stat cc-stat-pending text-center">
-                        <span class="cc-stat-num d-block fw-bold fs-5 text-warning"><?= $pending ?></span>
-                        <span class="cc-stat-lbl text-warning small">Pending</span>
-                    </div>
-                </div>
-                <div class="cc-footer mt-3 pt-2 border-top text-end">
-                    <span class="cc-open text-primary"><i class="bi bi-folder2-open"></i> Open →</span>
-                </div>
-            </a>
-        <?php endforeach; ?>
+    <div class="gold-card" style="background:#fff; border-radius:8px; overflow:hidden;">
+        <div class="table-responsive">
+            <table class="data-table" style="width: 100%;">
+                <thead>
+                    <tr style="background: var(--surface2);">
+                        <th class="py-3 px-4">Clearance Name</th>
+                        <th class="py-3 px-4">School Year</th>
+                        <th class="py-3 px-4 text-center">Students</th>
+                        <th class="py-3 px-4 text-center">Pending</th>
+                        <th class="py-3 px-4 text-center">Flagged</th>
+                        <th class="py-3 px-4 text-center">Cleared</th>
+                        <th class="py-3 px-4 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($clearances as $c): ?>
+                        <?php
+                        $total   = (int) $c['total_students'];
+                        $flagged = (int) $c['flagged_count'];
+                        $cleared = (int) $c['cleared_count'];
+                        $pending = $total - $flagged - $cleared;
+                        ?>
+                        <tr class="border-bottom">
+                            <td class="py-3 px-4">
+                                <strong><?= htmlspecialchars($c['clearance_name']) ?></strong>
+                            </td>
+                            <td class="py-3 px-4"><?= htmlspecialchars($c['school_year'] ?? '') ?></td>
+                            <td class="py-3 px-4 text-center"><span class="badge badge-info"><?= $total ?></span></td>
+                            <td class="py-3 px-4 text-center">
+                                <?php if ($pending > 0): ?>
+                                    <span class="badge badge-warning text-dark"><?= $pending ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <?php if ($flagged > 0): ?>
+                                    <span class="badge badge-danger"><?= $flagged ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <?php if ($cleared > 0): ?>
+                                    <span class="badge badge-success"><?= $cleared ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="py-3 px-4 text-end">
+                                <a href="<?= BASE_URL ?>signatory/clearances?cid=<?= $c['clearance_id'] ?>" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 <?php endif; ?>
 
@@ -94,7 +110,7 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
     </div>
     <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
         <button type="button" class="btn btn-primary" onclick="openConfirmAllModal()">
-            <i class="bi bi-check-all"></i> Confirm All Pending
+            Confirm All
         </button>
     </div>
 </div>
@@ -279,7 +295,7 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
 <div id="confirm-all-modal" class="modal" style="display:none;" onclick="closeConfirmAllModalOnOverlay(event)">
     <div class="modal-box">
         <div class="modal-header">
-            <h3>Confirm All Pending</h3>
+            <h3>Confirm All</h3>
             <button type="button" class="modal-close" onclick="closeConfirmAllModal()">✕</button>
         </div>
         <form action="<?= BASE_URL ?>signatory/confirm-all" method="POST" id="confirm-all-form-modal">
@@ -290,7 +306,7 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeConfirmAllModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary" id="confirm-all-btn-modal" onclick="this.disabled=true; this.innerHTML='<span class=\'spinner-border spinner-border-sm\'></span> Processing...'; this.form.submit();">Confirm All Pending</button>
+                <button type="submit" class="btn btn-primary" id="confirm-all-btn-modal" onclick="this.disabled=true; this.innerHTML='<span class=\'spinner-border spinner-border-sm\'></span> Processing...'; this.form.submit();">Confirm All</button>
             </div>
         </form>
     </div>

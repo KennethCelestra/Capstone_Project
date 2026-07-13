@@ -22,8 +22,9 @@ $routes = [
     // ---- Auth (Admin) — redirects to shared login ----
     'GET /admin/login'                            => ['AuthController', 'adminLogin'],
 
-    // ---- Admin: Dashboard ----
+    // ---- Admin: Dashboard & Security ----
     'GET /admin/dashboard'                        => ['AdminController', 'dashboard'],
+    'POST /admin/verify-password'                 => ['AdminController', 'verifyPassword'],
 
     // ---- Admin: Students ----
     'GET /admin/students'                         => ['AdminController', 'students'],

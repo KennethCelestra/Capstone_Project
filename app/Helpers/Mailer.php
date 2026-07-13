@@ -117,7 +117,7 @@ class Mailer
             <p>Congratulations! All signatories have cleared you for the <strong>" . htmlspecialchars($clearanceName) . "</strong> clearance. Your clearance is now <strong>complete</strong>.</p>
             {$sigListHtml}
             <p>No further action is required on your part.</p>
-            <p>Please contact your adviser or the administration office if you have any questions.</p>
+            <p>Please contact your enrollment committee or the administration office if you have any questions.</p>
             <br>
             <p><small>This is an automated message from the ISAT U Clearance System. Do not reply to this email.</small></p>
         ";

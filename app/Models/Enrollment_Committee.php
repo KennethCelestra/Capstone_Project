@@ -7,14 +7,15 @@ class Enrollment_Committee extends Model
     public function create(array $data): bool
     {
         $stmt = $this->db->prepare("
-            INSERT INTO enrollment_committees (full_name, email, department, password)
-            VALUES (:full_name, :email, :department, :password)
+            INSERT INTO enrollment_committees (full_name, email, department, password, temp_password)
+            VALUES (:full_name, :email, :department, :password, :temp_password)
         ");
         return $stmt->execute([
             ':full_name'      => $data['full_name'],
             ':email'          => $data['email'],
             ':department'     => $data['department'],
             ':password'       => password_hash($data['password'], PASSWORD_DEFAULT),
+            ':temp_password'  => $data['password'],
         ]);
     }
 
@@ -24,7 +25,7 @@ class Enrollment_Committee extends Model
             $stmt = $this->db->prepare("
                 UPDATE enrollment_committees
                 SET full_name = :full_name, email = :email, department = :department,
-                    password = :password
+                    password = :password, temp_password = :temp_password
                 WHERE id = :id
             ");
             return $stmt->execute([
@@ -32,6 +33,7 @@ class Enrollment_Committee extends Model
                 ':email'          => $data['email'],
                 ':department'     => $data['department'],
                 ':password'       => password_hash($data['password'], PASSWORD_DEFAULT),
+                ':temp_password'  => $data['password'],
                 ':id'             => $id,
             ]);
         } else {
@@ -51,7 +53,7 @@ class Enrollment_Committee extends Model
 
     public function updatePassword(int $id, string $hashedPassword): bool
     {
-        $stmt = $this->db->prepare("UPDATE enrollment_committees SET password = :password WHERE id = :id");
+        $stmt = $this->db->prepare("UPDATE enrollment_committees SET password = :password, temp_password = NULL WHERE id = :id");
         return $stmt->execute([
             ':password' => $hashedPassword,
             ':id'       => $id,

@@ -50,7 +50,7 @@ class ClearanceStatus extends Model
                 ON cs.clearance_id = c.id
                AND cs.student_id   = cst.student_id
                AND cs.signatory_id = ?
-            WHERE csig.signatory_id = ?
+            WHERE csig.signatory_id = ? AND c.archived = 0
             GROUP BY c.id, c.name, c.school_year
             ORDER BY c.name ASC
         ");
@@ -250,7 +250,7 @@ class ClearanceStatus extends Model
                 ON cs.clearance_id = c.id
                AND cs.student_id   = st.id
                AND cs.signatory_id = csig.signatory_id
-            WHERE ca.enrollment_committee_id = ?
+            WHERE ca.enrollment_committee_id = ? AND c.archived = 0
             GROUP BY c.id, c.name, c.school_year,
                      st.id, st.student_id, st.last_name, st.first_name, st.college, st.email,
                      st.course, st.year_level, st.section
@@ -262,7 +262,7 @@ class ClearanceStatus extends Model
 
     /**
      * Get per-signatory flag detail for a specific student in a clearance.
-     * Used by adviser to see exactly who flagged and why.
+     * Used by enrollment committee to see exactly who flagged and why.
      */
     public function getSignatoryDetailForStudent(int $clearanceId, int $studentId): array
     {

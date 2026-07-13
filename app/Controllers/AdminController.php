@@ -42,6 +42,20 @@ class AdminController extends Controller
         $this->view('layouts/main', array_merge($data, ['content' => 'admin/dashboard']));
     }
 
+    public function verifyPassword(): void
+    {
+        $this->requireLogin('admin');
+        header('Content-Type: application/json');
+        $adminPass = $this->getPost('admin_password', '');
+        $adminUser = $this->adminModel->findById((int) $_SESSION['user_id']);
+        if ($adminUser && password_verify($adminPass, $adminUser['password'])) {
+            echo json_encode(['valid' => true]);
+        } else {
+            echo json_encode(['valid' => false]);
+        }
+        exit;
+    }
+
     // ================================================================
     //  STUDENTS
     // ================================================================
@@ -193,6 +207,22 @@ class AdminController extends Controller
             'department' => $this->getPost('department'),
             'password'   => $this->getPost('password', ''),
         ];
+        
+        if (!empty($data['password'])) {
+            $adminPass = $this->getPost('admin_password', '');
+            if (empty($adminPass)) {
+                $this->setFlash('error', 'Admin password is required to change user password.');
+                $this->redirect('admin/enrollment-committees');
+                return;
+            }
+            $adminUser = $this->adminModel->findById((int) $_SESSION['user_id']);
+            if (!$adminUser || !password_verify($adminPass, $adminUser['password'])) {
+                $this->setFlash('error', 'Incorrect admin password. Changes not saved.');
+                $this->redirect('admin/enrollment-committees');
+                return;
+            }
+        }
+        
         $this->enrollmentCommitteeModel->update($id, $data);
         $this->setFlash('success', 'Enrollment Committee member updated successfully.');
         $this->redirect('admin/enrollment-committees');
@@ -255,6 +285,22 @@ class AdminController extends Controller
             'office'    => $this->getPost('office'),
             'password'  => $this->getPost('password', ''),
         ];
+        
+        if (!empty($data['password'])) {
+            $adminPass = $this->getPost('admin_password', '');
+            if (empty($adminPass)) {
+                $this->setFlash('error', 'Admin password is required to change user password.');
+                $this->redirect('admin/signatories');
+                return;
+            }
+            $adminUser = $this->adminModel->findById((int) $_SESSION['user_id']);
+            if (!$adminUser || !password_verify($adminPass, $adminUser['password'])) {
+                $this->setFlash('error', 'Incorrect admin password. Changes not saved.');
+                $this->redirect('admin/signatories');
+                return;
+            }
+        }
+        
         $this->signatoryModel->update($id, $data);
         $this->setFlash('success', 'Signatory updated successfully.');
         $this->redirect('admin/signatories');
@@ -380,8 +426,8 @@ class AdminController extends Controller
             'clearance'           => $clearance,
             'assignedSignatories' => $this->clearanceModel->getSignatories($id),
             'unassignedSignatories' => $this->signatoryModel->findUnassigned($id),
-            'assignedAdvisers'    => $this->clearanceModel->getEnrollmentCommittees($id),
-            'unassignedAdvisers'  => $this->enrollmentCommitteeModel->findUnassigned($id),
+            'assignedEnrollmentCommittees' => $this->clearanceModel->getEnrollmentCommittees($id),
+            'unassignedEnrollmentCommittees' => $this->enrollmentCommitteeModel->findUnassigned($id),
             'students'            => $this->clearanceModel->getStudentsWithStatus($id),
             'flash'               => $this->getFlash(),
             'userName'            => $_SESSION['user_name'],
@@ -435,8 +481,8 @@ class AdminController extends Controller
     {
         $this->requireLogin('admin');
         $clearanceId = (int) $this->getPost('clearance_id');
-        $adviserId   = (int) $this->getPost('enrollment_committee_id');
-        $this->clearanceModel->assignEnrollmentCommittee($clearanceId, $adviserId);
+        $enrollmentCommitteeId = (int) $this->getPost('enrollment_committee_id');
+        $this->clearanceModel->assignEnrollmentCommittee($clearanceId, $enrollmentCommitteeId);
         $this->setFlash('success', 'Enrollment Committee member assigned to clearance.');
         $this->redirect("admin/clearances/detail?id={$clearanceId}");
     }
@@ -445,13 +491,13 @@ class AdminController extends Controller
     {
         $this->requireLogin('admin');
         $clearanceId = (int) $this->getPost('clearance_id');
-        $adviserIds  = $this->getPost('enrollment_committee_ids', []);
+        $enrollmentCommitteeIds = $this->getPost('enrollment_committee_ids', []);
         
-        if (!empty($adviserIds)) {
-            foreach ((array) $adviserIds as $aid) {
+        if (!empty($enrollmentCommitteeIds)) {
+            foreach ((array) $enrollmentCommitteeIds as $aid) {
                 $this->clearanceModel->assignEnrollmentCommittee($clearanceId, (int) $aid);
             }
-            $count = count($adviserIds);
+            $count = count($enrollmentCommitteeIds);
             $this->setFlash('success', "{$count} enrollment committee member" . ($count === 1 ? '' : 's') . " assigned.");
         } else {
             $this->setFlash('success', 'Clearance setup complete. No enrollment committee assigned.');
@@ -463,8 +509,8 @@ class AdminController extends Controller
     {
         $this->requireLogin('admin');
         $clearanceId = (int) $this->getPost('clearance_id');
-        $adviserId   = (int) $this->getPost('enrollment_committee_id');
-        $this->clearanceModel->removeEnrollmentCommittee($clearanceId, $adviserId);
+        $enrollmentCommitteeId = (int) $this->getPost('enrollment_committee_id');
+        $this->clearanceModel->removeEnrollmentCommittee($clearanceId, $enrollmentCommitteeId);
         $this->setFlash('success', 'Enrollment Committee member removed from clearance.');
         $this->redirect("admin/clearances/detail?id={$clearanceId}");
     }

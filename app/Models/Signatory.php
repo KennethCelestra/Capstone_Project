@@ -7,14 +7,15 @@ class Signatory extends Model
     public function create(array $data): bool
     {
         $stmt = $this->db->prepare("
-            INSERT INTO signatories (full_name, email, office, password)
-            VALUES (:full_name, :email, :office, :password)
+            INSERT INTO signatories (full_name, email, office, password, temp_password)
+            VALUES (:full_name, :email, :office, :password, :temp_password)
         ");
         return $stmt->execute([
             ':full_name'      => $data['full_name'],
             ':email'          => $data['email'],
             ':office'         => $data['office'],
             ':password'       => password_hash($data['password'], PASSWORD_DEFAULT),
+            ':temp_password'  => $data['password'],
         ]);
     }
 
@@ -25,7 +26,7 @@ class Signatory extends Model
             $stmt = $this->db->prepare("
                 UPDATE signatories
                 SET full_name = :full_name, email = :email, office = :office,
-                    password = :password
+                    password = :password, temp_password = :temp_password
                 WHERE id = :id
             ");
             return $stmt->execute([
@@ -33,6 +34,7 @@ class Signatory extends Model
                 ':email'          => $data['email'],
                 ':office'         => $data['office'],
                 ':password'       => password_hash($data['password'], PASSWORD_DEFAULT),
+                ':temp_password'  => $data['password'],
                 ':id'             => $id,
             ]);
         } else {
@@ -52,7 +54,7 @@ class Signatory extends Model
 
     public function updatePassword(int $id, string $hashedPassword): bool
     {
-        $stmt = $this->db->prepare("UPDATE signatories SET password = :password WHERE id = :id");
+        $stmt = $this->db->prepare("UPDATE signatories SET password = :password, temp_password = NULL WHERE id = :id");
         return $stmt->execute([
             ':password' => $hashedPassword,
             ':id'       => $id,

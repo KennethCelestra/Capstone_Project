@@ -22,14 +22,15 @@ CREATE TABLE IF NOT EXISTS `admins` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------
--- Table: advisers
+-- Table: enrollment_committees
 -- ------------------------------------------------
-CREATE TABLE IF NOT EXISTS `advisers` (
+CREATE TABLE IF NOT EXISTS `enrollment_committees` (
     `id`             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `full_name`      VARCHAR(150) NOT NULL,
     `email`          VARCHAR(150) NOT NULL UNIQUE,
     `department`     VARCHAR(150) NOT NULL,
     `password`       VARCHAR(255) NOT NULL,
+    `temp_password`  VARCHAR(255) DEFAULT NULL,
     `created_at`     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -42,6 +43,7 @@ CREATE TABLE IF NOT EXISTS `signatories` (
     `email`          VARCHAR(150) NOT NULL UNIQUE,
     `office`         VARCHAR(150) NOT NULL,
     `password`       VARCHAR(255) NOT NULL,
+    `temp_password`  VARCHAR(255) DEFAULT NULL,
     `created_at`     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -99,16 +101,16 @@ CREATE TABLE IF NOT EXISTS `clearance_signatories` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------
--- Table: clearance_advisers (pivot)
+-- Table: clearance_enrollment_committees (pivot)
 -- ------------------------------------------------
-CREATE TABLE IF NOT EXISTS `clearance_advisers` (
-    `clearance_id` INT UNSIGNED NOT NULL,
-    `adviser_id`   INT UNSIGNED NOT NULL,
-    PRIMARY KEY (`clearance_id`, `adviser_id`),
+CREATE TABLE IF NOT EXISTS `clearance_enrollment_committees` (
+    `clearance_id`           INT UNSIGNED NOT NULL,
+    `enrollment_committee_id` INT UNSIGNED NOT NULL,
+    PRIMARY KEY (`clearance_id`, `enrollment_committee_id`),
     CONSTRAINT `fk_ca_clearance`
         FOREIGN KEY (`clearance_id`) REFERENCES `clearances`(`id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_ca_adviser`
-        FOREIGN KEY (`adviser_id`) REFERENCES `advisers`(`id`) ON DELETE CASCADE
+    CONSTRAINT `fk_ca_enrollment_committee`
+        FOREIGN KEY (`enrollment_committee_id`) REFERENCES `enrollment_committees`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------
