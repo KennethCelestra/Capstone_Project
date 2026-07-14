@@ -301,7 +301,7 @@ $totalFlagged = (int) ($c['flagged_count'] ?? $cFlagged);
         <form action="<?= BASE_URL ?>signatory/confirm-all" method="POST" id="confirm-all-form-modal">
             <input type="hidden" name="clearance_id" value="<?= $selectedCid ?>">
             <div class="modal-body">
-                <p>This will clear all pending students and send deficiency emails to <strong><?= $totalFlagged ?></strong> flagged student(s).</p>
+                <p>This will clear all pending students.</p>
                 <p>Are you sure you want to continue?</p>
             </div>
             <div class="modal-footer">

@@ -19,7 +19,7 @@ class Student extends Model
             ':course'     => $data['course'],
             ':year_level' => $data['year_level'],
             ':section'    => $data['section'],
-            ':password'   => password_hash($data['password'], PASSWORD_DEFAULT),
+            ':password'   => '', // Students do not log in
         ]);
     }
 
@@ -52,7 +52,7 @@ class Student extends Model
                 ':course'     => trim($row['course'] ?? ''),
                 ':year_level' => (int) ($row['year_level'] ?? 1),
                 ':section'    => trim($row['section'] ?? ''),
-                ':password'   => password_hash(trim($row['student_id']), PASSWORD_DEFAULT), // default password = student_id
+                ':password'   => '', // Students do not log in
             ]);
             if ($ok && $stmt->rowCount() > 0) {
                 $inserted++;

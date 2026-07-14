@@ -1,66 +1,62 @@
 <?php
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
 require_once ROOT_PATH . '/vendor/autoload.php';
 
 /**
- * Simple Mailer helper using PHPMailer + Gmail SMTP.
+ * Simple Mailer helper using Brevo API.
  */
 class Mailer
 {
-    private static ?PHPMailer $mailInstance = null;
-
-    private static function getMailer(): PHPMailer
-    {
-        if (self::$mailInstance === null) {
-            self::$mailInstance = new PHPMailer(true);
-            self::$mailInstance->isSMTP();
-            self::$mailInstance->Host       = SMTP_HOST;
-            self::$mailInstance->SMTPAuth   = true;
-            self::$mailInstance->Username   = SMTP_USER;
-            self::$mailInstance->Password   = SMTP_PASS;
-            self::$mailInstance->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            self::$mailInstance->Port       = SMTP_PORT;
-            self::$mailInstance->CharSet    = 'UTF-8';
-            self::$mailInstance->setFrom(MAIL_FROM, APP_NAME);
-            // Crucial for bulk sending: keep the connection open to avoid Gmail rate limits & timeouts
-            self::$mailInstance->SMTPKeepAlive = true; 
-        }
-        return self::$mailInstance;
-    }
-
     public static function sendEmail(string $toEmail, string $toName, string $subject, string $htmlContent): bool
     {
+        $apiKey = defined('BREVO_API_KEY') ? BREVO_API_KEY : '';
+        
+        if (empty($apiKey) || $apiKey === 'YOUR_BREVO_API_KEY_HERE') {
+            // Fallback to logging if no API key is set
+            $logFile = ROOT_PATH . '/storage/logs/emails.txt';
+            if (!is_dir(dirname($logFile))) {
+                mkdir(dirname($logFile), 0777, true);
+            }
+            $logEntry = "[" . date('Y-m-d H:i:s') . "] MISSING_API_KEY | To: {$toEmail} | Subject: {$subject}\n";
+            file_put_contents($logFile, $logEntry, FILE_APPEND);
+            return false;
+        }
+
+        $data = [
+            'sender' => ['name' => APP_NAME, 'email' => MAIL_FROM],
+            'to' => [
+                ['email' => $toEmail, 'name' => $toName]
+            ],
+            'subject' => $subject,
+            'htmlContent' => $htmlContent
+        ];
+
+        $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'accept: application/json',
+            'api-key: ' . $apiKey,
+            'content-type: application/json'
+        ]);
+
         // Give the script more time when sending emails
         set_time_limit(300);
-        
-        try {
-            $mail = self::getMailer();
-            
-            // Reset state from previous emails
-            $mail->clearAllRecipients();
-            $mail->clearAttachments();
-            
-            // Recipients
-            $mail->addAddress($toEmail, $toName);
 
-            // Content
-            $mail->isHTML(true);
-            $mail->Subject = $subject;
-            $mail->Body    = $htmlContent;
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
 
-            $mail->send();
+        if ($httpCode === 201) {
             return true;
-        } catch (Exception $e) {
+        } else {
             // Log API errors for debugging
             $logFile = ROOT_PATH . '/storage/logs/emails.txt';
             if (!is_dir(dirname($logFile))) {
                 mkdir(dirname($logFile), 0777, true);
             }
-            $mail = self::getMailer();
-            $logEntry = "[" . date('Y-m-d H:i:s') . "] SMTP_ERROR | " . $mail->ErrorInfo . "\n";
+            $logEntry = "[" . date('Y-m-d H:i:s') . "] BREVO_ERROR | Code: {$httpCode} | Response: {$response}\n";
             file_put_contents($logFile, $logEntry, FILE_APPEND);
             return false;
         }

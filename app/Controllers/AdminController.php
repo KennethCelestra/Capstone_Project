@@ -147,11 +147,17 @@ class AdminController extends Controller
         if ($clearanceId > 0) {
             $csvIds     = array_column($rows, 'student_id');
             $unEnrolled = $this->studentModel->findNotInClearance($clearanceId);
+            
+            $studentIdsToEnroll = [];
             foreach ($unEnrolled as $st) {
                 if (in_array($st['student_id'], $csvIds)) {
-                    $this->clearanceModel->enrollStudent($clearanceId, (int) $st['id']);
-                    $enrolledCount++;
+                    $studentIdsToEnroll[] = (int) $st['id'];
                 }
+            }
+            
+            if (!empty($studentIdsToEnroll)) {
+                $this->clearanceModel->bulkEnrollStudents($clearanceId, $studentIdsToEnroll);
+                $enrolledCount = count($studentIdsToEnroll);
             }
         }
 
@@ -442,7 +448,18 @@ class AdminController extends Controller
         $this->requireLogin('admin');
         $clearanceId = (int) $this->getPost('clearance_id');
         $signatoryId = (int) $this->getPost('signatory_id');
-        $this->clearanceModel->assignSignatory($clearanceId, $signatoryId);
+        
+        $scopeType = $this->getPost('scope_type', '');
+        $scopeValue = null;
+        if ($scopeType === 'college') {
+            $scopeValue = $this->getPost('scope_college', '');
+        } elseif ($scopeType === 'course') {
+            $scopeValue = $this->getPost('scope_course', '');
+        } else {
+            $scopeType = null;
+        }
+
+        $this->clearanceModel->assignSignatory($clearanceId, $signatoryId, $scopeType, $scopeValue);
         $this->setFlash('success', 'Signatory assigned to clearance.');
         $this->redirect("admin/clearances/detail?id={$clearanceId}");
     }

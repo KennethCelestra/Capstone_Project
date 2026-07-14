@@ -20,9 +20,6 @@ define('DB_NAME', 'clearance_system');
 // Session Configuration
 define('SESSION_NAME', 'clearance_sess');
 
-// Mail Configuration (Gmail SMTP)
-define('MAIL_FROM', 'kencelestra637@gmail.com');
-define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_USER', 'kencelestra637@gmail.com');
-define('SMTP_PASS', 'snnbxkenoztxvotn');
-define('SMTP_PORT', 587);
+// Mail Configuration (Brevo API)
+define('MAIL_FROM', 'kenneth.celestra@students.isatu.edu.ph');
+define('BREVO_API_KEY', 'your_brevo_api_key_here');

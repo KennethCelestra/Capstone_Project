@@ -89,7 +89,8 @@ class Clearance extends Model
     public function getSignatories(int $clearanceId): array
     {
         $stmt = $this->db->prepare("
-            SELECT s.* FROM signatories s
+            SELECT s.*, cs.scope_type, cs.scope_value 
+            FROM signatories s
             JOIN clearance_signatories cs ON cs.signatory_id = s.id
             WHERE cs.clearance_id = ?
             ORDER BY s.full_name ASC
@@ -98,21 +99,26 @@ class Clearance extends Model
         return $stmt->fetchAll();
     }
 
-    public function assignSignatory(int $clearanceId, int $signatoryId): void
+    public function assignSignatory(int $clearanceId, int $signatoryId, ?string $scopeType = null, ?string $scopeValue = null): void
     {
+        // Avoid duplicate assignment error by doing ON DUPLICATE KEY UPDATE for scope changes
         $stmt = $this->db->prepare("
-            INSERT IGNORE INTO clearance_signatories (clearance_id, signatory_id) VALUES (?, ?)
+            INSERT INTO clearance_signatories (clearance_id, signatory_id, scope_type, scope_value) 
+            VALUES (?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE scope_type = VALUES(scope_type), scope_value = VALUES(scope_value)
         ");
-        $stmt->execute([$clearanceId, $signatoryId]);
+        $stmt->execute([$clearanceId, $signatoryId, $scopeType, $scopeValue]);
 
-        // Initialize status rows for all enrolled students in this clearance
-        $students = $this->getStudentIds($clearanceId);
-        $statusStmt = $this->db->prepare("
-            INSERT IGNORE INTO clearance_status (clearance_id, student_id, signatory_id)
-            VALUES (?, ?, ?)
-        ");
-        foreach ($students as $sid) {
-            $statusStmt->execute([$clearanceId, $sid, $signatoryId]);
+        // Initialize status rows ONLY for students that match this scope
+        $students = $this->getStudentIds($clearanceId, $scopeType, $scopeValue);
+        if (!empty($students)) {
+            $statusStmt = $this->db->prepare("
+                INSERT IGNORE INTO clearance_status (clearance_id, student_id, signatory_id)
+                VALUES (?, ?, ?)
+            ");
+            foreach ($students as $sid) {
+                $statusStmt->execute([$clearanceId, $sid, $signatoryId]);
+            }
         }
     }
 
@@ -154,11 +160,27 @@ class Clearance extends Model
 
     // ---- STUDENTS ----
 
-    private function getStudentIds(int $clearanceId): array
+    private function getStudentIds(int $clearanceId, ?string $scopeType = null, ?string $scopeValue = null): array
     {
-        $stmt = $this->db->prepare("SELECT student_id FROM clearance_students WHERE clearance_id = ?");
-        $stmt->execute([$clearanceId]);
-        return $stmt->fetchAll(\PDO::FETCH_COLUMN);
+        $query = "
+            SELECT cs.student_id 
+            FROM clearance_students cs
+            JOIN students s ON s.id = cs.student_id
+            WHERE cs.clearance_id = ?
+        ";
+        $params = [$clearanceId];
+
+        if ($scopeType === 'college' && !empty($scopeValue)) {
+            $query .= " AND s.college = ?";
+            $params[] = $scopeValue;
+        } elseif ($scopeType === 'course' && !empty($scopeValue)) {
+            $query .= " AND s.course = ?";
+            $params[] = $scopeValue;
+        }
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
 
     public function getStudentsWithStatus(int $clearanceId): array
@@ -208,14 +230,55 @@ class Clearance extends Model
             INSERT IGNORE INTO clearance_students (clearance_id, student_id) VALUES (?, ?)
         ")->execute([$clearanceId, $studentDbId]);
 
-        // Create status rows for each signatory already in this clearance
-        $signatories = $this->getSignatories($clearanceId);
-        $statusStmt = $this->db->prepare("
+        // Create status rows for signatories that match this student's scope
+        $insertStatusSql = "
             INSERT IGNORE INTO clearance_status (clearance_id, student_id, signatory_id)
-            VALUES (?, ?, ?)
-        ");
-        foreach ($signatories as $sig) {
-            $statusStmt->execute([$clearanceId, $studentDbId, $sig['id']]);
+            SELECT ?, st.id, csig.signatory_id
+            FROM students st
+            JOIN clearance_signatories csig ON csig.clearance_id = ?
+            WHERE st.id = ?
+              AND (
+                  csig.scope_type IS NULL 
+                  OR (csig.scope_type = 'college' AND csig.scope_value = st.college)
+                  OR (csig.scope_type = 'course' AND csig.scope_value = st.course)
+              )
+        ";
+        $this->db->prepare($insertStatusSql)->execute([$clearanceId, $clearanceId, $studentDbId]);
+    }
+
+    public function bulkEnrollStudents(int $clearanceId, array $studentDbIds): void
+    {
+        if (empty($studentDbIds)) return;
+
+        $this->db->beginTransaction();
+        try {
+            // 1. Bulk insert into clearance_students
+            $pivotStmt = $this->db->prepare("INSERT IGNORE INTO clearance_students (clearance_id, student_id) VALUES (?, ?)");
+            foreach ($studentDbIds as $sid) {
+                $pivotStmt->execute([$clearanceId, $sid]);
+            }
+
+            // 2. Bulk insert status rows matching scopes
+            $placeholders = implode(',', array_fill(0, count($studentDbIds), '?'));
+            $insertStatusSql = "
+                INSERT IGNORE INTO clearance_status (clearance_id, student_id, signatory_id)
+                SELECT ?, st.id, csig.signatory_id
+                FROM students st
+                JOIN clearance_signatories csig ON csig.clearance_id = ?
+                WHERE st.id IN ($placeholders)
+                  AND (
+                      csig.scope_type IS NULL 
+                      OR (csig.scope_type = 'college' AND csig.scope_value = st.college)
+                      OR (csig.scope_type = 'course' AND csig.scope_value = st.course)
+                  )
+            ";
+            $params = array_merge([$clearanceId, $clearanceId], $studentDbIds);
+            $this->db->prepare($insertStatusSql)->execute($params);
+
+            $this->db->commit();
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            throw $e;
         }
     }
 
