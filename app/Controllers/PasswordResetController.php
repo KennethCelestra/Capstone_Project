@@ -64,8 +64,13 @@ class PasswordResetController extends Controller
             }
         }
 
-        // Always show the same success message to prevent email enumeration
-        $this->setFlash('success', 'If that email exists in our system, a password reset link has been sent to it.');
+        if (!$userFound) {
+            $this->setFlash('error', 'That email address was not found in our system.');
+            $this->redirect('forgot-password');
+            return;
+        }
+
+        $this->setFlash('success', 'A password reset link has been sent to your email.');
         $this->redirect('login');
     }
 

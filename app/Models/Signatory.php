@@ -7,8 +7,8 @@ class Signatory extends Model
     public function create(array $data): bool
     {
         $stmt = $this->db->prepare("
-            INSERT INTO signatories (full_name, email, office, password, temp_password)
-            VALUES (:full_name, :email, :office, :password, :temp_password)
+            INSERT INTO signatories (full_name, email, office, password, temp_password, scope_type, scope_value)
+            VALUES (:full_name, :email, :office, :password, :temp_password, :scope_type, :scope_value)
         ");
         return $stmt->execute([
             ':full_name'      => $data['full_name'],
@@ -16,17 +16,19 @@ class Signatory extends Model
             ':office'         => $data['office'],
             ':password'       => password_hash($data['password'], PASSWORD_DEFAULT),
             ':temp_password'  => $data['password'],
+            ':scope_type'     => $data['scope_type'] ?? null,
+            ':scope_value'    => $data['scope_value'] ?? null,
         ]);
     }
 
     public function update(int $id, array $data): bool
     {
-        // If password is empty, don't change it
         if (!empty($data['password'])) {
             $stmt = $this->db->prepare("
                 UPDATE signatories
                 SET full_name = :full_name, email = :email, office = :office,
-                    password = :password, temp_password = :temp_password
+                    password = :password, temp_password = :temp_password,
+                    scope_type = :scope_type, scope_value = :scope_value
                 WHERE id = :id
             ");
             return $stmt->execute([
@@ -35,19 +37,24 @@ class Signatory extends Model
                 ':office'         => $data['office'],
                 ':password'       => password_hash($data['password'], PASSWORD_DEFAULT),
                 ':temp_password'  => $data['password'],
+                ':scope_type'     => $data['scope_type'] ?? null,
+                ':scope_value'    => $data['scope_value'] ?? null,
                 ':id'             => $id,
             ]);
         } else {
             $stmt = $this->db->prepare("
                 UPDATE signatories
-                SET full_name = :full_name, email = :email, office = :office
+                SET full_name = :full_name, email = :email, office = :office,
+                    scope_type = :scope_type, scope_value = :scope_value
                 WHERE id = :id
             ");
             return $stmt->execute([
-                ':full_name' => $data['full_name'],
-                ':email'     => $data['email'],
-                ':office'    => $data['office'],
-                ':id'        => $id,
+                ':full_name'   => $data['full_name'],
+                ':email'       => $data['email'],
+                ':office'      => $data['office'],
+                ':scope_type'  => $data['scope_type'] ?? null,
+                ':scope_value' => $data['scope_value'] ?? null,
+                ':id'          => $id,
             ]);
         }
     }

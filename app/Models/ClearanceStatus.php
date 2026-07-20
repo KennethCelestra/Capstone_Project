@@ -22,15 +22,16 @@ class ClearanceStatus extends Model
             FROM clearance_students cst
             JOIN students st ON st.id = cst.student_id
             JOIN clearance_signatories csig ON csig.clearance_id = cst.clearance_id AND csig.signatory_id = ?
+            JOIN signatories sg ON sg.id = csig.signatory_id
             LEFT JOIN clearance_status cs
                 ON cs.student_id   = st.id
                AND cs.clearance_id = cst.clearance_id
                AND cs.signatory_id = ?
             WHERE cst.clearance_id = ?
               AND (
-                  csig.scope_type IS NULL 
-                  OR (csig.scope_type = 'college' AND csig.scope_value = st.college)
-                  OR (csig.scope_type = 'course' AND csig.scope_value = st.course)
+                  sg.scope_type IS NULL 
+                  OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
+                  OR (sg.scope_type = 'course' AND sg.scope_value = st.course)
               )
             ORDER BY FIELD(COALESCE(cs.status, 'pending'), 'flagged', 'pending', 'cleared'), st.last_name ASC, st.first_name ASC
         ");
@@ -53,15 +54,16 @@ class ClearanceStatus extends Model
             JOIN clearances c   ON c.id  = csig.clearance_id
             JOIN clearance_students cst ON cst.clearance_id = c.id
             JOIN students st ON st.id = cst.student_id
+            JOIN signatories sg ON sg.id = csig.signatory_id
             LEFT JOIN clearance_status cs
                 ON cs.clearance_id = c.id
                AND cs.student_id   = cst.student_id
                AND cs.signatory_id = ?
             WHERE csig.signatory_id = ? AND c.archived = 0
               AND (
-                  csig.scope_type IS NULL 
-                  OR (csig.scope_type = 'college' AND csig.scope_value = st.college)
-                  OR (csig.scope_type = 'course' AND csig.scope_value = st.course)
+                  sg.scope_type IS NULL 
+                  OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
+                  OR (sg.scope_type = 'course' AND sg.scope_value = st.course)
               )
             GROUP BY c.id, c.name, c.school_year
             ORDER BY c.name ASC
@@ -144,12 +146,13 @@ class ClearanceStatus extends Model
         // Count assigned signatories RELEVANT to this student
         $stmtSig = $this->db->prepare("
             SELECT COUNT(*) FROM clearance_signatories csig
+            JOIN signatories sg ON sg.id = csig.signatory_id
             JOIN students st ON st.id = ?
             WHERE csig.clearance_id = ?
               AND (
-                  csig.scope_type IS NULL 
-                  OR (csig.scope_type = 'college' AND csig.scope_value = st.college)
-                  OR (csig.scope_type = 'course' AND csig.scope_value = st.course)
+                  sg.scope_type IS NULL 
+                  OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
+                  OR (sg.scope_type = 'course' AND sg.scope_value = st.course)
               )
         ");
         $stmtSig->execute([$studentId, $clearanceId]);
@@ -198,11 +201,12 @@ class ClearanceStatus extends Model
             WHERE st.id IN ($placeholders)
             AND (
                 SELECT COUNT(*) FROM clearance_signatories csig
+                JOIN signatories sg ON sg.id = csig.signatory_id
                 WHERE csig.clearance_id = ?
                   AND (
-                      csig.scope_type IS NULL 
-                      OR (csig.scope_type = 'college' AND csig.scope_value = st.college)
-                      OR (csig.scope_type = 'course' AND csig.scope_value = st.course)
+                      sg.scope_type IS NULL 
+                      OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
+                      OR (sg.scope_type = 'course' AND sg.scope_value = st.course)
                   )
             ) = (
                 SELECT COUNT(*) FROM clearance_status cs
@@ -212,11 +216,12 @@ class ClearanceStatus extends Model
             )
             AND (
                 SELECT COUNT(*) FROM clearance_signatories csig
+                JOIN signatories sg ON sg.id = csig.signatory_id
                 WHERE csig.clearance_id = ?
                   AND (
-                      csig.scope_type IS NULL 
-                      OR (csig.scope_type = 'college' AND csig.scope_value = st.college)
-                      OR (csig.scope_type = 'course' AND csig.scope_value = st.course)
+                      sg.scope_type IS NULL 
+                      OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
+                      OR (sg.scope_type = 'course' AND sg.scope_value = st.course)
                   )
             ) > 0
         ";
@@ -281,11 +286,17 @@ class ClearanceStatus extends Model
             JOIN clearance_students cst ON cst.clearance_id = c.id
             JOIN students   st ON st.id = cst.student_id
             JOIN clearance_signatories csig ON csig.clearance_id = c.id
+            JOIN signatories sg ON sg.id = csig.signatory_id
             LEFT JOIN clearance_status cs
                 ON cs.clearance_id = c.id
                AND cs.student_id   = st.id
                AND cs.signatory_id = csig.signatory_id
             WHERE ca.enrollment_committee_id = ? AND c.archived = 0
+              AND (
+                  sg.scope_type IS NULL 
+                  OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
+                  OR (sg.scope_type = 'course' AND sg.scope_value = st.course)
+              )
             GROUP BY c.id, c.name, c.school_year,
                      st.id, st.student_id, st.last_name, st.first_name, st.college, st.email,
                      st.course, st.year_level, st.section
@@ -314,9 +325,9 @@ class ClearanceStatus extends Model
                AND cs.student_id    = st.id
             WHERE csig.clearance_id = ?
               AND (
-                  csig.scope_type IS NULL 
-                  OR (csig.scope_type = 'college' AND csig.scope_value = st.college)
-                  OR (csig.scope_type = 'course' AND csig.scope_value = st.course)
+                  sg.scope_type IS NULL 
+                  OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
+                  OR (sg.scope_type = 'course' AND sg.scope_value = st.course)
               )
             ORDER BY sg.office ASC
         ");
@@ -343,6 +354,7 @@ class ClearanceStatus extends Model
             FROM clearance_students cst
             JOIN students st ON st.id = cst.student_id
             JOIN clearance_signatories csig ON csig.clearance_id = cst.clearance_id AND csig.signatory_id = ?
+            JOIN signatories sg ON sg.id = csig.signatory_id
             LEFT JOIN clearance_status cs
                 ON cs.student_id   = st.id
                AND cs.clearance_id = ?
@@ -350,9 +362,9 @@ class ClearanceStatus extends Model
             WHERE cst.clearance_id = ?
               AND (cs.status IS NULL OR cs.status = 'pending')
               AND (
-                  csig.scope_type IS NULL 
-                  OR (csig.scope_type = 'college' AND csig.scope_value = st.college)
-                  OR (csig.scope_type = 'course' AND csig.scope_value = st.course)
+                  sg.scope_type IS NULL 
+                  OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
+                  OR (sg.scope_type = 'course' AND sg.scope_value = st.course)
               )
         ");
         $stmt->execute([$signatoryId, $clearanceId, $signatoryId, $clearanceId]);

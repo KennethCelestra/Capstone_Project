@@ -243,57 +243,7 @@ $cid = $clearance['id'];
                 <?php endif; ?>
             </div>
             
-            <div class="form-group" style="margin-top: 1rem;">
-                <label>Student Scope <small class="text-muted">(Which students must this signatory clear?)</small></label>
 
-                <!-- Scope option cards -->
-                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-top:8px;">
-
-                    <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;" id="scope-card-global">
-                        <input type="radio" name="scope_type" value="" checked onchange="toggleScopeInputs(this.value)" style="margin:0; accent-color:var(--primary);">
-                        <i class="bi bi-globe2" style="font-size:1.2rem; color:var(--primary);"></i>
-                        <span style="font-weight:600; font-size:0.85rem; line-height:1.2;">Global<br><small style="font-weight:400; color:var(--text-muted);">All Students</small></span>
-                    </label>
-
-                    <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;" id="scope-card-college">
-                        <input type="radio" name="scope_type" value="college" onchange="toggleScopeInputs(this.value)" style="margin:0; accent-color:#0ea5e9;">
-                        <i class="bi bi-building" style="font-size:1.2rem; color:#0ea5e9;"></i>
-                        <span style="font-weight:600; font-size:0.85rem; line-height:1.2;">By College<br><small style="font-weight:400; color:var(--text-muted);">e.g. Dean</small></span>
-                    </label>
-
-                    <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;" id="scope-card-course">
-                        <input type="radio" name="scope_type" value="course" onchange="toggleScopeInputs(this.value)" style="margin:0; accent-color:#22c55e;">
-                        <i class="bi bi-journal-bookmark" style="font-size:1.2rem; color:#22c55e;"></i>
-                        <span style="font-weight:600; font-size:0.85rem; line-height:1.2;">By Course<br><small style="font-weight:400; color:var(--text-muted);">e.g. Dept. Head</small></span>
-                    </label>
-
-                </div>
-
-                <!-- College input -->
-                <div id="scope_college_container" style="display:none; margin-top:10px;">
-                    <input type="text" name="scope_college" id="scope_college_input" list="college_list"
-                           placeholder="Type or select a college (e.g. CCI)"
-                           style="width:100%;">
-                    <datalist id="college_list">
-                        <?php foreach (['CAS','CCI','CEA','CIT','COE'] as $col): ?>
-                            <option value="<?= $col ?>"></option>
-                        <?php endforeach; ?>
-                    </datalist>
-                </div>
-
-                <!-- Course input -->
-                <div id="scope_course_container" style="display:none; margin-top:10px;">
-                    <input type="text" name="scope_course" id="scope_course_input" list="course_list"
-                           placeholder="Type or select a course (e.g. BSIT)"
-                           style="width:100%;">
-                    <datalist id="course_list">
-                        <?php foreach (['BSAMT','BSArchi','BSCE','BSCS','BSECE','BSEE','BSFT','BSIS','BSIT','BSME'] as $cur): ?>
-                            <option value="<?= $cur ?>"></option>
-                        <?php endforeach; ?>
-                    </datalist>
-                </div>
-
-            </div>
 
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
@@ -386,29 +336,5 @@ function openEditClearanceDetail(id, name, desc, year) {
     document.getElementById('editClearanceDetailModal').style.display = 'flex';
 }
 
-/* ---- Scope Input Toggle ---- */
-function toggleScopeInputs(val) {
-    var colContainer = document.getElementById('scope_college_container');
-    var colInput = document.getElementById('scope_college_input');
-    var curContainer = document.getElementById('scope_course_container');
-    var curInput = document.getElementById('scope_course_input');
-    
-    colContainer.style.display = 'none';
-    colInput.required = false;
-    colInput.value = ''; // Reset when hidden
-    
-    curContainer.style.display = 'none';
-    curInput.required = false;
-    curInput.value = ''; // Reset when hidden
-    
-    if (val === 'college') {
-        colContainer.style.display = 'block';
-        colInput.required = true;
-        colInput.focus();
-    } else if (val === 'course') {
-        curContainer.style.display = 'block';
-        curInput.required = true;
-        curInput.focus();
-    }
-}
+
 </script>

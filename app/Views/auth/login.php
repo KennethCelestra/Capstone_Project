@@ -107,8 +107,8 @@
         </div>
 
         <?php if (!empty($flash)): ?>
-            <div class="alert alert-<?= $flash['type'] ?> mb-3 p-3 rounded" style="background: <?= $flash['type'] === 'danger' ? '#f8d7da' : '#d4edda' ?>; color: <?= $flash['type'] === 'danger' ? '#721c24' : '#155724' ?>; border: 1px solid <?= $flash['type'] === 'danger' ? '#f5c6cb' : '#c3e6cb' ?>; text-align: left; font-size: 0.9rem;">
-                <i class="bi <?= $flash['type'] === 'danger' ? 'bi-exclamation-octagon' : 'bi-check-circle' ?> me-2"></i> <?= htmlspecialchars($flash['message']) ?>
+            <div class="alert mb-3 p-3 rounded" style="background: <?= $flash['type'] === 'error' ? '#f8d7da' : '#d4edda' ?>; color: <?= $flash['type'] === 'error' ? 'red' : '#155724' ?>; border: 1px solid <?= $flash['type'] === 'error' ? '#f5c6cb' : '#c3e6cb' ?>; text-align: left; font-size: 0.9rem;">
+                <i class="bi <?= $flash['type'] === 'error' ? 'bi-exclamation-octagon' : 'bi-check-circle' ?> me-2"></i> <?= htmlspecialchars($flash['message']) ?>
             </div>
         <?php endif; ?>
 

@@ -11,7 +11,7 @@ class Mailer
     {
         $apiKey = defined('BREVO_API_KEY') ? BREVO_API_KEY : '';
         
-        if (empty($apiKey) || $apiKey === 'YOUR_BREVO_API_KEY_HERE') {
+        if (empty($apiKey) || strtolower($apiKey) === 'your_brevo_api_key_here') {
             // Fallback to logging if no API key is set
             $logFile = ROOT_PATH . '/storage/logs/emails.txt';
             if (!is_dir(dirname($logFile))) {

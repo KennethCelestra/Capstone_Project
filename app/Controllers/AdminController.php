@@ -211,23 +211,7 @@ class AdminController extends Controller
             'full_name'  => $this->getPost('full_name'),
             'email'      => $this->getPost('email'),
             'department' => $this->getPost('department'),
-            'password'   => $this->getPost('password', ''),
         ];
-        
-        if (!empty($data['password'])) {
-            $adminPass = $this->getPost('admin_password', '');
-            if (empty($adminPass)) {
-                $this->setFlash('error', 'Admin password is required to change user password.');
-                $this->redirect('admin/enrollment-committees');
-                return;
-            }
-            $adminUser = $this->adminModel->findById((int) $_SESSION['user_id']);
-            if (!$adminUser || !password_verify($adminPass, $adminUser['password'])) {
-                $this->setFlash('error', 'Incorrect admin password. Changes not saved.');
-                $this->redirect('admin/enrollment-committees');
-                return;
-            }
-        }
         
         $this->enrollmentCommitteeModel->update($id, $data);
         $this->setFlash('success', 'Enrollment Committee member updated successfully.');
@@ -266,11 +250,24 @@ class AdminController extends Controller
     public function addSignatory(): void
     {
         $this->requireLogin('admin');
+        
+        $scopeType = $this->getPost('scope_type', '');
+        $scopeValue = null;
+        if ($scopeType === 'college') {
+            $scopeValue = $this->getPost('scope_college', '');
+        } elseif ($scopeType === 'course') {
+            $scopeValue = $this->getPost('scope_course', '');
+        } else {
+            $scopeType = null;
+        }
+
         $data = [
-            'full_name' => $this->getPost('full_name'),
-            'email'     => $this->getPost('email'),
-            'office'    => $this->getPost('office'),
-            'password'  => $this->getPost('password'),
+            'full_name'   => $this->getPost('full_name'),
+            'email'       => $this->getPost('email'),
+            'office'      => $this->getPost('office'),
+            'password'    => $this->getPost('password'),
+            'scope_type'  => $scopeType,
+            'scope_value' => $scopeValue,
         ];
         if (in_array('', $data, true)) {
             $this->setFlash('error', 'All fields are required.');
@@ -285,27 +282,24 @@ class AdminController extends Controller
     {
         $this->requireLogin('admin');
         $id = (int) $this->getPost('id');
-        $data = [
-            'full_name' => $this->getPost('full_name'),
-            'email'     => $this->getPost('email'),
-            'office'    => $this->getPost('office'),
-            'password'  => $this->getPost('password', ''),
-        ];
-        
-        if (!empty($data['password'])) {
-            $adminPass = $this->getPost('admin_password', '');
-            if (empty($adminPass)) {
-                $this->setFlash('error', 'Admin password is required to change user password.');
-                $this->redirect('admin/signatories');
-                return;
-            }
-            $adminUser = $this->adminModel->findById((int) $_SESSION['user_id']);
-            if (!$adminUser || !password_verify($adminPass, $adminUser['password'])) {
-                $this->setFlash('error', 'Incorrect admin password. Changes not saved.');
-                $this->redirect('admin/signatories');
-                return;
-            }
+
+        $scopeType = $this->getPost('scope_type', '');
+        $scopeValue = null;
+        if ($scopeType === 'college') {
+            $scopeValue = $this->getPost('scope_college', '');
+        } elseif ($scopeType === 'course') {
+            $scopeValue = $this->getPost('scope_course', '');
+        } else {
+            $scopeType = null;
         }
+
+        $data = [
+            'full_name'   => $this->getPost('full_name'),
+            'email'       => $this->getPost('email'),
+            'office'      => $this->getPost('office'),
+            'scope_type'  => $scopeType,
+            'scope_value' => $scopeValue,
+        ];
         
         $this->signatoryModel->update($id, $data);
         $this->setFlash('success', 'Signatory updated successfully.');
@@ -448,18 +442,8 @@ class AdminController extends Controller
         $this->requireLogin('admin');
         $clearanceId = (int) $this->getPost('clearance_id');
         $signatoryId = (int) $this->getPost('signatory_id');
-        
-        $scopeType = $this->getPost('scope_type', '');
-        $scopeValue = null;
-        if ($scopeType === 'college') {
-            $scopeValue = $this->getPost('scope_college', '');
-        } elseif ($scopeType === 'course') {
-            $scopeValue = $this->getPost('scope_course', '');
-        } else {
-            $scopeType = null;
-        }
 
-        $this->clearanceModel->assignSignatory($clearanceId, $signatoryId, $scopeType, $scopeValue);
+        $this->clearanceModel->assignSignatory($clearanceId, $signatoryId);
         $this->setFlash('success', 'Signatory assigned to clearance.');
         $this->redirect("admin/clearances/detail?id={$clearanceId}");
     }

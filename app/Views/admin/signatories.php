@@ -13,9 +13,10 @@
         <table class="data-table" style="width: 100%;">
             <thead>
                 <tr style="background: var(--surface2);">
-                    <th class="py-3 px-4">Full Name</th>
-                    <th class="py-3 px-4">Email</th>
+                    <th class="py-3 px-4" style="min-width: 180px;">Full Name</th>
+                    <th class="py-3 px-4" style="min-width: 180px;">Email</th>
                     <th class="py-3 px-4">Office</th>
+                    <th class="py-3 px-4">Scope</th>
                     <th class="py-3 px-4">Password</th>
                     <th class="py-3 px-4 text-end">Actions</th>
                 </tr>
@@ -26,9 +27,16 @@
                 <?php else: ?>
                     <?php foreach ($signatories as $s): ?>
                         <tr class="border-bottom">
-                            <td class="py-3 px-4"><strong><i class="bi bi-person-circle text-muted me-2"></i> <?= htmlspecialchars($s['full_name']) ?></strong></td>
-                            <td class="py-3 px-4"><?= htmlspecialchars($s['email']) ?></td>
+                            <td class="py-3 px-4" style="max-width: 220px; white-space: normal; word-break: break-word;"><strong><?= htmlspecialchars($s['full_name']) ?></strong></td>
+                            <td class="py-3 px-4" style="max-width: 220px; white-space: normal; word-break: break-word;"><?= htmlspecialchars($s['email']) ?></td>
                             <td class="py-3 px-4"><span class="badge badge-info"><?= htmlspecialchars($s['office']) ?></span></td>
+                            <td class="py-3 px-4">
+                                <?php if (empty($s['scope_type'])): ?>
+                                    <span class="badge bg-secondary">All Students</span>
+                                <?php else: ?>
+                                    <span class="badge bg-primary"><?= ucfirst(htmlspecialchars($s['scope_type'])) ?>: <?= htmlspecialchars($s['scope_value']) ?></span>
+                                <?php endif; ?>
+                            </td>
                             <td class="py-3 px-4">
                                 <?php if (!empty($s['temp_password'])): ?>
                                     <span class="badge bg-warning text-dark" style="font-family: monospace;" title="Temporary Password">Temp: <?= htmlspecialchars($s['temp_password']) ?></span>
@@ -39,7 +47,7 @@
                             <td class="py-3 px-4 text-end">
                                 <div style="display:inline-flex; gap:.5rem; align-items:center;">
                                     <button class="btn btn-secondary btn-sm"
-                                            onclick="openEditSignatory(<?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['full_name'])) ?>', '<?= htmlspecialchars(addslashes($s['email'])) ?>', '<?= htmlspecialchars(addslashes($s['office'])) ?>')">
+                                            onclick="openEditSignatory(<?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['full_name'])) ?>', '<?= htmlspecialchars(addslashes($s['email'])) ?>', '<?= htmlspecialchars(addslashes($s['office'])) ?>', '<?= htmlspecialchars(addslashes($s['scope_type'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($s['scope_value'] ?? '')) ?>')">
                                         <i class="bi bi-pencil"></i> Edit
                                     </button>
                                     <form action="<?= BASE_URL ?>admin/signatories/delete" method="POST" style="margin:0;"
@@ -81,6 +89,32 @@
                 <label>Password *</label>
                 <input type="text" name="password" required placeholder="Set login password">
             </div>
+
+            <!-- Add Scope Selection -->
+            <div class="form-group" style="margin-top: 1rem;">
+                <label>Student Scope <small class="text-muted">(Which students must this signatory clear?)</small></label>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-top:8px;">
+                    <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;">
+                        <input type="radio" name="scope_type" value="" checked onchange="toggleAddScopeInputs(this.value)" style="margin:0; accent-color:var(--primary);">
+                        <span style="font-weight:600; font-size:0.85rem; line-height:1.2;">All Students<br><small style="font-weight:400; color:var(--text-muted);">Default Scope</small></span>
+                    </label>
+                    <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;">
+                        <input type="radio" name="scope_type" value="college" onchange="toggleAddScopeInputs(this.value)" style="margin:0; accent-color:#0ea5e9;">
+                        <span style="font-weight:600; font-size:0.85rem; line-height:1.2;">By College<br><small style="font-weight:400; color:var(--text-muted);">e.g. Dean</small></span>
+                    </label>
+                    <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;">
+                        <input type="radio" name="scope_type" value="course" onchange="toggleAddScopeInputs(this.value)" style="margin:0; accent-color:#22c55e;">
+                        <span style="font-weight:600; font-size:0.85rem; line-height:1.2;">By Course<br><small style="font-weight:400; color:var(--text-muted);">e.g. Dept. Head</small></span>
+                    </label>
+                </div>
+                <div id="add_scope_college_container" style="display:none; margin-top:10px;">
+                    <input type="text" name="scope_college" id="add_scope_college_input" list="college_list" placeholder="Type or select a college (e.g. CCI)" style="width:100%;">
+                </div>
+                <div id="add_scope_course_container" style="display:none; margin-top:10px;">
+                    <input type="text" name="scope_course" id="add_scope_course_input" list="course_list" placeholder="Type or select a course (e.g. BSIT)" style="width:100%;">
+                </div>
+            </div>
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
                         onclick="document.getElementById('addSignatoryModal').style.display='none'">Cancel</button>
@@ -97,7 +131,7 @@
             <h3>Edit Signatory</h3>
             <button onclick="document.getElementById('editSignatoryModal').style.display='none'" class="close-btn">✕</button>
         </div>
-        <form action="<?= BASE_URL ?>admin/signatories/edit" method="POST" class="modal-form" id="editSignatoryForm" onsubmit="return validateEditForm(event, this, 'editSigAdminPassword')">
+        <form action="<?= BASE_URL ?>admin/signatories/edit" method="POST" class="modal-form" id="editSignatoryForm">
             <input type="hidden" name="id" id="editSigId">
             <div class="form-group">
                 <label>Full Name *</label>
@@ -111,14 +145,32 @@
                 <label>Office / Department *</label>
                 <input type="text" name="office" id="editSigOffice" required>
             </div>
-            <div class="form-group">
-                <label>New Password <small class="text-muted">(leave blank to keep current)</small></label>
-                <input type="text" name="password" id="editSigPassword" placeholder="Leave blank to keep" oninput="toggleAdminPasswordReq(this, 'editSigAdminPassword')">
+            
+            <!-- Edit Scope Selection -->
+            <div class="form-group" style="margin-top: 1rem;">
+                <label>Student Scope</label>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-top:8px;">
+                    <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;">
+                        <input type="radio" name="scope_type" id="editSigScopeGlobal" value="" onchange="toggleEditScopeInputs(this.value)" style="margin:0; accent-color:var(--primary);">
+                        <span style="font-weight:600; font-size:0.85rem;">All Students</span>
+                    </label>
+                    <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;">
+                        <input type="radio" name="scope_type" id="editSigScopeCollege" value="college" onchange="toggleEditScopeInputs(this.value)" style="margin:0; accent-color:#0ea5e9;">
+                        <span style="font-weight:600; font-size:0.85rem;">By College</span>
+                    </label>
+                    <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;">
+                        <input type="radio" name="scope_type" id="editSigScopeCourse" value="course" onchange="toggleEditScopeInputs(this.value)" style="margin:0; accent-color:#22c55e;">
+                        <span style="font-weight:600; font-size:0.85rem;">By Course</span>
+                    </label>
+                </div>
+                <div id="edit_scope_college_container" style="display:none; margin-top:10px;">
+                    <input type="text" name="scope_college" id="edit_scope_college_input" list="college_list" placeholder="College" style="width:100%;">
+                </div>
+                <div id="edit_scope_course_container" style="display:none; margin-top:10px;">
+                    <input type="text" name="scope_course" id="edit_scope_course_input" list="course_list" placeholder="Course" style="width:100%;">
+                </div>
             </div>
-            <div class="form-group" id="editSigAdminPasswordGroup" style="display:none;">
-                <label>Admin Password <small class="text-danger">*Required for password change</small></label>
-                <input type="password" name="admin_password" id="editSigAdminPassword" placeholder="Enter your admin password">
-            </div>
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
                         onclick="document.getElementById('editSignatoryModal').style.display='none'">Cancel</button>
@@ -128,68 +180,67 @@
     </div>
 </div>
 
+<datalist id="college_list">
+    <?php foreach (['CAS','CCI','CEA','CIT','COE'] as $col): ?>
+        <option value="<?= $col ?>"></option>
+    <?php endforeach; ?>
+</datalist>
+<datalist id="course_list">
+    <?php foreach (['BSAMT','BSArchi','BSCE','BSCS','BSECE','BSEE','BSFT','BSIS','BSIT','BSME'] as $cur): ?>
+        <option value="<?= $cur ?>"></option>
+    <?php endforeach; ?>
+</datalist>
+
 <script>
-function openEditSignatory(id, name, email, office) {
+function toggleAddScopeInputs(val) {
+    document.getElementById('add_scope_college_container').style.display = 'none';
+    document.getElementById('add_scope_course_container').style.display = 'none';
+    document.getElementById('add_scope_college_input').required = false;
+    document.getElementById('add_scope_course_input').required = false;
+    
+    if (val === 'college') {
+        document.getElementById('add_scope_college_container').style.display = 'block';
+        document.getElementById('add_scope_college_input').required = true;
+    } else if (val === 'course') {
+        document.getElementById('add_scope_course_container').style.display = 'block';
+        document.getElementById('add_scope_course_input').required = true;
+    }
+}
+
+function toggleEditScopeInputs(val) {
+    document.getElementById('edit_scope_college_container').style.display = 'none';
+    document.getElementById('edit_scope_course_container').style.display = 'none';
+    document.getElementById('edit_scope_college_input').required = false;
+    document.getElementById('edit_scope_course_input').required = false;
+    
+    if (val === 'college') {
+        document.getElementById('edit_scope_college_container').style.display = 'block';
+        document.getElementById('edit_scope_college_input').required = true;
+    } else if (val === 'course') {
+        document.getElementById('edit_scope_course_container').style.display = 'block';
+        document.getElementById('edit_scope_course_input').required = true;
+    }
+}
+
+function openEditSignatory(id, name, email, office, scopeType, scopeValue) {
     document.getElementById('editSigId').value     = id;
     document.getElementById('editSigName').value   = name;
     document.getElementById('editSigEmail').value  = email;
     document.getElementById('editSigOffice').value = office;
-    document.getElementById('editSigPassword').value = '';
-    document.getElementById('editSigAdminPassword').value = '';
-    document.getElementById('editSigAdminPassword').required = false;
-    document.getElementById('editSigAdminPasswordGroup').style.display = 'none';
+    
+    document.getElementById('editSigScopeGlobal').checked = true;
+    document.getElementById('edit_scope_college_input').value = '';
+    document.getElementById('edit_scope_course_input').value = '';
+    
+    if (scopeType === 'college') {
+        document.getElementById('editSigScopeCollege').checked = true;
+        document.getElementById('edit_scope_college_input').value = scopeValue;
+    } else if (scopeType === 'course') {
+        document.getElementById('editSigScopeCourse').checked = true;
+        document.getElementById('edit_scope_course_input').value = scopeValue;
+    }
+    toggleEditScopeInputs(scopeType);
     document.getElementById('editSignatoryModal').style.display = 'flex';
 }
 
-function toggleAdminPasswordReq(input, adminPassId) {
-    const adminPassInput = document.getElementById(adminPassId);
-    const group = document.getElementById(adminPassId + 'Group');
-    if (input.value.trim() !== '') {
-        group.style.display = 'block';
-        adminPassInput.required = true;
-    } else {
-        group.style.display = 'none';
-        adminPassInput.required = false;
-        adminPassInput.value = '';
-        // clear errors if any
-        adminPassInput.classList.remove('border-danger');
-        const err = document.getElementById(adminPassId + 'Error');
-        if (err) err.remove();
-    }
-}
-
-async function validateEditForm(event, form, adminPassId) {
-    const adminPassInput = document.getElementById(adminPassId);
-    if (adminPassInput && adminPassInput.required && adminPassInput.value.trim() !== '') {
-        event.preventDefault();
-        try {
-            const formData = new FormData();
-            formData.append('admin_password', adminPassInput.value);
-            const response = await fetch('<?= BASE_URL ?>admin/verify-password', {
-                method: 'POST',
-                body: formData
-            });
-            const result = await response.json();
-            if (!result.valid) {
-                const group = document.getElementById(adminPassId + 'Group');
-                let err = document.getElementById(adminPassId + 'Error');
-                if (!err) {
-                    err = document.createElement('small');
-                    err.id = adminPassId + 'Error';
-                    err.className = 'text-danger d-block mt-1';
-                    group.appendChild(err);
-                }
-                err.textContent = 'Incorrect admin password. Please try again.';
-                adminPassInput.classList.add('border-danger');
-                return false;
-            } else {
-                form.submit();
-            }
-        } catch (e) {
-            console.error(e);
-        }
-        return false;
-    }
-    return true;
-}
 </script>

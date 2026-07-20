@@ -89,7 +89,7 @@ class Clearance extends Model
     public function getSignatories(int $clearanceId): array
     {
         $stmt = $this->db->prepare("
-            SELECT s.*, cs.scope_type, cs.scope_value 
+            SELECT s.*, s.scope_type, s.scope_value 
             FROM signatories s
             JOIN clearance_signatories cs ON cs.signatory_id = s.id
             WHERE cs.clearance_id = ?
@@ -99,18 +99,20 @@ class Clearance extends Model
         return $stmt->fetchAll();
     }
 
-    public function assignSignatory(int $clearanceId, int $signatoryId, ?string $scopeType = null, ?string $scopeValue = null): void
+    public function assignSignatory(int $clearanceId, int $signatoryId): void
     {
-        // Avoid duplicate assignment error by doing ON DUPLICATE KEY UPDATE for scope changes
         $stmt = $this->db->prepare("
-            INSERT INTO clearance_signatories (clearance_id, signatory_id, scope_type, scope_value) 
-            VALUES (?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE scope_type = VALUES(scope_type), scope_value = VALUES(scope_value)
+            INSERT IGNORE INTO clearance_signatories (clearance_id, signatory_id) 
+            VALUES (?, ?)
         ");
-        $stmt->execute([$clearanceId, $signatoryId, $scopeType, $scopeValue]);
+        $stmt->execute([$clearanceId, $signatoryId]);
+
+        $sigStmt = $this->db->prepare("SELECT scope_type, scope_value FROM signatories WHERE id = ?");
+        $sigStmt->execute([$signatoryId]);
+        $sig = $sigStmt->fetch();
 
         // Initialize status rows ONLY for students that match this scope
-        $students = $this->getStudentIds($clearanceId, $scopeType, $scopeValue);
+        $students = $this->getStudentIds($clearanceId, $sig['scope_type'], $sig['scope_value']);
         if (!empty($students)) {
             $statusStmt = $this->db->prepare("
                 INSERT IGNORE INTO clearance_status (clearance_id, student_id, signatory_id)
@@ -236,11 +238,12 @@ class Clearance extends Model
             SELECT ?, st.id, csig.signatory_id
             FROM students st
             JOIN clearance_signatories csig ON csig.clearance_id = ?
+            JOIN signatories sg ON sg.id = csig.signatory_id
             WHERE st.id = ?
               AND (
-                  csig.scope_type IS NULL 
-                  OR (csig.scope_type = 'college' AND csig.scope_value = st.college)
-                  OR (csig.scope_type = 'course' AND csig.scope_value = st.course)
+                  sg.scope_type IS NULL 
+                  OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
+                  OR (sg.scope_type = 'course' AND sg.scope_value = st.course)
               )
         ";
         $this->db->prepare($insertStatusSql)->execute([$clearanceId, $clearanceId, $studentDbId]);
@@ -265,11 +268,12 @@ class Clearance extends Model
                 SELECT ?, st.id, csig.signatory_id
                 FROM students st
                 JOIN clearance_signatories csig ON csig.clearance_id = ?
+                JOIN signatories sg ON sg.id = csig.signatory_id
                 WHERE st.id IN ($placeholders)
                   AND (
-                      csig.scope_type IS NULL 
-                      OR (csig.scope_type = 'college' AND csig.scope_value = st.college)
-                      OR (csig.scope_type = 'course' AND csig.scope_value = st.course)
+                      sg.scope_type IS NULL 
+                      OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
+                      OR (sg.scope_type = 'course' AND sg.scope_value = st.course)
                   )
             ";
             $params = array_merge([$clearanceId, $clearanceId], $studentDbIds);

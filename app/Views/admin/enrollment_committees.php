@@ -13,8 +13,8 @@
         <table class="data-table" style="width: 100%;">
             <thead>
                 <tr style="background: var(--surface2);">
-                    <th class="py-3 px-4">Full Name</th>
-                    <th class="py-3 px-4">Email</th>
+                    <th class="py-3 px-4" style="min-width: 180px;">Full Name</th>
+                    <th class="py-3 px-4" style="min-width: 180px;">Email</th>
                     <th class="py-3 px-4">Department</th>
                     <th class="py-3 px-4">Password</th>
                     <th class="py-3 px-4 text-end">Actions</th>
@@ -26,8 +26,8 @@
                 <?php else: ?>
                     <?php foreach ($enrollment_committees as $a): ?>
                         <tr class="border-bottom">
-                            <td class="py-3 px-4"><strong><i class="bi bi-person-badge text-muted me-2"></i> <?= htmlspecialchars($a['full_name']) ?></strong></td>
-                            <td class="py-3 px-4"><?= htmlspecialchars($a['email']) ?></td>
+                            <td class="py-3 px-4" style="max-width: 220px; white-space: normal; word-break: break-word;"><strong><?= htmlspecialchars($a['full_name']) ?></strong></td>
+                            <td class="py-3 px-4" style="max-width: 220px; white-space: normal; word-break: break-word;"><?= htmlspecialchars($a['email']) ?></td>
                             <td class="py-3 px-4"><span class="badge badge-info"><?= htmlspecialchars($a['department']) ?></span></td>
                             <td class="py-3 px-4">
                                 <?php if (!empty($a['temp_password'])): ?>
@@ -97,7 +97,7 @@
             <h3>Edit Enrollment Committee Member</h3>
             <button onclick="document.getElementById('editEnrollmentCommitteeModal').style.display='none'" class="close-btn">✕</button>
         </div>
-        <form action="<?= BASE_URL ?>admin/enrollment-committees/edit" method="POST" class="modal-form" id="editAdvForm" onsubmit="return validateEditForm(event, this, 'editAdvAdminPassword')">
+        <form action="<?= BASE_URL ?>admin/enrollment-committees/edit" method="POST" class="modal-form" id="editEnrollmentCommitteeForm">
             <input type="hidden" name="id" id="editAdvId">
             <div class="form-group">
                 <label>Full Name *</label>
@@ -110,14 +110,6 @@
             <div class="form-group">
                 <label>Department *</label>
                 <input type="text" name="department" id="editAdvDept" required>
-            </div>
-            <div class="form-group">
-                <label>New Password <small class="text-muted">(leave blank to keep current)</small></label>
-                <input type="text" name="password" id="editAdvPassword" placeholder="Leave blank to keep" oninput="toggleAdminPasswordReq(this, 'editAdvAdminPassword')">
-            </div>
-            <div class="form-group" id="editAdvAdminPasswordGroup" style="display:none;">
-                <label>Admin Password <small class="text-danger">*Required for password change</small></label>
-                <input type="password" name="admin_password" id="editAdvAdminPassword" placeholder="Enter your admin password">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
@@ -134,62 +126,6 @@ function openEditEnrollmentCommittee(id, name, email, dept) {
     document.getElementById('editAdvName').value   = name;
     document.getElementById('editAdvEmail').value  = email;
     document.getElementById('editAdvDept').value   = dept;
-    document.getElementById('editAdvPassword').value = '';
-    document.getElementById('editAdvAdminPassword').value = '';
-    document.getElementById('editAdvAdminPassword').required = false;
-    document.getElementById('editAdvAdminPasswordGroup').style.display = 'none';
     document.getElementById('editEnrollmentCommitteeModal').style.display = 'flex';
-}
-
-function toggleAdminPasswordReq(input, adminPassId) {
-    const adminPassInput = document.getElementById(adminPassId);
-    const group = document.getElementById(adminPassId + 'Group');
-    if (input.value.trim() !== '') {
-        group.style.display = 'block';
-        adminPassInput.required = true;
-    } else {
-        group.style.display = 'none';
-        adminPassInput.required = false;
-        adminPassInput.value = '';
-        // clear errors if any
-        adminPassInput.classList.remove('border-danger');
-        const err = document.getElementById(adminPassId + 'Error');
-        if (err) err.remove();
-    }
-}
-
-async function validateEditForm(event, form, adminPassId) {
-    const adminPassInput = document.getElementById(adminPassId);
-    if (adminPassInput && adminPassInput.required && adminPassInput.value.trim() !== '') {
-        event.preventDefault();
-        try {
-            const formData = new FormData();
-            formData.append('admin_password', adminPassInput.value);
-            const response = await fetch('<?= BASE_URL ?>admin/verify-password', {
-                method: 'POST',
-                body: formData
-            });
-            const result = await response.json();
-            if (!result.valid) {
-                const group = document.getElementById(adminPassId + 'Group');
-                let err = document.getElementById(adminPassId + 'Error');
-                if (!err) {
-                    err = document.createElement('small');
-                    err.id = adminPassId + 'Error';
-                    err.className = 'text-danger d-block mt-1';
-                    group.appendChild(err);
-                }
-                err.textContent = 'Incorrect admin password. Please try again.';
-                adminPassInput.classList.add('border-danger');
-                return false;
-            } else {
-                form.submit();
-            }
-        } catch (e) {
-            console.error(e);
-        }
-        return false;
-    }
-    return true;
 }
 </script>
