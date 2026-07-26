@@ -113,9 +113,11 @@ class AdminController extends Controller
         $this->requireLogin('admin');
         $clearanceId = (int) $this->getPost('clearance_id');
 
+        $tab = $this->getPost('tab', 'tab-stu');
+        $hash = $tab ? "#{$tab}" : '#tab-stu';
         if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
             $this->setFlash('error', 'Please select a valid CSV file.');
-            $this->redirect("admin/clearances/detail?id={$clearanceId}");
+            $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
             return;
         }
 
@@ -123,7 +125,7 @@ class AdminController extends Controller
         $handle = fopen($file, 'r');
         if (!$handle) {
             $this->setFlash('error', 'Could not read the uploaded file.');
-            $this->redirect("admin/clearances/detail?id={$clearanceId}");
+            $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
             return;
         }
 
@@ -163,7 +165,7 @@ class AdminController extends Controller
 
         $this->setFlash('success', "Import complete: {$inserted} new student accounts created, {$skipped} existing accounts skipped. Enrolled {$enrolledCount} students into the clearance.");
         if ($clearanceId > 0) {
-            $this->redirect("admin/clearances/detail?id={$clearanceId}");
+            $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
         } else {
             $this->redirect('admin/students');
         }
@@ -440,12 +442,26 @@ class AdminController extends Controller
     public function assignSignatory(): void
     {
         $this->requireLogin('admin');
-        $clearanceId = (int) $this->getPost('clearance_id');
-        $signatoryId = (int) $this->getPost('signatory_id');
+        $clearanceId  = (int) $this->getPost('clearance_id');
+        $signatoryVal = $this->getPost('signatory_id');
 
-        $this->clearanceModel->assignSignatory($clearanceId, $signatoryId);
-        $this->setFlash('success', 'Signatory assigned to clearance.');
-        $this->redirect("admin/clearances/detail?id={$clearanceId}");
+        if ($signatoryVal === 'all') {
+            $unassigned = $this->signatoryModel->findUnassigned($clearanceId);
+            foreach ($unassigned as $s) {
+                $this->clearanceModel->assignSignatory($clearanceId, (int) $s['id']);
+            }
+            $count = count($unassigned);
+            $this->setFlash('success', "All unassigned signatories ({$count}) assigned to clearance.");
+        } else {
+            $signatoryId = (int) $signatoryVal;
+            if ($signatoryId > 0) {
+                $this->clearanceModel->assignSignatory($clearanceId, $signatoryId);
+                $this->setFlash('success', 'Signatory assigned to clearance.');
+            }
+        }
+        $tab = $this->getPost('tab', 'tab-sig');
+        $hash = $tab ? "#{$tab}" : '#tab-sig';
+        $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
     }
 
     public function bulkAssignSignatories(): void
@@ -463,7 +479,9 @@ class AdminController extends Controller
         } else {
             $this->setFlash('error', 'No signatories selected.');
         }
-        $this->redirect("admin/clearances/detail?id={$clearanceId}");
+        $tab = $this->getPost('tab', 'tab-sig');
+        $hash = $tab ? "#{$tab}" : '#tab-sig';
+        $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
     }
 
     public function removeSignatory(): void
@@ -473,7 +491,9 @@ class AdminController extends Controller
         $signatoryId = (int) $this->getPost('signatory_id');
         $this->clearanceModel->removeSignatory($clearanceId, $signatoryId);
         $this->setFlash('success', 'Signatory removed from clearance.');
-        $this->redirect("admin/clearances/detail?id={$clearanceId}");
+        $tab = $this->getPost('tab', 'tab-sig');
+        $hash = $tab ? "#{$tab}" : '#tab-sig';
+        $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
     }
 
     // ---- Enrollment Committee assignment ----
@@ -481,11 +501,26 @@ class AdminController extends Controller
     public function assignEnrollmentCommittee(): void
     {
         $this->requireLogin('admin');
-        $clearanceId = (int) $this->getPost('clearance_id');
-        $enrollmentCommitteeId = (int) $this->getPost('enrollment_committee_id');
-        $this->clearanceModel->assignEnrollmentCommittee($clearanceId, $enrollmentCommitteeId);
-        $this->setFlash('success', 'Enrollment Committee member assigned to clearance.');
-        $this->redirect("admin/clearances/detail?id={$clearanceId}");
+        $clearanceId  = (int) $this->getPost('clearance_id');
+        $committeeVal = $this->getPost('enrollment_committee_id');
+
+        if ($committeeVal === 'all') {
+            $unassigned = $this->enrollmentCommitteeModel->findUnassigned($clearanceId);
+            foreach ($unassigned as $c) {
+                $this->clearanceModel->assignEnrollmentCommittee($clearanceId, (int) $c['id']);
+            }
+            $count = count($unassigned);
+            $this->setFlash('success', "All unassigned enrollment committee members ({$count}) assigned to clearance.");
+        } else {
+            $enrollmentCommitteeId = (int) $committeeVal;
+            if ($enrollmentCommitteeId > 0) {
+                $this->clearanceModel->assignEnrollmentCommittee($clearanceId, $enrollmentCommitteeId);
+                $this->setFlash('success', 'Enrollment Committee member assigned to clearance.');
+            }
+        }
+        $tab = $this->getPost('tab', 'tab-adv');
+        $hash = $tab ? "#{$tab}" : '#tab-adv';
+        $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
     }
 
     public function bulkAssignEnrollmentCommittees(): void
@@ -503,7 +538,9 @@ class AdminController extends Controller
         } else {
             $this->setFlash('success', 'Clearance setup complete. No enrollment committee assigned.');
         }
-        $this->redirect("admin/clearances/detail?id={$clearanceId}");
+        $tab = $this->getPost('tab', 'tab-adv');
+        $hash = $tab ? "#{$tab}" : '#tab-adv';
+        $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
     }
 
     public function removeEnrollmentCommittee(): void
@@ -513,7 +550,9 @@ class AdminController extends Controller
         $enrollmentCommitteeId = (int) $this->getPost('enrollment_committee_id');
         $this->clearanceModel->removeEnrollmentCommittee($clearanceId, $enrollmentCommitteeId);
         $this->setFlash('success', 'Enrollment Committee member removed from clearance.');
-        $this->redirect("admin/clearances/detail?id={$clearanceId}");
+        $tab = $this->getPost('tab', 'tab-adv');
+        $hash = $tab ? "#{$tab}" : '#tab-adv';
+        $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
     }
 
     // ---- Student removal from clearance ----
@@ -525,6 +564,8 @@ class AdminController extends Controller
         $studentId   = (int) $this->getPost('student_id');
         $this->clearanceModel->removeStudent($clearanceId, $studentId);
         $this->setFlash('success', 'Student removed from clearance.');
-        $this->redirect("admin/clearances/detail?id={$clearanceId}");
+        $tab = $this->getPost('tab', 'tab-stu');
+        $hash = $tab ? "#{$tab}" : '#tab-stu';
+        $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
     }
 }

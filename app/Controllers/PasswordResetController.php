@@ -26,6 +26,11 @@ class PasswordResetController extends Controller
 
     public function sendResetLink(): void
     {
+        if (!$this->validateCsrfToken()) {
+            $this->redirect('forgot-password');
+            return;
+        }
+
         $email = trim($this->getPost('email', ''));
         if (empty($email)) {
             $this->setFlash('error', 'Please enter your email address.');
@@ -99,6 +104,11 @@ class PasswordResetController extends Controller
     public function updatePassword(): void
     {
         $token = $this->getPost('token', '');
+        if (!$this->validateCsrfToken()) {
+            $this->redirect('reset-password?token=' . urlencode($token));
+            return;
+        }
+
         $password = $this->getPost('password', '');
         $confirm = $this->getPost('confirm_password', '');
 

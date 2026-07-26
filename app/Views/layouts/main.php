@@ -15,7 +15,10 @@
     <!-- Top Navbar -->
     <nav class="top-navbar">
         <div class="top-navbar-brand">
-            <img src="<?= BASE_URL ?>ISATU _ Student Portal (KIOSK)_files/logo.png" alt="ISAT-U Logo" class="nav-logo">
+            <button type="button" class="sidebar-toggle-btn" id="sidebar-toggle" aria-label="Toggle menu">
+                <i class="bi bi-list"></i>
+            </button>
+            <img src="<?= BASE_URL ?>css/logo.png" alt="ISAT-U Logo" class="nav-logo">
             <h5 class="nav-title"><?= APP_NAME ?></h5>
         </div>
     </nav>
@@ -85,27 +88,6 @@
             
             <?php require_once ROOT_PATH . '/app/Views/' . $content . '.php'; ?>
         </main>
-        
-        <!-- Mobile Bottom Nav -->
-        <nav class="bottom-nav">
-            <?php 
-                $rolePath = str_replace('_', '-', $_SESSION['user_role']);
-                $dashUrl = BASE_URL . $rolePath . '/dashboard';
-                $clearUrl = BASE_URL . $rolePath . '/clearances';
-            ?>
-            <a class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/dashboard') !== false ? 'active' : '' ?>" href="<?= $dashUrl ?>">
-                <i class="bi bi-house"></i>
-                <div>Home</div>
-            </a>
-            <a class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/clearances') !== false ? 'active' : '' ?>" href="<?= $clearUrl ?>">
-                <i class="bi bi-file-earmark-text"></i>
-                <div>Clearances</div>
-            </a>
-            <a class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/profile') !== false ? 'active' : '' ?>" href="<?= BASE_URL ?>profile">
-                <i class="bi bi-person"></i>
-                <div>Profile</div>
-            </a>
-        </nav>
     </div>
 
     <!-- Generic Confirm Modal -->
@@ -163,8 +145,31 @@
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeGenericConfirmModal();
+            closeSidebar();
         }
     });
+
+    /* Mobile Sidebar Toggle */
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle');
+    const sidebarMenu = document.getElementById('sidebar-menu');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+    function toggleSidebar() {
+        if (sidebarMenu) sidebarMenu.classList.toggle('open');
+        if (sidebarOverlay) sidebarOverlay.classList.toggle('show');
+    }
+
+    function closeSidebar() {
+        if (sidebarMenu) sidebarMenu.classList.remove('open');
+        if (sidebarOverlay) sidebarOverlay.classList.remove('show');
+    }
+
+    if (sidebarToggleBtn) {
+        sidebarToggleBtn.addEventListener('click', toggleSidebar);
+    }
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', closeSidebar);
+    }
     </script>
     
     <?php if (!empty($_SESSION['bg_emails'])): ?>

@@ -18,34 +18,34 @@
                     <th class="py-3 px-4">Office</th>
                     <th class="py-3 px-4">Scope</th>
                     <th class="py-3 px-4">Password</th>
-                    <th class="py-3 px-4 text-end">Actions</th>
+                    <th class="py-3 px-4 text-end" style="white-space: nowrap;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($signatories)): ?>
-                    <tr><td colspan="5" class="text-center py-4 text-muted">No signatories found.</td></tr>
+                    <tr><td colspan="6" class="text-center py-4 text-muted">No signatories found.</td></tr>
                 <?php else: ?>
                     <?php foreach ($signatories as $s): ?>
                         <tr class="border-bottom">
-                            <td class="py-3 px-4" style="max-width: 220px; white-space: normal; word-break: break-word;"><strong><?= htmlspecialchars($s['full_name']) ?></strong></td>
-                            <td class="py-3 px-4" style="max-width: 220px; white-space: normal; word-break: break-word;"><?= htmlspecialchars($s['email']) ?></td>
-                            <td class="py-3 px-4"><span class="badge badge-info"><?= htmlspecialchars($s['office']) ?></span></td>
-                            <td class="py-3 px-4">
+                            <td class="py-3 px-4" data-label="Full Name"><strong><?= htmlspecialchars($s['full_name']) ?></strong></td>
+                            <td class="py-3 px-4" data-label="Email"><?= htmlspecialchars($s['email']) ?></td>
+                            <td class="py-3 px-4" data-label="Office"><span class="badge badge-info"><?= htmlspecialchars($s['office']) ?></span></td>
+                            <td class="py-3 px-4" data-label="Scope">
                                 <?php if (empty($s['scope_type'])): ?>
                                     <span class="badge bg-secondary">All Students</span>
                                 <?php else: ?>
                                     <span class="badge bg-primary"><?= ucfirst(htmlspecialchars($s['scope_type'])) ?>: <?= htmlspecialchars($s['scope_value']) ?></span>
                                 <?php endif; ?>
                             </td>
-                            <td class="py-3 px-4">
+                            <td class="py-3 px-4" data-label="Password">
                                 <?php if (!empty($s['temp_password'])): ?>
                                     <span class="badge bg-warning text-dark" style="font-family: monospace;" title="Temporary Password">Temp: <?= htmlspecialchars($s['temp_password']) ?></span>
                                 <?php else: ?>
                                     <span class="password-pill">********</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="py-3 px-4 text-end">
-                                <div style="display:inline-flex; gap:.5rem; align-items:center;">
+                            <td class="py-3 px-4 text-end" data-label="Actions">
+                                <div class="action-cell">
                                     <button class="btn btn-secondary btn-sm"
                                             onclick="openEditSignatory(<?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['full_name'])) ?>', '<?= htmlspecialchars(addslashes($s['email'])) ?>', '<?= htmlspecialchars(addslashes($s['office'])) ?>', '<?= htmlspecialchars(addslashes($s['scope_type'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($s['scope_value'] ?? '')) ?>')">
                                         <i class="bi bi-pencil"></i> Edit

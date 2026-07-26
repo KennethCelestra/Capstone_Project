@@ -1,7 +1,5 @@
 <?php
 
-require_once ROOT_PATH . '/vendor/autoload.php';
-
 /**
  * Simple Mailer helper using Brevo API.
  */

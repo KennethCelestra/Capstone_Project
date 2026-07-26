@@ -4,12 +4,36 @@ abstract class Controller
 {
     protected function view(string $viewPath, array $data = []): void
     {
+        if (!isset($data['csrfToken'])) {
+            $data['csrfToken'] = $this->getCsrfToken();
+        }
         extract($data);
         $fullPath = ROOT_PATH . '/app/Views/' . $viewPath . '.php';
         if (!file_exists($fullPath)) {
             die("View not found: {$fullPath}");
         }
         require_once $fullPath;
+    }
+
+    protected function getCsrfToken(): string
+    {
+        if (empty($_SESSION['_csrf_token'])) {
+            $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['_csrf_token'];
+    }
+
+    protected function validateCsrfToken(): bool
+    {
+        $submittedToken = $this->getPost('_csrf_token', '');
+        $sessionToken   = $_SESSION['_csrf_token'] ?? '';
+
+        if (!empty($submittedToken) && hash_equals($sessionToken, $submittedToken)) {
+            return true;
+        }
+
+        $this->setFlash('error', 'Invalid security token (CSRF check failed). Please try submitting again.');
+        return false;
     }
 
     protected function redirect(string $path): void

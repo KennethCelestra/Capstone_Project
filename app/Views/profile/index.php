@@ -18,6 +18,7 @@
         <h3 style="font-size: 1.1rem; margin-bottom: 1rem;"><i class="bi bi-shield-lock text-primary me-2"></i> Change Password</h3>
         
         <form action="<?= BASE_URL ?>profile/change-password" method="POST" id="changePasswordForm" onsubmit="return validateProfilePasswords(event)">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <?php if (!empty($flash) && $flash['type'] === 'error'): ?>
                 <div class="alert alert-danger mb-3 p-3 rounded" style="background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;">
                     <i class="bi bi-exclamation-octagon me-2"></i> <?= htmlspecialchars($flash['message']) ?>

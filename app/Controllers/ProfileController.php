@@ -29,6 +29,11 @@ class ProfileController extends Controller
             return;
         }
 
+        if (!$this->validateCsrfToken()) {
+            $this->redirect('profile');
+            return;
+        }
+
         $userId = (int)$_SESSION['user_id'];
         $role   = $_SESSION['user_role'];
         

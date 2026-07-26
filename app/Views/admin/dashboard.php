@@ -96,7 +96,7 @@ $pendingPct = $total > 0 ? ($pending / $total) * 100 : 0;
                         <th class="py-3 px-4">School Year</th>
                         <th class="py-3 px-4 text-center">Students</th>
                         <th class="py-3 px-4" style="width: 30%;">Progress</th>
-                        <th class="py-3 px-4 text-end">Action</th>
+                        <th class="py-3 px-4 text-end" style="white-space: nowrap;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -111,10 +111,10 @@ $pendingPct = $total > 0 ? ($pending / $total) * 100 : 0;
                         $cPendingPct = $cTotal > 0 ? ($cPending / $cTotal) * 100 : 0;
                         ?>
                         <tr class="border-bottom">
-                            <td class="py-3 px-4"><strong><?= htmlspecialchars($c['clearance_name']) ?></strong></td>
-                            <td class="py-3 px-4 text-muted"><?= htmlspecialchars($c['school_year']) ?></td>
-                            <td class="py-3 px-4 text-center fw-bold"><?= $cTotal ?></td>
-                            <td class="py-3 px-4">
+                            <td class="py-3 px-4" data-label="Clearance Name"><strong><?= htmlspecialchars($c['clearance_name']) ?></strong></td>
+                            <td class="py-3 px-4 text-muted" data-label="School Year"><?= htmlspecialchars($c['school_year']) ?></td>
+                            <td class="py-3 px-4 text-center fw-bold" data-label="Students"><?= $cTotal ?></td>
+                            <td class="py-3 px-4" data-label="Progress">
                                 <div class="progress-bar-stacked mb-2" style="height:6px; border-radius:3px; overflow:hidden; display:flex; background:var(--surface2);">
                                     <?php if ($cCleared > 0): ?>
                                         <div class="progress-segment" style="width: <?= $cClearedPct ?>%; background:var(--success);" title="<?= $cCleared ?> Cleared"></div>
@@ -132,10 +132,12 @@ $pendingPct = $total > 0 ? ($pending / $total) * 100 : 0;
                                     <span title="In Progress" class="text-warning"><i class="bi bi-clock-fill"></i> <?= $cPending ?></span>
                                 </div>
                             </td>
-                            <td class="py-3 px-4 text-end">
-                                <a href="<?= BASE_URL ?>admin/clearances/detail?id=<?= $c['clearance_id'] ?>" class="btn btn-primary btn-sm">
-                                    <i class="bi bi-gear"></i> Manage
-                                </a>
+                            <td class="py-3 px-4 text-end" data-label="Action">
+                                <div class="action-cell">
+                                    <a href="<?= BASE_URL ?>admin/clearances/detail?id=<?= $c['clearance_id'] ?>" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-gear"></i> Manage
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>

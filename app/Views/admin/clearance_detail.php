@@ -51,14 +51,14 @@ $cid = $clearance['id'];
     <?php else: ?>
         <div class="table-container">
             <table class="data-table">
-                <thead><tr><th>Name</th><th>Office</th><th>Email</th><th>Scope</th><th>Action</th></tr></thead>
+                <thead><tr><th>Name</th><th>Office</th><th>Email</th><th>Scope</th><th class="text-end" style="white-space: nowrap;">Action</th></tr></thead>
                 <tbody>
                     <?php foreach ($assignedSignatories as $s): ?>
                         <tr>
-                            <td><?= htmlspecialchars($s['full_name']) ?></td>
-                            <td><?= htmlspecialchars($s['office']) ?></td>
-                            <td><?= htmlspecialchars($s['email']) ?></td>
-                            <td>
+                            <td data-label="Name"><?= htmlspecialchars($s['full_name']) ?></td>
+                            <td data-label="Office"><?= htmlspecialchars($s['office']) ?></td>
+                            <td data-label="Email"><?= htmlspecialchars($s['email']) ?></td>
+                            <td data-label="Scope">
                                 <?php if ($s['scope_type'] === 'college'): ?>
                                     <span class="badge" style="background:var(--primary);color:#fff;">College: <?= htmlspecialchars($s['scope_value']) ?></span>
                                 <?php elseif ($s['scope_type'] === 'course'): ?>
@@ -67,13 +67,16 @@ $cid = $clearance['id'];
                                     <span class="text-muted" style="font-size:0.8rem;">All Students</span>
                                 <?php endif; ?>
                             </td>
-                            <td>
-                                <form action="<?= BASE_URL ?>admin/clearances/signatories/remove"
-                                      method="POST" onsubmit="return confirmAction(this, 'Remove this signatory?', 'Remove', 'btn-danger')">
-                                    <input type="hidden" name="clearance_id" value="<?= $cid ?>">
-                                    <input type="hidden" name="signatory_id" value="<?= $s['id'] ?>">
-                                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                                </form>
+                            <td class="text-end" data-label="Action">
+                                <div class="action-cell">
+                                    <form action="<?= BASE_URL ?>admin/clearances/signatories/remove"
+                                          method="POST" onsubmit="return confirmAction(this, 'Remove this signatory?', 'Remove', 'btn-danger')">
+                                         <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+                                         <input type="hidden" name="signatory_id" value="<?= $s['id'] ?>">
+                                         <input type="hidden" name="tab"          value="tab-sig">
+                                         <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -97,20 +100,23 @@ $cid = $clearance['id'];
     <?php else: ?>
         <div class="table-container">
             <table class="data-table">
-                <thead><tr><th>Name</th><th>Department</th><th>Email</th><th>Action</th></tr></thead>
+                <thead><tr><th>Name</th><th>Department</th><th>Email</th><th class="text-end" style="white-space: nowrap;">Action</th></tr></thead>
                 <tbody>
                     <?php foreach ($assignedEnrollmentCommittees as $a): ?>
                         <tr>
-                            <td><?= htmlspecialchars($a['full_name']) ?></td>
-                            <td><?= htmlspecialchars($a['department']) ?></td>
-                            <td><?= htmlspecialchars($a['email']) ?></td>
-                            <td>
-                                <form action="<?= BASE_URL ?>admin/clearances/enrollment-committees/remove"
-                                      method="POST" onsubmit="return confirmAction(this, 'Remove this member?', 'Remove', 'btn-danger')">
-                                    <input type="hidden" name="clearance_id" value="<?= $cid ?>">
-                                    <input type="hidden" name="enrollment_committee_id"   value="<?= $a['id'] ?>">
-                                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                                </form>
+                            <td data-label="Name"><?= htmlspecialchars($a['full_name']) ?></td>
+                            <td data-label="Department"><?= htmlspecialchars($a['department']) ?></td>
+                            <td data-label="Email"><?= htmlspecialchars($a['email']) ?></td>
+                            <td class="text-end" data-label="Action">
+                                <div class="action-cell">
+                                    <form action="<?= BASE_URL ?>admin/clearances/enrollment-committees/remove"
+                                          method="POST" onsubmit="return confirmAction(this, 'Remove this member?', 'Remove', 'btn-danger')">
+                                         <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+                                         <input type="hidden" name="enrollment_committee_id"   value="<?= $a['id'] ?>">
+                                         <input type="hidden" name="tab"          value="tab-adv">
+                                         <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -147,7 +153,7 @@ $cid = $clearance['id'];
                         <th>College</th>
                         <th>Course</th>
                         <th>Year / Section</th>
-                        <th>Action</th>
+                        <th class="text-end" style="white-space: nowrap;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -166,19 +172,22 @@ $cid = $clearance['id'];
                         }
                     ?>
                         <tr class="<?= $flagged > 0 ? 'row-flagged' : ($cleared === $totalSig && $totalSig > 0 ? 'row-cleared' : '') ?>">
-                            <td><?= htmlspecialchars($s['student_number']) ?></td>
-                            <td><?= htmlspecialchars($s['last_name']) ?></td>
-                            <td><?= htmlspecialchars($s['first_name']) ?></td>
-                            <td><?= htmlspecialchars($s['college']) ?></td>
-                            <td><?= htmlspecialchars($s['course']) ?></td>
-                            <td><?= $s['year_level'] ?> – <?= htmlspecialchars($s['section']) ?></td>
-                            <td>
-                                <form action="<?= BASE_URL ?>admin/clearances/students/remove"
-                                      method="POST" onsubmit="return confirmAction(this, 'Remove student from clearance?', 'Remove', 'btn-danger')">
-                                    <input type="hidden" name="clearance_id" value="<?= $cid ?>">
-                                    <input type="hidden" name="student_id"   value="<?= $s['id'] ?>">
-                                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                                </form>
+                            <td data-label="Student ID"><?= htmlspecialchars($s['student_number']) ?></td>
+                            <td data-label="Last Name"><?= htmlspecialchars($s['last_name']) ?></td>
+                            <td data-label="First Name"><?= htmlspecialchars($s['first_name']) ?></td>
+                            <td data-label="College"><?= htmlspecialchars($s['college']) ?></td>
+                            <td data-label="Course"><?= htmlspecialchars($s['course']) ?></td>
+                            <td data-label="Year / Section"><?= $s['year_level'] ?> – <?= htmlspecialchars($s['section']) ?></td>
+                            <td class="text-end" data-label="Action">
+                                <div class="action-cell">
+                                    <form action="<?= BASE_URL ?>admin/clearances/students/remove"
+                                          method="POST" onsubmit="return confirmAction(this, 'Remove student from clearance?', 'Remove', 'btn-danger')">
+                                         <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+                                         <input type="hidden" name="student_id"   value="<?= $s['id'] ?>">
+                                         <input type="hidden" name="tab"          value="tab-stu">
+                                         <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -227,6 +236,7 @@ $cid = $clearance['id'];
         </div>
         <form action="<?= BASE_URL ?>admin/clearances/signatories/assign" method="POST" class="modal-form">
             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+            <input type="hidden" name="tab"          value="tab-sig">
             <div class="form-group">
                 <label>Select Signatory</label>
                 <?php if (empty($unassignedSignatories)): ?>
@@ -234,6 +244,7 @@ $cid = $clearance['id'];
                 <?php else: ?>
                     <select name="signatory_id" required>
                         <option value="">-- Choose Signatory --</option>
+                        <option value="all" style="font-weight: bold; color: var(--primary);">-- Assign All Signatories --</option>
                         <?php foreach ($unassignedSignatories as $us): ?>
                             <option value="<?= $us['id'] ?>">
                                 <?= htmlspecialchars($us['full_name']) ?> — <?= htmlspecialchars($us['office']) ?>
@@ -265,6 +276,7 @@ $cid = $clearance['id'];
         </div>
         <form action="<?= BASE_URL ?>admin/clearances/enrollment-committees/assign" method="POST" class="modal-form">
             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+            <input type="hidden" name="tab"          value="tab-adv">
             <div class="form-group">
                 <label>Select Member</label>
                 <?php if (empty($unassignedEnrollmentCommittees)): ?>
@@ -272,6 +284,7 @@ $cid = $clearance['id'];
                 <?php else: ?>
                     <select name="enrollment_committee_id" required>
                         <option value="">-- Choose Member --</option>
+                        <option value="all" style="font-weight: bold; color: var(--primary);">-- Assign All Enrollment Committees --</option>
                         <?php foreach ($unassignedEnrollmentCommittees as $ua): ?>
                             <option value="<?= $ua['id'] ?>">
                                 <?= htmlspecialchars($ua['full_name']) ?> — <?= htmlspecialchars($ua['department']) ?>
@@ -301,6 +314,7 @@ $cid = $clearance['id'];
         <form action="<?= BASE_URL ?>admin/clearances/students/upload" method="POST"
               enctype="multipart/form-data" class="modal-form">
             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+            <input type="hidden" name="tab"          value="tab-stu">
             <div class="form-group">
                 <label>CSV File</label>
                 <input type="file" name="csv_file" accept=".csv,.txt" required>
@@ -324,8 +338,21 @@ function showTab(id, btn) {
     document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(id).style.display = 'block';
-    btn.classList.add('active');
+    if (btn) {
+        btn.classList.add('active');
+    } else {
+        const targetBtn = document.querySelector(`.tab-btn[onclick*="${id}"]`);
+        if (targetBtn) targetBtn.classList.add('active');
+    }
+    history.replaceState(null, null, '#' + id);
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && document.getElementById(hash)) {
+        showTab(hash);
+    }
+});
 
 /* ---- Edit clearance prefill ---- */
 function openEditClearanceDetail(id, name, desc, year) {

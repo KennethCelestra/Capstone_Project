@@ -24,27 +24,27 @@
                         <th class="py-3 px-4 text-center">Signatories</th>
                         <th class="py-3 px-4 text-center">Students</th>
                         <th class="py-3 px-4">Archived Since</th>
-                        <th class="py-3 px-4 text-end">Actions</th>
+                        <th class="py-3 px-4 text-end" style="white-space: nowrap;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($clearances as $c): ?>
                         <tr class="row-archived border-bottom" style="opacity: 0.85;">
-                            <td class="py-3 px-4">
+                            <td class="py-3 px-4" data-label="Clearance Name">
                                 <strong><i class="bi bi-archive text-muted me-2"></i><?= htmlspecialchars($c['name']) ?></strong>
                                 <?php if (!empty($c['description'])): ?>
                                     <br><small class="text-muted"><?= htmlspecialchars($c['description']) ?></small>
                                 <?php endif; ?>
                                 <br><span class="badge bg-secondary mt-1">Archived</span>
                             </td>
-                            <td class="py-3 px-4"><?= htmlspecialchars($c['school_year']) ?></td>
-                            <td class="py-3 px-4 text-center"><span class="badge badge-info"><i class="bi bi-pen"></i> <?= $c['signatory_count'] ?></span></td>
-                            <td class="py-3 px-4 text-center"><span class="badge badge-info"><i class="bi bi-mortarboard"></i> <?= $c['student_count'] ?></span></td>
-                            <td class="py-3 px-4 text-muted" style="font-size:.85rem">
+                            <td class="py-3 px-4" data-label="School Year"><?= htmlspecialchars($c['school_year']) ?></td>
+                            <td class="py-3 px-4 text-center" data-label="Signatories"><span class="badge badge-info"><i class="bi bi-pen"></i> <?= $c['signatory_count'] ?></span></td>
+                            <td class="py-3 px-4 text-center" data-label="Students"><span class="badge badge-info"><i class="bi bi-mortarboard"></i> <?= $c['student_count'] ?></span></td>
+                            <td class="py-3 px-4 text-muted" style="font-size:.85rem" data-label="Archived Since">
                                 <?= date('M d, Y', strtotime($c['created_at'])) ?>
                             </td>
-                            <td class="py-3 px-4">
-                                <div style="display:flex; gap:.5rem; justify-content:flex-end; align-items:center;">
+                            <td class="py-3 px-4 text-end" data-label="Actions">
+                                <div class="action-cell">
                                     <a href="<?= BASE_URL ?>admin/clearances/detail?id=<?= $c['id'] ?>"
                                        class="btn btn-secondary btn-sm"><i class="bi bi-eye"></i> View</a>
                                     <form action="<?= BASE_URL ?>admin/clearances/unarchive" method="POST" style="margin:0;"

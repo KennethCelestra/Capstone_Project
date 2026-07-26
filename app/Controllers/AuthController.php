@@ -36,6 +36,11 @@ class AuthController extends Controller
 
     public function login(): void
     {
+        if (!$this->validateCsrfToken()) {
+            $this->redirect('login');
+            return;
+        }
+
         $email    = trim($this->getPost('email', ''));
         $password = $this->getPost('password', '');
 
@@ -65,6 +70,7 @@ class AuthController extends Controller
         }
 
         if ($user) {
+            session_regenerate_id(true);
             $_SESSION['user_id']   = $user['id'];
             $_SESSION['user_role'] = $role;
             $_SESSION['user_name'] = $user['full_name'];

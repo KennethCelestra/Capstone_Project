@@ -15,7 +15,7 @@
                 <th>College</th>
                 <th>Course</th>
                 <th>Year / Section</th>
-                <th>Action</th>
+                <th class="text-end" style="white-space: nowrap;">Action</th>
             </tr>
         </thead>
         <tbody>
@@ -24,18 +24,20 @@
             <?php else: ?>
                 <?php foreach ($students as $s): ?>
                     <tr>
-                        <td><?= htmlspecialchars($s['student_id']) ?></td>
-                        <td><?= htmlspecialchars($s['last_name']) ?></td>
-                        <td><?= htmlspecialchars($s['first_name']) ?></td>
-                        <td><?= htmlspecialchars($s['college']) ?></td>
-                        <td><?= htmlspecialchars($s['course']) ?></td>
-                        <td><?= htmlspecialchars($s['year_level']) ?> – <?= htmlspecialchars($s['section']) ?></td>
-                        <td>
-                              <form action="<?= BASE_URL ?>admin/students/delete" method="POST" class="d-inline"
-                                  onsubmit="return confirmAction(this, 'Delete this student?', 'Delete', 'btn-danger')">
-                                <input type="hidden" name="id" value="<?= $s['id'] ?>">
-                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                            </form>
+                        <td data-label="Student ID"><?= htmlspecialchars($s['student_id']) ?></td>
+                        <td data-label="Last Name"><?= htmlspecialchars($s['last_name']) ?></td>
+                        <td data-label="First Name"><?= htmlspecialchars($s['first_name']) ?></td>
+                        <td data-label="College"><?= htmlspecialchars($s['college']) ?></td>
+                        <td data-label="Course"><?= htmlspecialchars($s['course']) ?></td>
+                        <td data-label="Year / Section"><?= htmlspecialchars($s['year_level']) ?> – <?= htmlspecialchars($s['section']) ?></td>
+                        <td class="text-end" data-label="Action">
+                            <div class="action-cell">
+                                <form action="<?= BASE_URL ?>admin/students/delete" method="POST" style="margin:0;"
+                                      onsubmit="return confirmAction(this, 'Delete this student?', 'Delete', 'btn-danger')">
+                                    <input type="hidden" name="id" value="<?= $s['id'] ?>">
+                                    <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Delete</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>

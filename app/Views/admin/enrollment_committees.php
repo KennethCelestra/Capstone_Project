@@ -17,7 +17,7 @@
                     <th class="py-3 px-4" style="min-width: 180px;">Email</th>
                     <th class="py-3 px-4">Department</th>
                     <th class="py-3 px-4">Password</th>
-                    <th class="py-3 px-4 text-end">Actions</th>
+                    <th class="py-3 px-4 text-end" style="white-space: nowrap;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,18 +26,18 @@
                 <?php else: ?>
                     <?php foreach ($enrollment_committees as $a): ?>
                         <tr class="border-bottom">
-                            <td class="py-3 px-4" style="max-width: 220px; white-space: normal; word-break: break-word;"><strong><?= htmlspecialchars($a['full_name']) ?></strong></td>
-                            <td class="py-3 px-4" style="max-width: 220px; white-space: normal; word-break: break-word;"><?= htmlspecialchars($a['email']) ?></td>
-                            <td class="py-3 px-4"><span class="badge badge-info"><?= htmlspecialchars($a['department']) ?></span></td>
-                            <td class="py-3 px-4">
+                            <td class="py-3 px-4" data-label="Full Name"><strong><?= htmlspecialchars($a['full_name']) ?></strong></td>
+                            <td class="py-3 px-4" data-label="Email"><?= htmlspecialchars($a['email']) ?></td>
+                            <td class="py-3 px-4" data-label="Department"><span class="badge badge-info"><?= htmlspecialchars($a['department']) ?></span></td>
+                            <td class="py-3 px-4" data-label="Password">
                                 <?php if (!empty($a['temp_password'])): ?>
                                     <span class="badge bg-warning text-dark" style="font-family: monospace;" title="Temporary Password">Temp: <?= htmlspecialchars($a['temp_password']) ?></span>
                                 <?php else: ?>
                                     <span class="password-pill">********</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="py-3 px-4 text-end">
-                                <div style="display:inline-flex; gap:.5rem; align-items:center;">
+                            <td class="py-3 px-4 text-end" data-label="Actions">
+                                <div class="action-cell">
                                     <button class="btn btn-secondary btn-sm"
                                             onclick="openEditEnrollmentCommittee(<?= $a['id'] ?>, '<?= htmlspecialchars(addslashes($a['full_name'])) ?>', '<?= htmlspecialchars(addslashes($a['email'])) ?>', '<?= htmlspecialchars(addslashes($a['department'])) ?>')">
                                         <i class="bi bi-pencil"></i> Edit

@@ -101,7 +101,7 @@
 <body class="login-body">
     <div class="gold-card login-card text-center">
         <div class="login-header">
-            <img src="<?= BASE_URL ?>ISATU%20_%20Student%20Portal%20(KIOSK)_files/logo.png" alt="ISAT-U Logo" class="school-logo">
+            <img src="<?= BASE_URL ?>css/logo.png" alt="ISAT-U Logo" class="school-logo">
             <h1><?= APP_NAME ?></h1>
             <p>Sign in to your account</p>
         </div>
@@ -113,6 +113,7 @@
         <?php endif; ?>
 
         <form action="<?= BASE_URL ?>login" method="POST" class="login-form">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <div class="form-group">
                 <label for="email">Email Address</label>
                 <div class="input-group">

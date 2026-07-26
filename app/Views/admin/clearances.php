@@ -34,18 +34,18 @@
                 <tbody>
                     <?php foreach ($clearances as $c): ?>
                         <tr class="border-bottom">
-                            <td class="py-3 px-4">
+                            <td class="py-3 px-4" data-label="Clearance Name">
                                 <strong><?= htmlspecialchars($c['name']) ?></strong>
                                 <?php if (!empty($c['description'])): ?>
                                     <br><small class="text-muted"><?= htmlspecialchars($c['description']) ?></small>
                                 <?php endif; ?>
                             </td>
-                            <td class="py-3 px-4"><?= htmlspecialchars($c['school_year']) ?></td>
-                            <td class="py-3 px-4 text-center"><span class="badge badge-info"><i class="bi bi-pen"></i> <?= $c['signatory_count'] ?></span></td>
-                            <td class="py-3 px-4 text-center"><span class="badge badge-info"><i class="bi bi-people"></i> <?= $c['enrollment_committee_count'] ?></span></td>
-                            <td class="py-3 px-4 text-center"><span class="badge badge-info"><i class="bi bi-mortarboard"></i> <?= $c['student_count'] ?></span></td>
-                            <td class="py-3 px-4">
-                                <div style="display:flex; gap:.5rem; justify-content:flex-end; align-items:center;">
+                            <td class="py-3 px-4" data-label="School Year"><?= htmlspecialchars($c['school_year']) ?></td>
+                            <td class="py-3 px-4 text-center" data-label="Signatories"><span class="badge badge-info"><i class="bi bi-pen"></i> <?= $c['signatory_count'] ?></span></td>
+                            <td class="py-3 px-4 text-center" data-label="Enrollment Committee"><span class="badge badge-info"><i class="bi bi-people"></i> <?= $c['enrollment_committee_count'] ?></span></td>
+                            <td class="py-3 px-4 text-center" data-label="Students"><span class="badge badge-info"><i class="bi bi-mortarboard"></i> <?= $c['student_count'] ?></span></td>
+                            <td class="py-3 px-4 text-end" data-label="Actions">
+                                <div class="action-cell">
                                     <a href="<?= BASE_URL ?>admin/clearances/detail?id=<?= $c['id'] ?>"
                                        class="btn btn-primary btn-sm"><i class="bi bi-gear"></i> Manage</a>
                                     <button class="btn btn-secondary btn-sm"
