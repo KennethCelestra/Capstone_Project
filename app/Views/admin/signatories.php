@@ -39,7 +39,7 @@
                             </td>
                             <td class="py-3 px-4" data-label="Password">
                                 <?php if (!empty($s['temp_password'])): ?>
-                                    <span class="badge bg-warning text-dark" style="font-family: monospace;" title="Temporary Password">Temp: <?= htmlspecialchars($s['temp_password']) ?></span>
+                                    <span class="badge bg-warning text-dark" style="font-family: monospace;" title="Temporary Password"><?= htmlspecialchars($s['temp_password']) ?></span>
                                 <?php else: ?>
                                     <span class="password-pill">********</span>
                                 <?php endif; ?>
@@ -181,13 +181,13 @@
 </div>
 
 <datalist id="college_list">
-    <?php foreach (['CAS','CCI','CEA','CIT','COE'] as $col): ?>
-        <option value="<?= $col ?>"></option>
+    <?php foreach ($colleges as $col): ?>
+        <option value="<?= htmlspecialchars($col) ?>"></option>
     <?php endforeach; ?>
 </datalist>
 <datalist id="course_list">
-    <?php foreach (['BSAMT','BSArchi','BSCE','BSCS','BSECE','BSEE','BSFT','BSIS','BSIT','BSME'] as $cur): ?>
-        <option value="<?= $cur ?>"></option>
+    <?php foreach ($courses as $cur): ?>
+        <option value="<?= htmlspecialchars($cur) ?>"></option>
     <?php endforeach; ?>
 </datalist>
 

@@ -31,7 +31,7 @@
                             <td class="py-3 px-4" data-label="Department"><span class="badge badge-info"><?= htmlspecialchars($a['department']) ?></span></td>
                             <td class="py-3 px-4" data-label="Password">
                                 <?php if (!empty($a['temp_password'])): ?>
-                                    <span class="badge bg-warning text-dark" style="font-family: monospace;" title="Temporary Password">Temp: <?= htmlspecialchars($a['temp_password']) ?></span>
+                                    <span class="badge bg-warning text-dark" style="font-family: monospace;" title="Temporary Password"><?= htmlspecialchars($a['temp_password']) ?></span>
                                 <?php else: ?>
                                     <span class="password-pill">********</span>
                                 <?php endif; ?>

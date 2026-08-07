@@ -84,4 +84,30 @@ class Student extends Model
         $stmt->execute([$clearanceId]);
         return $stmt->fetchAll();
     }
+
+    /**
+     * Get all distinct, non-empty college values from the students table.
+     */
+    public function getDistinctColleges(): array
+    {
+        $stmt = $this->db->query("
+            SELECT DISTINCT college FROM students
+            WHERE college IS NOT NULL AND college != ''
+            ORDER BY college ASC
+        ");
+        return $stmt->fetchAll(\PDO::FETCH_COLUMN);
+    }
+
+    /**
+     * Get all distinct, non-empty course values from the students table.
+     */
+    public function getDistinctCourses(): array
+    {
+        $stmt = $this->db->query("
+            SELECT DISTINCT course FROM students
+            WHERE course IS NOT NULL AND course != ''
+            ORDER BY course ASC
+        ");
+        return $stmt->fetchAll(\PDO::FETCH_COLUMN);
+    }
 }

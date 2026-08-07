@@ -120,6 +120,29 @@ class ClearanceStatus extends Model
     }
 
     /**
+     * Bulk-flag multiple students with a single shared deficiency note.
+     * Returns the number of rows actually flagged.
+     */
+    public function bulkFlagStudents(int $clearanceId, array $studentIds, int $signatoryId, string $note): int
+    {
+        if (empty($studentIds)) return 0;
+
+        $stmt = $this->db->prepare("
+            INSERT INTO clearance_status (clearance_id, student_id, signatory_id, status, flag_note, signed_at)
+            VALUES (?, ?, ?, 'flagged', ?, NULL)
+            ON DUPLICATE KEY UPDATE status = 'flagged', flag_note = VALUES(flag_note), signed_at = NULL
+        ");
+
+        $count = 0;
+        foreach ($studentIds as $studentId) {
+            if ($stmt->execute([$clearanceId, (int)$studentId, $signatoryId, $note])) {
+                $count++;
+            }
+        }
+        return $count;
+    }
+
+    /**
      * Clear (unflag) a student — sets status to 'cleared'.
      */
     public function clearStudent(int $clearanceId, int $studentId, int $signatoryId): bool

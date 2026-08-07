@@ -63,7 +63,7 @@ class Mailer
     /**
      * Send a deficiency notification to a flagged student.
      */
-    public static function sendDeficiencyEmail(
+    private static function sendDeficiencyEmail(
         string $studentEmail,
         string $studentName,
         string $officeName,
@@ -87,7 +87,7 @@ class Mailer
     /**
      * Send a "clearance complete" notification once all signatories have cleared the student.
      */
-    public static function sendClearedEmail(
+    private static function sendClearedEmail(
         string $studentEmail,
         string $studentName,
         string $clearanceName,

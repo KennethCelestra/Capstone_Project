@@ -161,6 +161,68 @@ class SignatoryController extends Controller
     }
 
     // ----------------------------------------------------------------
+    // Bulk flag multiple students with a shared deficiency note
+    // ----------------------------------------------------------------
+
+    public function bulkFlagStudents(): void
+    {
+        $this->requireLogin('signatory');
+        $clearanceId = (int) $this->getPost('clearance_id');
+        $note        = trim($this->getPost('flag_note', ''));
+        $signatoryId = (int) $_SESSION['user_id'];
+        $studentIds  = $this->getPost('student_ids', []);
+
+        if (!is_array($studentIds)) {
+            $studentIds = [];
+        }
+        $studentIds = array_filter(array_map('intval', $studentIds));
+
+        if (!$clearanceId || empty($studentIds) || $note === '') {
+            $this->setFlash('error', 'Please select at least one student and provide a deficiency reason.');
+            $this->redirect("signatory/clearances?cid={$clearanceId}");
+            return;
+        }
+
+        $count = $this->statusModel->bulkFlagStudents($clearanceId, $studentIds, $signatoryId, $note);
+
+        // Queue one bulk deficiency email job for all flagged students
+        if ($count > 0) {
+            $signatoryRecord = $this->signatoryModel->findById($signatoryId);
+            $officeName      = $signatoryRecord ? $signatoryRecord['office'] : 'Office';
+
+            $studentsInfo = [];
+            foreach ($studentIds as $studentId) {
+                $info = $this->statusModel->getStudentClearanceInfo($clearanceId, $studentId);
+                if ($info) {
+                    $studentsInfo[] = [
+                        'email'          => $info['email'],
+                        'full_name'      => $info['full_name'],
+                        'clearance_name' => $info['clearance_name'],
+                        'flag_note'      => $note,
+                    ];
+                }
+            }
+
+            if (!empty($studentsInfo)) {
+                if (!isset($_SESSION['bg_emails'])) {
+                    $_SESSION['bg_emails'] = [];
+                }
+                $_SESSION['bg_emails'][] = [
+                    'type'       => 'deficiency',
+                    'officeName' => $officeName,
+                    'students'   => $studentsInfo,
+                ];
+            }
+
+            $this->setFlash('warning', "{$count} student(s) flagged. Deficiency emails sending in the background.");
+        } else {
+            $this->setFlash('error', 'No students were flagged. Please try again.');
+        }
+
+        $this->redirect("signatory/clearances?cid={$clearanceId}");
+    }
+
+    // ----------------------------------------------------------------
     // Clear (sign off) a single student
     // ----------------------------------------------------------------
 
@@ -377,7 +439,6 @@ class SignatoryController extends Controller
         $clearanceId = (int) $this->getPost('clearance_id', 0);
         $flagged     = $this->statusModel->getFlaggedStudentsForConfirmation($signatoryId, $clearanceId);
         $sent = 0;
-        $errors = 0;
 
         if (!empty($flagged)) {
             if (!isset($_SESSION['bg_emails'])) {

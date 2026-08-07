@@ -243,6 +243,8 @@ class AdminController extends Controller
         $this->requireLogin('admin');
         $data = [
             'signatories' => $this->signatoryModel->findAll(),
+            'colleges'    => $this->studentModel->getDistinctColleges(),
+            'courses'     => $this->studentModel->getDistinctCourses(),
             'flash'       => $this->getFlash(),
             'userName'    => $_SESSION['user_name'],
         ];
@@ -271,7 +273,7 @@ class AdminController extends Controller
             'scope_type'  => $scopeType,
             'scope_value' => $scopeValue,
         ];
-        if (in_array('', $data, true)) {
+        if (empty($data['full_name']) || empty($data['email']) || empty($data['office']) || empty($data['password'])) {
             $this->setFlash('error', 'All fields are required.');
         } else {
             $this->signatoryModel->create($data);

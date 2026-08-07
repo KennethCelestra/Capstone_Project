@@ -225,30 +225,6 @@ class Clearance extends Model
         return $rows;
     }
 
-    public function enrollStudent(int $clearanceId, int $studentDbId): void
-    {
-        // Add to pivot
-        $this->db->prepare("
-            INSERT IGNORE INTO clearance_students (clearance_id, student_id) VALUES (?, ?)
-        ")->execute([$clearanceId, $studentDbId]);
-
-        // Create status rows for signatories that match this student's scope
-        $insertStatusSql = "
-            INSERT IGNORE INTO clearance_status (clearance_id, student_id, signatory_id)
-            SELECT ?, st.id, csig.signatory_id
-            FROM students st
-            JOIN clearance_signatories csig ON csig.clearance_id = ?
-            JOIN signatories sg ON sg.id = csig.signatory_id
-            WHERE st.id = ?
-              AND (
-                  sg.scope_type IS NULL 
-                  OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
-                  OR (sg.scope_type = 'course' AND sg.scope_value = st.course)
-              )
-        ";
-        $this->db->prepare($insertStatusSql)->execute([$clearanceId, $clearanceId, $studentDbId]);
-    }
-
     public function bulkEnrollStudents(int $clearanceId, array $studentDbIds): void
     {
         if (empty($studentDbIds)) return;

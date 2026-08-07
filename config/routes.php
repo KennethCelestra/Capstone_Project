@@ -78,6 +78,7 @@ $routes = [
     'GET /signatory/dashboard'                    => ['SignatoryController', 'dashboard'],
     'GET /signatory/clearances'                   => ['SignatoryController', 'clearances'],
     'POST /signatory/students/flag'               => ['SignatoryController', 'flagStudent'],
+    'POST /signatory/students/flag-bulk'          => ['SignatoryController', 'bulkFlagStudents'],
     'POST /signatory/students/clear'              => ['SignatoryController', 'clearStudent'],
     'POST /signatory/students/clear-all'          => ['SignatoryController', 'clearAll'],
     'POST /signatory/confirm/submit'              => ['SignatoryController', 'submitConfirm'],
