@@ -188,6 +188,7 @@ $cPending = count($students) - $cFlagged - $cCleared;
     </div>
 <?php else: ?>
 <form id="bulk-flag-form" action="<?= BASE_URL ?>signatory/students/flag-bulk" method="POST">
+    <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
     <input type="hidden" name="clearance_id" value="<?= $selectedCid ?>">
     <input type="hidden" name="flag_note" id="bulk-flag-note-hidden" value="">
 
@@ -300,6 +301,7 @@ $cPending = count($students) - $cFlagged - $cCleared;
             <button type="button" class="modal-close" onclick="closeFlagModal()">✕</button>
         </div>
         <form action="<?= BASE_URL ?>signatory/students/flag" method="POST" id="flag-form">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <input type="hidden" name="clearance_id" id="modal-clearance-id">
             <input type="hidden" name="student_id"   id="modal-student-id">
             <div class="modal-body">
@@ -351,6 +353,7 @@ $cPending = count($students) - $cFlagged - $cCleared;
             <button type="button" class="modal-close" onclick="closeUnflagModal()">✕</button>
         </div>
         <form action="<?= BASE_URL ?>signatory/students/clear" method="POST" id="unflag-form">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <input type="hidden" name="clearance_id" id="unflag-modal-clearance-id">
             <input type="hidden" name="student_id"   id="unflag-modal-student-id">
             <div class="modal-body">
@@ -372,6 +375,7 @@ $cPending = count($students) - $cFlagged - $cCleared;
             <button type="button" class="modal-close" onclick="closeConfirmAllModal()">✕</button>
         </div>
         <form action="<?= BASE_URL ?>signatory/confirm-all" method="POST" id="confirm-all-form-modal">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <input type="hidden" name="clearance_id" value="<?= $selectedCid ?>">
             <div class="modal-body">
                 <p>This will clear all pending students.</p>

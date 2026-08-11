@@ -60,9 +60,9 @@ $cid = $clearance['id'];
                             <td data-label="Email"><?= htmlspecialchars($s['email']) ?></td>
                             <td data-label="Scope">
                                 <?php if ($s['scope_type'] === 'college'): ?>
-                                    <span class="badge" style="background:var(--primary);color:#fff;">College: <?= htmlspecialchars($s['scope_value']) ?></span>
+                                    College: <?= htmlspecialchars($s['scope_value']) ?>
                                 <?php elseif ($s['scope_type'] === 'course'): ?>
-                                    <span class="badge" style="background:var(--secondary);color:#fff;">Course: <?= htmlspecialchars($s['scope_value']) ?></span>
+                                    Course: <?= htmlspecialchars($s['scope_value']) ?>
                                 <?php else: ?>
                                     <span class="text-muted" style="font-size:0.8rem;">All Students</span>
                                 <?php endif; ?>
@@ -71,6 +71,7 @@ $cid = $clearance['id'];
                                 <div class="action-cell">
                                     <form action="<?= BASE_URL ?>admin/clearances/signatories/remove"
                                           method="POST" onsubmit="return confirmAction(this, 'Remove this signatory?', 'Remove', 'btn-danger')">
+                                         <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                                          <input type="hidden" name="clearance_id" value="<?= $cid ?>">
                                          <input type="hidden" name="signatory_id" value="<?= $s['id'] ?>">
                                          <input type="hidden" name="tab"          value="tab-sig">
@@ -111,6 +112,7 @@ $cid = $clearance['id'];
                                 <div class="action-cell">
                                     <form action="<?= BASE_URL ?>admin/clearances/enrollment-committees/remove"
                                           method="POST" onsubmit="return confirmAction(this, 'Remove this member?', 'Remove', 'btn-danger')">
+                                         <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                                          <input type="hidden" name="clearance_id" value="<?= $cid ?>">
                                          <input type="hidden" name="enrollment_committee_id"   value="<?= $a['id'] ?>">
                                          <input type="hidden" name="tab"          value="tab-adv">
@@ -182,6 +184,7 @@ $cid = $clearance['id'];
                                 <div class="action-cell">
                                     <form action="<?= BASE_URL ?>admin/clearances/students/remove"
                                           method="POST" onsubmit="return confirmAction(this, 'Remove student from clearance?', 'Remove', 'btn-danger')">
+                                         <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                                          <input type="hidden" name="clearance_id" value="<?= $cid ?>">
                                          <input type="hidden" name="student_id"   value="<?= $s['id'] ?>">
                                          <input type="hidden" name="tab"          value="tab-stu">
@@ -205,6 +208,7 @@ $cid = $clearance['id'];
             <button onclick="document.getElementById('editClearanceDetailModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <form action="<?= BASE_URL ?>admin/clearances/edit" method="POST" class="modal-form">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <input type="hidden" name="id" id="editDetailId">
             <div class="form-group">
                 <label>Clearance Name *</label>
@@ -235,6 +239,7 @@ $cid = $clearance['id'];
             <button onclick="document.getElementById('assignSigModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <form action="<?= BASE_URL ?>admin/clearances/signatories/assign" method="POST" class="modal-form">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
             <input type="hidden" name="tab"          value="tab-sig">
             <div class="form-group">
@@ -275,6 +280,7 @@ $cid = $clearance['id'];
             <button onclick="document.getElementById('assignAdvModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <form action="<?= BASE_URL ?>admin/clearances/enrollment-committees/assign" method="POST" class="modal-form">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
             <input type="hidden" name="tab"          value="tab-adv">
             <div class="form-group">
@@ -313,6 +319,7 @@ $cid = $clearance['id'];
         </div>
         <form action="<?= BASE_URL ?>admin/clearances/students/upload" method="POST"
               enctype="multipart/form-data" class="modal-form">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
             <input type="hidden" name="tab"          value="tab-stu">
             <div class="form-group">

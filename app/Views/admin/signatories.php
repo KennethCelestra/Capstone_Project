@@ -32,9 +32,9 @@
                             <td class="py-3 px-4" data-label="Office"><span class="badge badge-info"><?= htmlspecialchars($s['office']) ?></span></td>
                             <td class="py-3 px-4" data-label="Scope">
                                 <?php if (empty($s['scope_type'])): ?>
-                                    <span class="badge bg-secondary">All Students</span>
+                                    <span class="text-muted" style="font-size:0.85rem;">All Students</span>
                                 <?php else: ?>
-                                    <span class="badge bg-primary"><?= ucfirst(htmlspecialchars($s['scope_type'])) ?>: <?= htmlspecialchars($s['scope_value']) ?></span>
+                                    <?= ucfirst(htmlspecialchars($s['scope_type'])) ?>: <?= htmlspecialchars($s['scope_value']) ?>
                                 <?php endif; ?>
                             </td>
                             <td class="py-3 px-4" data-label="Password">
@@ -52,6 +52,7 @@
                                     </button>
                                     <form action="<?= BASE_URL ?>admin/signatories/delete" method="POST" style="margin:0;"
                                           onsubmit="return confirmAction(this, 'Delete this signatory?', 'Delete', 'btn-danger')">
+                                        <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                                         <input type="hidden" name="id" value="<?= $s['id'] ?>">
                                         <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Delete</button>
                                     </form>
@@ -73,6 +74,7 @@
             <button onclick="document.getElementById('addSignatoryModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <form action="<?= BASE_URL ?>admin/signatories/add" method="POST" class="modal-form">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <div class="form-group">
                 <label>Full Name *</label>
                 <input type="text" name="full_name" required placeholder="Ms. Maria Santos">
@@ -132,6 +134,7 @@
             <button onclick="document.getElementById('editSignatoryModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <form action="<?= BASE_URL ?>admin/signatories/edit" method="POST" class="modal-form" id="editSignatoryForm">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <input type="hidden" name="id" id="editSigId">
             <div class="form-group">
                 <label>Full Name *</label>

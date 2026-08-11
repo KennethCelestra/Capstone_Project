@@ -49,11 +49,13 @@
                                        class="btn btn-secondary btn-sm"><i class="bi bi-eye"></i> View</a>
                                     <form action="<?= BASE_URL ?>admin/clearances/unarchive" method="POST" style="margin:0;"
                                           onsubmit="return confirmAction(this, 'Restore this clearance to active?', 'Restore', 'btn-success')">
+                                        <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                                         <input type="hidden" name="id" value="<?= $c['id'] ?>">
                                         <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-arrow-counterclockwise"></i> Restore</button>
                                     </form>
                                     <form action="<?= BASE_URL ?>admin/clearances/delete" method="POST" style="margin:0;"
                                           onsubmit="return confirmAction(this, 'PERMANENTLY delete this clearance? All student data, flags, and statuses will be gone forever. This cannot be undone.', 'Permanently Delete', 'btn-danger')">
+                                        <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                                         <input type="hidden" name="id" value="<?= $c['id'] ?>">
                                         <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Delete</button>
                                     </form>

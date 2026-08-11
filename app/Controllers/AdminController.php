@@ -74,6 +74,7 @@ class AdminController extends Controller
     public function addStudent(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/students'); return; }
         $data = [
             'student_id' => $this->getPost('student_id'),
             'last_name'  => $this->getPost('last_name'),
@@ -83,7 +84,6 @@ class AdminController extends Controller
             'course'     => $this->getPost('course'),
             'year_level' => $this->getPost('year_level'),
             'section'    => $this->getPost('section'),
-            'password'   => $this->getPost('password'),
         ];
         if (in_array('', $data, true)) {
             $this->setFlash('error', 'All fields are required.');
@@ -97,6 +97,7 @@ class AdminController extends Controller
     public function deleteStudent(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/students'); return; }
         $id = (int) $this->getPost('id');
         if ($id <= 0) {
             $this->setFlash('error', 'Invalid student ID.');
@@ -111,6 +112,7 @@ class AdminController extends Controller
     public function uploadStudents(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $clearanceId = (int) $this->getPost('clearance_id');
 
         $tab = $this->getPost('tab', 'tab-stu');
@@ -190,6 +192,7 @@ class AdminController extends Controller
     public function addEnrollmentCommittee(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/enrollment-committees'); return; }
         $data = [
             'full_name'  => $this->getPost('full_name'),
             'email'      => $this->getPost('email'),
@@ -208,6 +211,7 @@ class AdminController extends Controller
     public function editEnrollmentCommittee(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/enrollment-committees'); return; }
         $id = (int) $this->getPost('id');
         $data = [
             'full_name'  => $this->getPost('full_name'),
@@ -223,6 +227,7 @@ class AdminController extends Controller
     public function deleteEnrollmentCommittee(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/enrollment-committees'); return; }
         $id = (int) $this->getPost('id');
         if ($id <= 0) {
             $this->setFlash('error', 'Invalid member ID.');
@@ -254,6 +259,7 @@ class AdminController extends Controller
     public function addSignatory(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/signatories'); return; }
         
         $scopeType = $this->getPost('scope_type', '');
         $scopeValue = null;
@@ -285,6 +291,7 @@ class AdminController extends Controller
     public function editSignatory(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/signatories'); return; }
         $id = (int) $this->getPost('id');
 
         $scopeType = $this->getPost('scope_type', '');
@@ -313,6 +320,7 @@ class AdminController extends Controller
     public function deleteSignatory(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/signatories'); return; }
         $id = (int) $this->getPost('id');
         if ($id <= 0) {
             $this->setFlash('error', 'Invalid signatory ID.');
@@ -342,6 +350,7 @@ class AdminController extends Controller
     public function createClearance(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $data = [
             'name'        => $this->getPost('name'),
             'description' => $this->getPost('description', ''),
@@ -361,6 +370,7 @@ class AdminController extends Controller
     public function editClearance(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $id = (int) $this->getPost('id');
         $data = [
             'name'        => $this->getPost('name'),
@@ -380,6 +390,7 @@ class AdminController extends Controller
     public function deleteClearance(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $id = (int) $this->getPost('id');
         $this->clearanceModel->delete($id);
         $this->setFlash('success', 'Clearance deleted.');
@@ -389,6 +400,7 @@ class AdminController extends Controller
     public function archiveClearance(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $id = (int) $this->getPost('id');
         $this->clearanceModel->archive($id);
         $this->setFlash('success', 'Clearance archived. You can restore it from Archived Clearances.');
@@ -398,6 +410,7 @@ class AdminController extends Controller
     public function unarchiveClearance(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/archived-clearances'); return; }
         $id = (int) $this->getPost('id');
         $this->clearanceModel->unarchive($id);
         $this->setFlash('success', 'Clearance restored to active.');
@@ -444,6 +457,7 @@ class AdminController extends Controller
     public function assignSignatory(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $clearanceId  = (int) $this->getPost('clearance_id');
         $signatoryVal = $this->getPost('signatory_id');
 
@@ -469,6 +483,7 @@ class AdminController extends Controller
     public function bulkAssignSignatories(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $clearanceId  = (int) $this->getPost('clearance_id');
         $signatoryIds = $this->getPost('signatory_ids', []);
 
@@ -489,6 +504,7 @@ class AdminController extends Controller
     public function removeSignatory(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $clearanceId = (int) $this->getPost('clearance_id');
         $signatoryId = (int) $this->getPost('signatory_id');
         $this->clearanceModel->removeSignatory($clearanceId, $signatoryId);
@@ -503,6 +519,7 @@ class AdminController extends Controller
     public function assignEnrollmentCommittee(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $clearanceId  = (int) $this->getPost('clearance_id');
         $committeeVal = $this->getPost('enrollment_committee_id');
 
@@ -528,6 +545,7 @@ class AdminController extends Controller
     public function bulkAssignEnrollmentCommittees(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $clearanceId = (int) $this->getPost('clearance_id');
         $enrollmentCommitteeIds = $this->getPost('enrollment_committee_ids', []);
         
@@ -548,6 +566,7 @@ class AdminController extends Controller
     public function removeEnrollmentCommittee(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $clearanceId = (int) $this->getPost('clearance_id');
         $enrollmentCommitteeId = (int) $this->getPost('enrollment_committee_id');
         $this->clearanceModel->removeEnrollmentCommittee($clearanceId, $enrollmentCommitteeId);
@@ -562,6 +581,7 @@ class AdminController extends Controller
     public function removeStudentFromClearance(): void
     {
         $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $clearanceId = (int) $this->getPost('clearance_id');
         $studentId   = (int) $this->getPost('student_id');
         $this->clearanceModel->removeStudent($clearanceId, $studentId);

@@ -7,8 +7,8 @@ class Student extends Model
     public function create(array $data): bool
     {
         $stmt = $this->db->prepare("
-            INSERT INTO students (student_id, last_name, first_name, email, college, course, year_level, section, password)
-            VALUES (:student_id, :last_name, :first_name, :email, :college, :course, :year_level, :section, :password)
+            INSERT INTO students (student_id, last_name, first_name, email, college, course, year_level, section)
+            VALUES (:student_id, :last_name, :first_name, :email, :college, :course, :year_level, :section)
         ");
         return $stmt->execute([
             ':student_id' => $data['student_id'],
@@ -19,7 +19,6 @@ class Student extends Model
             ':course'     => $data['course'],
             ':year_level' => $data['year_level'],
             ':section'    => $data['section'],
-            ':password'   => '', // Students do not log in
         ]);
     }
 
@@ -32,11 +31,13 @@ class Student extends Model
     public function bulkInsertFromCSV(array $rows): array
     {
         $stmt = $this->db->prepare("
-            INSERT IGNORE INTO students (student_id, last_name, first_name, email, college, course, year_level, section, password)
-            VALUES (:student_id, :last_name, :first_name, :email, :college, :course, :year_level, :section, :password)
+            INSERT IGNORE INTO students (student_id, last_name, first_name, email, college, course, year_level, section)
+            VALUES (:student_id, :last_name, :first_name, :email, :college, :course, :year_level, :section)
         ");
         $inserted = 0;
         $skipped  = 0;
+
+        $this->db->beginTransaction();
         foreach ($rows as $row) {
             // Require at minimum student_id, last_name, first_name, email
             if (empty($row['student_id']) || empty($row['last_name']) || empty($row['first_name']) || empty($row['email'])) {
@@ -52,7 +53,6 @@ class Student extends Model
                 ':course'     => trim($row['course'] ?? ''),
                 ':year_level' => (int) ($row['year_level'] ?? 1),
                 ':section'    => trim($row['section'] ?? ''),
-                ':password'   => '', // Students do not log in
             ]);
             if ($ok && $stmt->rowCount() > 0) {
                 $inserted++;
@@ -60,6 +60,7 @@ class Student extends Model
                 $skipped++;
             }
         }
+        $this->db->commit();
         return [$inserted, $skipped];
     }
 

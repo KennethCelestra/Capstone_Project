@@ -54,6 +54,7 @@
                                     </button>
                                     <form action="<?= BASE_URL ?>admin/clearances/archive" method="POST" style="margin:0;"
                                           onsubmit="return confirmAction(this, 'Archive this clearance? It will be hidden from active list but all data is preserved.', 'Archive', 'btn-warning')">
+                                        <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                                         <input type="hidden" name="id" value="<?= $c['id'] ?>">
                                         <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-archive"></i> Archive</button>
                                     </form>
@@ -75,6 +76,7 @@
             <button onclick="document.getElementById('createClearanceModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <form action="<?= BASE_URL ?>admin/clearances/create" method="POST" class="modal-form">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <div class="form-group">
                 <label>Clearance Name <span class="required">*</span></label>
                 <input type="text" name="name" required placeholder="e.g. BSIT Clearance S2 2025">
@@ -104,6 +106,7 @@
             <button onclick="document.getElementById('editClearanceModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <form action="<?= BASE_URL ?>admin/clearances/edit" method="POST" class="modal-form">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <input type="hidden" name="id" id="editClearanceId">
             <div class="form-group">
                 <label>Clearance Name <span class="required">*</span></label>

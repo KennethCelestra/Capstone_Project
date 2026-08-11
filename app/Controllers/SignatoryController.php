@@ -123,6 +123,7 @@ class SignatoryController extends Controller
     public function flagStudent(): void
     {
         $this->requireLogin('signatory');
+        if (!$this->validateCsrfToken()) { $this->redirect('signatory/clearances'); return; }
         $clearanceId = (int)  $this->getPost('clearance_id');
         $studentId   = (int)  $this->getPost('student_id');
         $note        = trim($this->getPost('flag_note', ''));
@@ -167,6 +168,7 @@ class SignatoryController extends Controller
     public function bulkFlagStudents(): void
     {
         $this->requireLogin('signatory');
+        if (!$this->validateCsrfToken()) { $this->redirect('signatory/clearances'); return; }
         $clearanceId = (int) $this->getPost('clearance_id');
         $note        = trim($this->getPost('flag_note', ''));
         $signatoryId = (int) $_SESSION['user_id'];
@@ -229,6 +231,7 @@ class SignatoryController extends Controller
     public function clearStudent(): void
     {
         $this->requireLogin('signatory');
+        if (!$this->validateCsrfToken()) { $this->redirect('signatory/clearances'); return; }
         $clearanceId = (int) $this->getPost('clearance_id');
         $studentId   = (int) $this->getPost('student_id');
         $signatoryId = (int) $_SESSION['user_id'];
@@ -264,6 +267,7 @@ class SignatoryController extends Controller
     public function clearAll(): void
     {
         $this->requireLogin('signatory');
+        if (!$this->validateCsrfToken()) { $this->redirect('signatory/clearances'); return; }
         $clearanceId = (int) $this->getPost('clearance_id');
         $signatoryId = (int) $_SESSION['user_id'];
 
@@ -272,28 +276,22 @@ class SignatoryController extends Controller
             $count = count($clearedIds);
 
             if ($count > 0) {
-                // Check each student to see if they are now fully cleared
-                $fullyClearedCount = 0;
-                $infosToBg = [];
-                foreach ($clearedIds as $studentId) {
-                    if ($this->statusModel->isStudentFullyCleared($clearanceId, $studentId)) {
-                        $info = $this->statusModel->getStudentClearanceInfo($clearanceId, $studentId);
-                        if ($info) {
-                            $infosToBg[] = $info;
-                            $fullyClearedCount++;
-                        }
-                    }
-                }
+                // Batch-check which students are now fully cleared (single query)
+                $fullyClearedIds = $this->statusModel->getFullyClearedStudents($clearanceId, $clearedIds);
+                $fullyClearedCount = count($fullyClearedIds);
 
-                if (!empty($infosToBg)) {
-                    if (!isset($_SESSION['bg_emails'])) {
-                        $_SESSION['bg_emails'] = [];
+                if (!empty($fullyClearedIds)) {
+                    $infos = $this->statusModel->getBulkStudentClearanceInfo($clearanceId, $fullyClearedIds);
+                    if (!empty($infos)) {
+                        if (!isset($_SESSION['bg_emails'])) {
+                            $_SESSION['bg_emails'] = [];
+                        }
+                        $_SESSION['bg_emails'][] = [
+                            'type'         => 'cleared',
+                            'clearance_id' => $clearanceId,
+                            'students'     => $infos,
+                        ];
                     }
-                    $_SESSION['bg_emails'][] = [
-                        'type' => 'cleared',
-                        'clearance_id' => $clearanceId,
-                        'students' => $infosToBg
-                    ];
                 }
 
                 $msg = "{$count} student(s) have been cleared.";
@@ -316,6 +314,7 @@ class SignatoryController extends Controller
     public function confirmAll(): void
     {
         $this->requireLogin('signatory');
+        if (!$this->validateCsrfToken()) { $this->redirect('signatory/clearances'); return; }
         $signatoryId = (int) $_SESSION['user_id'];
         $clearanceId = (int) $this->getPost('clearance_id', 0);
 
@@ -431,6 +430,7 @@ class SignatoryController extends Controller
     public function submitConfirm(): void
     {
         $this->requireLogin('signatory');
+        if (!$this->validateCsrfToken()) { $this->redirect('signatory/clearances'); return; }
         $signatoryId = (int) $_SESSION['user_id'];
 
         $signatoryRecord = $this->signatoryModel->findById($signatoryId);

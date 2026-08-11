@@ -44,6 +44,7 @@
                                     </button>
                                     <form action="<?= BASE_URL ?>admin/enrollment-committees/delete" method="POST" style="margin:0;"
                                           onsubmit="return confirmAction(this, 'Delete this enrollment committee member?', 'Delete', 'btn-danger')">
+                                        <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                                         <input type="hidden" name="id" value="<?= $a['id'] ?>">
                                         <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Delete</button>
                                     </form>
@@ -65,6 +66,7 @@
             <button onclick="document.getElementById('addEnrollmentCommitteeModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <form action="<?= BASE_URL ?>admin/enrollment-committees/add" method="POST" class="modal-form">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <div class="form-group">
                 <label>Full Name *</label>
                 <input type="text" name="full_name" required placeholder="Prof. Juan Dela Cruz">
@@ -98,6 +100,7 @@
             <button onclick="document.getElementById('editEnrollmentCommitteeModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <form action="<?= BASE_URL ?>admin/enrollment-committees/edit" method="POST" class="modal-form" id="editEnrollmentCommitteeForm">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <input type="hidden" name="id" id="editAdvId">
             <div class="form-group">
                 <label>Full Name *</label>

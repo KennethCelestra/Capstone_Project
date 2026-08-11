@@ -34,6 +34,7 @@
                             <div class="action-cell">
                                 <form action="<?= BASE_URL ?>admin/students/delete" method="POST" style="margin:0;"
                                       onsubmit="return confirmAction(this, 'Delete this student?', 'Delete', 'btn-danger')">
+                                    <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                                     <input type="hidden" name="id" value="<?= $s['id'] ?>">
                                     <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Delete</button>
                                 </form>
@@ -59,6 +60,7 @@
             <button onclick="document.getElementById('addStudentModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <form action="<?= BASE_URL ?>admin/students/add" method="POST" class="modal-form">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <div class="form-row">
                 <div class="form-group">
                     <label>Student ID *</label>
@@ -109,10 +111,6 @@
                     <label>Section *</label>
                     <input type="text" name="section" required placeholder="A">
                 </div>
-            </div>
-            <div class="form-group">
-                <label>Default Password *</label>
-                <input type="text" name="password" required placeholder="Password">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
