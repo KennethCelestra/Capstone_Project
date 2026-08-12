@@ -211,12 +211,12 @@ $cid = $clearance['id'];
             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <input type="hidden" name="id" id="editDetailId">
             <div class="form-group">
-                <label>Clearance Name *</label>
+                <label>Clearance Name <span class="required">*</span></label>
                 <input type="text" name="name" id="editDetailName" required>
             </div>
             <div class="form-group">
-                <label>School Year</label>
-                <input type="text" name="school_year" id="editDetailYear">
+                <label>School Year <span class="required">*</span></label>
+                <input type="text" name="school_year" id="editDetailYear" required>
             </div>
             <div class="form-group">
                 <label>Description</label>

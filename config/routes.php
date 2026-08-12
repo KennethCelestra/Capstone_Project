@@ -84,4 +84,7 @@ $routes = [
     'POST /signatory/confirm/submit'              => ['SignatoryController', 'submitConfirm'],
     'POST /signatory/confirm-all'                 => ['SignatoryController', 'confirmAll'],
     'POST /api/process-bg-emails'                 => ['SignatoryController', 'processBgEmails'],
+
+    // ---- Public: Printable Clearance Form (token-secured, no login required) ----
+    'GET /clearance/form'                         => ['ClearanceFormController', 'show'],
 ];

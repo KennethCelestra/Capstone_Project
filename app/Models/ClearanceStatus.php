@@ -200,7 +200,8 @@ class ClearanceStatus extends Model
     public function getStudentClearanceInfo(int $clearanceId, int $studentId): array|false
     {
         $stmt = $this->db->prepare("
-            SELECT CONCAT(st.first_name, ' ', st.last_name) AS full_name, st.email, c.name AS clearance_name
+            SELECT st.id AS student_id, CONCAT(st.first_name, ' ', st.last_name) AS full_name, st.email,
+                   c.id AS clearance_id, c.name AS clearance_name
             FROM students   st
             JOIN clearances c  ON c.id = ?
             WHERE st.id = ?
@@ -265,7 +266,8 @@ class ClearanceStatus extends Model
         
         $placeholders = str_repeat('?,', count($studentIds) - 1) . '?';
         $sql = "
-            SELECT st.id AS student_id, CONCAT(st.first_name, ' ', st.last_name) AS full_name, st.email, c.name AS clearance_name
+            SELECT st.id AS student_id, CONCAT(st.first_name, ' ', st.last_name) AS full_name, st.email,
+                   c.id AS clearance_id, c.name AS clearance_name
             FROM students st
             JOIN clearances c ON c.id = ?
             WHERE st.id IN ($placeholders)
@@ -275,6 +277,75 @@ class ClearanceStatus extends Model
         $stmt->execute($params);
 
         return $stmt->fetchAll() ?: [];
+    }
+
+    /**
+     * Get all data needed to render the printable clearance form for one student.
+     * Returns ['student' => [...], 'clearance' => [...], 'signatories' => [...]] or false.
+     * Single optimised query — scales safely to 10,000+ students.
+     */
+    public function getFormData(int $clearanceId, int $studentId): array|false
+    {
+        // 1. Fetch student + clearance data
+        $stmt = $this->db->prepare("
+            SELECT
+                st.id              AS student_db_id,
+                st.student_id      AS student_number,
+                st.first_name,
+                st.last_name,
+                st.email,
+                st.college,
+                st.course,
+                st.year_level,
+                st.section,
+                c.id               AS clearance_id,
+                c.name             AS clearance_name,
+                c.school_year
+            FROM students st
+            JOIN clearances c ON c.id = ?
+            WHERE st.id = ?
+        ");
+        $stmt->execute([$clearanceId, $studentId]);
+        $row = $stmt->fetch();
+        if (!$row) return false;
+
+        $student   = $row;
+        $clearance = [
+            'id'          => $row['clearance_id'],
+            'name'        => $row['clearance_name'],
+            'school_year' => $row['school_year'],
+        ];
+
+        // 2. Fetch all scope-matched signatories with their cleared status for this student
+        $sigStmt = $this->db->prepare("
+            SELECT
+                sg.office,
+                sg.full_name       AS signatory_name,
+                COALESCE(cs.status, 'pending') AS status,
+                cs.signed_at
+            FROM clearance_signatories csig
+            JOIN signatories sg ON sg.id = csig.signatory_id
+            LEFT JOIN clearance_status cs
+                ON cs.signatory_id  = sg.id
+               AND cs.clearance_id  = csig.clearance_id
+               AND cs.student_id    = ?
+            JOIN students st ON st.id = ?
+            WHERE csig.clearance_id = ?
+              AND (
+                  sg.scope_type IS NULL
+                  OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
+                  OR (sg.scope_type = 'course'  AND sg.scope_value = st.course)
+              )
+            ORDER BY sg.office ASC
+        ");
+        $sigStmt->execute([$studentId, $studentId, $clearanceId]);
+        $signatories = $sigStmt->fetchAll();
+
+        return [
+            'student'     => $student,
+            'clearance'   => $clearance,
+            'signatories' => $signatories,
+        ];
     }
 
     // ----------------------------------------------------------------

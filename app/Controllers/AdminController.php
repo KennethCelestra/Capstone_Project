@@ -135,7 +135,12 @@ class AdminController extends Controller
         $header = null;
         while (($line = fgetcsv($handle)) !== false) {
             if ($header === null) {
-                $header = array_map(fn($h) => strtolower(trim($h)), $line);
+                // Strip UTF-8 BOM from the first column header if present
+                if (!empty($line[0])) {
+                    $line[0] = preg_replace('/^\x{EF}\x{BB}\x{BF}/u', '', $line[0]);
+                    $line[0] = str_replace("\xEF\xBB\xBF", '', $line[0]);
+                }
+                $header = array_map(fn($h) => strtolower(trim(preg_replace('/^\x{EF}\x{BB}\x{BF}/u', '', $h))), $line);
                 continue;
             }
             if (count($line) < count($header)) continue; // skip malformed rows
@@ -149,12 +154,13 @@ class AdminController extends Controller
 
         $enrolledCount = 0;
         if ($clearanceId > 0) {
-            $csvIds     = array_column($rows, 'student_id');
-            $unEnrolled = $this->studentModel->findNotInClearance($clearanceId);
+            $csvStudentIds = array_column($rows, 'student_id');
+            $csvEmails     = array_column($rows, 'email');
+            $unEnrolled    = $this->studentModel->findNotInClearance($clearanceId);
             
             $studentIdsToEnroll = [];
             foreach ($unEnrolled as $st) {
-                if (in_array($st['student_id'], $csvIds)) {
+                if (in_array($st['student_id'], $csvStudentIds, true) || in_array($st['email'], $csvEmails, true)) {
                     $studentIdsToEnroll[] = (int) $st['id'];
                 }
             }
@@ -352,12 +358,12 @@ class AdminController extends Controller
         $this->requireLogin('admin');
         if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $data = [
-            'name'        => $this->getPost('name'),
-            'description' => $this->getPost('description', ''),
-            'school_year' => $this->getPost('school_year', ''),
+            'name'        => trim($this->getPost('name', '')),
+            'description' => trim($this->getPost('description', '')),
+            'school_year' => trim($this->getPost('school_year', '')),
         ];
-        if (empty($data['name'])) {
-            $this->setFlash('error', 'Clearance name is required.');
+        if (empty($data['name']) || empty($data['school_year'])) {
+            $this->setFlash('error', 'Clearance name and school year are required.');
             $this->redirect('admin/clearances');
             return;
         }
@@ -373,12 +379,12 @@ class AdminController extends Controller
         if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $id = (int) $this->getPost('id');
         $data = [
-            'name'        => $this->getPost('name'),
-            'description' => $this->getPost('description', ''),
-            'school_year' => $this->getPost('school_year', ''),
+            'name'        => trim($this->getPost('name', '')),
+            'description' => trim($this->getPost('description', '')),
+            'school_year' => trim($this->getPost('school_year', '')),
         ];
-        if (empty($data['name'])) {
-            $this->setFlash('error', 'Clearance name is required.');
+        if (empty($data['name']) || empty($data['school_year'])) {
+            $this->setFlash('error', 'Clearance name and school year are required.');
             $this->redirect("admin/clearances/detail?id={$id}");
             return;
         }

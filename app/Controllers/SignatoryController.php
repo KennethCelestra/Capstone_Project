@@ -406,6 +406,7 @@ class SignatoryController extends Controller
 
         $queue = $_SESSION['bg_emails'];
         unset($_SESSION['bg_emails']); // Clear queue immediately before sending
+        session_write_close(); // Release PHP session lock so user can navigate/logout without blocking!
 
         $sent   = 0;
         $errors = 0;

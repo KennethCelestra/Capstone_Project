@@ -41,3 +41,6 @@ define('SESSION_NAME', getenv('SESSION_NAME') ?: 'clearance_sess');
 // Mail Configuration (Brevo API)
 define('MAIL_FROM', getenv('MAIL_FROM') ?: 'kenneth.celestra@students.isatu.edu.ph');
 define('BREVO_API_KEY', getenv('BREVO_API_KEY') ?: 'your_brevo_api_key_here');
+
+// Clearance Form Token (HMAC signing key)
+define('APP_SECRET', getenv('APP_SECRET') ?: 'isatu_clr_fallback_dev_secret_change_me');

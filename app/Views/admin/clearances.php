@@ -82,8 +82,8 @@
                 <input type="text" name="name" required placeholder="e.g. BSIT Clearance S2 2025">
             </div>
             <div class="form-group">
-                <label>School Year</label>
-                <input type="text" name="school_year" placeholder="e.g. 2024-2025">
+                <label>School Year <span class="required">*</span></label>
+                <input type="text" name="school_year" required placeholder="e.g. 2024-2025">
             </div>
             <div class="form-group">
                 <label>Description</label>
@@ -113,8 +113,8 @@
                 <input type="text" name="name" id="editClearanceName" required>
             </div>
             <div class="form-group">
-                <label>School Year</label>
-                <input type="text" name="school_year" id="editClearanceYear">
+                <label>School Year <span class="required">*</span></label>
+                <input type="text" name="school_year" id="editClearanceYear" required>
             </div>
             <div class="form-group">
                 <label>Description</label>

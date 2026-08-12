@@ -85,35 +85,40 @@ class Mailer
     }
 
     /**
-     * Send a "clearance complete" notification once all signatories have cleared the student.
+     * Send a "clearance complete" notification with a link to the printable form.
      */
     private static function sendClearedEmail(
         string $studentEmail,
         string $studentName,
         string $clearanceName,
-        array $signatoryDetails = []
+        int    $studentDbId,
+        int    $clearanceId
     ): bool {
         $subject = "Clearance Complete — {$clearanceName}";
 
-        $sigListHtml = "";
-        if (!empty($signatoryDetails)) {
-            $sigListHtml .= "<br><p><strong>Signatory Approvals:</strong></p><ul>";
-            foreach ($signatoryDetails as $sig) {
-                $office = htmlspecialchars($sig['office'] ?? 'Unknown Office');
-                $date = !empty($sig['signed_at']) ? date('M j, Y g:i A', strtotime($sig['signed_at'])) : 'Unknown Date';
-                $sigListHtml .= "<li>{$office}: Signed ({$date})</li>";
-            }
-            $sigListHtml .= "</ul><br>";
-        }
+        // Build secure HMAC token for the printable form link
+        $token   = hash_hmac('sha256', "cid={$clearanceId}&sid={$studentDbId}", APP_SECRET);
+        $formUrl = BASE_URL . "clearance/form?cid={$clearanceId}&sid={$studentDbId}&token={$token}";
 
         $body = "
-            <p>Dear <strong>" . htmlspecialchars($studentName) . "</strong>,</p>
-            <p>Congratulations! All signatories have cleared you for the <strong>" . htmlspecialchars($clearanceName) . "</strong> clearance. Your clearance is now <strong>complete</strong>.</p>
-            {$sigListHtml}
-            <p>No further action is required on your part.</p>
-            <p>Please contact your enrollment committee or the administration office if you have any questions.</p>
-            <br>
-            <p><small>This is an automated message from the ISAT U Clearance System. Do not reply to this email.</small></p>
+            <div style=\"font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; color: #333;\">
+                <p>Dear <strong>" . htmlspecialchars($studentName) . "</strong>,</p>
+                <p>Congratulations! You have been fully cleared for the <strong>" . htmlspecialchars($clearanceName) . "</strong> clearance. All required offices have signed off on your record.</p>
+                <p>You may now view and print your official clearance form using the button below:</p>
+                <p style=\"text-align: center; margin: 28px 0;\">
+                    <a href=\"" . htmlspecialchars($formUrl) . "\"
+                       style=\"background-color: #1a56a0; color: #ffffff; text-decoration: none;
+                              padding: 14px 32px; border-radius: 6px; font-size: 15px;
+                              font-weight: bold; display: inline-block;\">
+                        📄 View &amp; Print Clearance Form
+                    </a>
+                </p>
+                <p style=\"font-size: 13px; color: #777;\">If the button does not work, copy and paste this link into your browser:<br>
+                    <a href=\"" . htmlspecialchars($formUrl) . "\" style=\"color: #1a56a0;\">" . htmlspecialchars($formUrl) . "</a>
+                </p>
+                <br>
+                <p><small>This is an automated message from the ISAT U Clearance System. Do not reply to this email.</small></p>
+            </div>
         ";
 
         return self::sendEmail($studentEmail, $studentName, $subject, $body);
@@ -143,12 +148,12 @@ class Mailer
 
         $allOk = true;
         foreach ($studentsData as $student) {
-            $signatoryDetails = isset($student['signatory_details']) ? $student['signatory_details'] : [];
             $ok = self::sendClearedEmail(
                 $student['email'],
                 $student['full_name'],
                 $student['clearance_name'],
-                $signatoryDetails
+                (int) ($student['student_id'] ?? 0),
+                (int) ($student['clearance_id'] ?? 0)
             );
             if (!$ok) $allOk = false;
         }
