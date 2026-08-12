@@ -14,7 +14,11 @@ require_once ROOT_PATH . '/core/Router.php';
 
 // Start session
 session_name(SESSION_NAME);
-$isHttps = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
+$isHttps = (
+    (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) === 'on') ||
+    (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') ||
+    (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+);
 session_set_cookie_params([
     'lifetime' => 0,
     'path'     => '/',

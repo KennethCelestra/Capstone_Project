@@ -18,7 +18,6 @@
             <button type="button" class="sidebar-toggle-btn" id="sidebar-toggle" aria-label="Toggle menu">
                 <i class="bi bi-list"></i>
             </button>
-            <img src="<?= BASE_URL ?>css/logo.png" alt="ISAT-U Logo" class="nav-logo">
             <h5 class="nav-title"><?= APP_NAME ?></h5>
         </div>
     </nav>

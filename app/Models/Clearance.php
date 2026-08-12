@@ -276,57 +276,55 @@ class Clearance extends Model
                 c.id AS clearance_id,
                 c.name AS clearance_name,
                 c.school_year,
-                COUNT(DISTINCT csig.signatory_id) AS signatory_count,
-                COUNT(DISTINCT cst.student_id) AS student_count
+                (SELECT COUNT(*) FROM clearance_signatories WHERE clearance_id = c.id) AS signatory_count,
+                (SELECT COUNT(*) FROM clearance_students WHERE clearance_id = c.id) AS student_count,
+                COALESCE(st_stats.cleared_total, 0) AS cleared_total,
+                COALESCE(st_stats.flagged_total, 0) AS flagged_total,
+                (
+                    (SELECT COUNT(*) FROM clearance_students WHERE clearance_id = c.id) 
+                    - COALESCE(st_stats.cleared_total, 0) 
+                    - COALESCE(st_stats.flagged_total, 0)
+                ) AS pending_total
             FROM clearances c
-            LEFT JOIN clearance_signatories csig ON csig.clearance_id = c.id
-            LEFT JOIN clearance_students cst ON cst.clearance_id = c.id
+            LEFT JOIN (
+                SELECT 
+                    sub.clearance_id,
+                    SUM(CASE WHEN sub.flagged_cnt > 0 THEN 1 ELSE 0 END) AS flagged_total,
+                    SUM(CASE WHEN sub.flagged_cnt = 0 AND sub.total_sig > 0 AND sub.cleared_cnt = sub.total_sig THEN 1 ELSE 0 END) AS cleared_total
+                FROM (
+                    SELECT 
+                        cst.clearance_id,
+                        cst.student_id,
+                        (SELECT COUNT(*) FROM clearance_signatories WHERE clearance_id = cst.clearance_id) AS total_sig,
+                        SUM(CASE WHEN cs.status = 'flagged' THEN 1 ELSE 0 END) AS flagged_cnt,
+                        SUM(CASE WHEN cs.status = 'cleared' THEN 1 ELSE 0 END) AS cleared_cnt
+                    FROM clearance_students cst
+                    LEFT JOIN clearance_status cs ON cs.clearance_id = cst.clearance_id AND cs.student_id = cst.student_id
+                    GROUP BY cst.clearance_id, cst.student_id
+                ) sub
+                GROUP BY sub.clearance_id
+            ) st_stats ON st_stats.clearance_id = c.id
             WHERE c.archived = 0
-            GROUP BY c.id
             ORDER BY c.created_at DESC
         ");
-        $clearances = $stmt->fetchAll();
-
-        foreach ($clearances as &$c) {
-            $cid = (int)$c['clearance_id'];
-            $students = $this->getStudentsWithStatus($cid);
-
-            $cleared = 0;
-            $flagged = 0;
-            $pending = 0;
-
-            foreach ($students as $s) {
-                if ((int)$s['flagged_count'] > 0) {
-                    $flagged++;
-                } elseif ((int)$s['total_signatories'] > 0 && (int)$s['cleared_count'] === (int)$s['total_signatories']) {
-                    $cleared++;
-                } else {
-                    $pending++;
-                }
-            }
-
-            $c['cleared_total'] = $cleared;
-            $c['flagged_total'] = $flagged;
-            $c['pending_total'] = $pending;
-        }
-        unset($c);
-
-        return $clearances;
+        return $stmt->fetchAll();
     }
 
-    public function getOverallProgress(): array
+    public function getOverallProgress(?array $clearances = null): array
     {
-        $clearances = $this->getActiveClearancesWithProgress();
+        if ($clearances === null) {
+            $clearances = $this->getActiveClearancesWithProgress();
+        }
         $totalStudents = 0;
-        $totalCleared = 0;
-        $totalFlagged = 0;
-        $totalPending = 0;
+        $totalCleared  = 0;
+        $totalFlagged  = 0;
+        $totalPending  = 0;
 
         foreach ($clearances as $c) {
-            $totalStudents += $c['student_count'];
-            $totalCleared += $c['cleared_total'];
-            $totalFlagged += $c['flagged_total'];
-            $totalPending += $c['pending_total'];
+            $totalStudents += (int) $c['student_count'];
+            $totalCleared  += (int) $c['cleared_total'];
+            $totalFlagged  += (int) $c['flagged_total'];
+            $totalPending  += (int) $c['pending_total'];
         }
 
         return [

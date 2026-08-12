@@ -100,8 +100,7 @@
 <body class="login-body">
     <div class="gold-card login-card text-center">
         <div class="login-header">
-            <img src="<?= BASE_URL ?>css/logo.png" alt="ISAT-U Logo" class="school-logo">
-            <h1>Forgot Password</h1>
+            <h1 class="mt-2">Forgot Password</h1>
             <p>Enter your email to receive a reset link</p>
         </div>
 

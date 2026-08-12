@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Standalone Printable Clearance Form
  * Variables available: $student, $clearance, $signatories, $semester, $yearLabel
@@ -320,9 +320,6 @@ $sigHtml = renderSignatories($signatories);
 
             <!-- ══ HEADER ══ -->
             <div class="form-header">
-                <div class="header-logo">
-                    <img src="<?= htmlspecialchars($logoUrl) ?>" alt="ISAT U Logo">
-                </div>
                 <div class="header-university">
                     <div class="univ-tagline">Republic of the Philippines</div>
                     <div class="univ-name">ILOILO SCIENCE AND TECHNOLOGY UNIVERSITY</div>

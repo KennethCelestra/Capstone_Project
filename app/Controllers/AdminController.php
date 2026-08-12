@@ -29,15 +29,16 @@ class AdminController extends Controller
     public function dashboard(): void
     {
         $this->requireLogin('admin');
+        $activeClearances = $this->clearanceModel->getActiveClearancesWithProgress();
         $data = [
             'studentCount'             => $this->studentModel->count(),
             'enrollmentCommitteeCount' => $this->enrollmentCommitteeModel->count(),
-            'signatoryCount'  => $this->signatoryModel->count(),
-            'clearanceCount'  => $this->clearanceModel->count(),
-            'overallProgress' => $this->clearanceModel->getOverallProgress(),
-            'clearances'      => $this->clearanceModel->getActiveClearancesWithProgress(),
-            'flash'           => $this->getFlash(),
-            'userName'        => $_SESSION['user_name'],
+            'signatoryCount'           => $this->signatoryModel->count(),
+            'clearanceCount'           => $this->clearanceModel->count(),
+            'overallProgress'          => $this->clearanceModel->getOverallProgress($activeClearances),
+            'clearances'               => $activeClearances,
+            'flash'                    => $this->getFlash(),
+            'userName'                 => $_SESSION['user_name'],
         ];
         $this->view('layouts/main', array_merge($data, ['content' => 'admin/dashboard']));
     }

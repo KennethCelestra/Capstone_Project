@@ -56,7 +56,7 @@ class PasswordResetController extends Controller
                     <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">
                         <h2>Password Reset Request</h2>
                         <p>Hello " . htmlspecialchars($userFound['full_name']) . ",</p>
-                        <p>We received a request to reset your password for the ISAT U Clearance System.</p>
+                        <p>We received a request to reset your password for the AutoClear Clearance System.</p>
                         <p>Please click the button below to set a new password:</p>
                         <p style=\"text-align: center; margin: 30px 0;\">
                             <a href=\"{$resetLink}\" style=\"background: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;\">Reset Password</a>

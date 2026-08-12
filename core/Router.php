@@ -34,19 +34,39 @@ class Router
     {
         $controllerFile = ROOT_PATH . '/app/Controllers/' . $controllerName . '.php';
         if (!file_exists($controllerFile)) {
-            die("Controller not found: {$controllerName}");
+            $this->handleError("Controller not found: {$controllerName}");
+            return;
         }
         require_once $controllerFile;
 
         if (!class_exists($controllerName)) {
-            die("Class not found: {$controllerName}");
+            $this->handleError("Class not found: {$controllerName}");
+            return;
         }
 
         $controller = new $controllerName();
         if (!method_exists($controller, $methodName)) {
-            die("Method not found: {$controllerName}::{$methodName}");
+            $this->handleError("Method not found: {$controllerName}::{$methodName}");
+            return;
         }
 
         $controller->{$methodName}();
+    }
+
+    private function handleError(string $message): void
+    {
+        error_log($message);
+        if (defined('APP_ENV') && APP_ENV === 'development') {
+            die($message);
+        } else {
+            http_response_code(500);
+            $errorView = ROOT_PATH . '/app/Views/errors/500.php';
+            if (file_exists($errorView)) {
+                require_once $errorView;
+            } else {
+                echo '<!DOCTYPE html><html><head><title>500 Error</title></head><body><h1>500 Internal Server Error</h1></body></html>';
+            }
+            exit;
+        }
     }
 }

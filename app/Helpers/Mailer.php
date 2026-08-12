@@ -78,7 +78,7 @@ class Mailer
             <p><strong>Deficiency Reason:</strong><br>" . nl2br(htmlspecialchars($note)) . "</p>
             <p>Please visit the <strong>" . htmlspecialchars($officeName) . "</strong> office at your earliest convenience to resolve this deficiency and have it removed before your clearance can be completed.</p>
             <br>
-            <p><small>This is an automated message from the ISAT U Clearance System. Do not reply to this email.</small></p>
+            <p><small>This is an automated message from the AutoClear Clearance System. Do not reply to this email.</small></p>
         ";
 
         return self::sendEmail($studentEmail, $studentName, $subject, $body);
@@ -117,7 +117,7 @@ class Mailer
                     <a href=\"" . htmlspecialchars($formUrl) . "\" style=\"color: #1a56a0;\">" . htmlspecialchars($formUrl) . "</a>
                 </p>
                 <br>
-                <p><small>This is an automated message from the ISAT U Clearance System. Do not reply to this email.</small></p>
+                <p><small>This is an automated message from the AutoClear Clearance System. Do not reply to this email.</small></p>
             </div>
         ";
 

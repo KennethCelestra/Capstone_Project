@@ -17,6 +17,7 @@ $routes = [
     
     // ---- Profile / Change Password (Auth) ----
     'GET /profile'                                => ['ProfileController', 'index'],
+    'POST /profile/update-info'                   => ['ProfileController', 'updateInfo'],
     'POST /profile/change-password'               => ['ProfileController', 'changePassword'],
 
     // ---- Auth (Admin) — redirects to shared login ----

@@ -25,4 +25,14 @@ class Admin extends Model
             ':id'       => $id,
         ]);
     }
+
+    public function updateProfile(int $id, string $fullName, string $email): bool
+    {
+        $stmt = $this->db->prepare("UPDATE {$this->table} SET full_name = :full_name, email = :email WHERE id = :id");
+        return $stmt->execute([
+            ':full_name' => $fullName,
+            ':email'     => $email,
+            ':id'        => $id,
+        ]);
+    }
 }

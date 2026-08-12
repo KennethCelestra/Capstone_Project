@@ -5,11 +5,15 @@
 -- For live DB upgrades, see the ALTER statements at the bottom.
 -- ================================================
 
-CREATE DATABASE IF NOT EXISTS `clearance_system`
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
+-- NOTE FOR INFINITYFREE / FREE HOSTING USERS:
+-- Do NOT run CREATE DATABASE or USE statements on InfinityFree!
+-- First select your database (e.g. `if0_38123456_clearance_system`) in phpMyAdmin on the left panel,
+-- then paste and execute the table creation statements below.
 
-USE `clearance_system`;
+-- CREATE DATABASE IF NOT EXISTS `clearance_system`
+--     CHARACTER SET utf8mb4
+--     COLLATE utf8mb4_unicode_ci;
+-- USE `clearance_system`;
 
 -- ------------------------------------------------
 -- Table: admins
