@@ -42,6 +42,10 @@
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/archived-clearances') !== false ? 'selected' : '' ?>">
                         <i class="bi bi-archive me-2"></i> Archived
                     </a>
+                    <a href="<?= BASE_URL ?>admin/students"
+                       class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/students') !== false ? 'selected' : '' ?>">
+                        <i class="bi bi-mortarboard me-2"></i> Students
+                    </a>
                     <a href="<?= BASE_URL ?>admin/signatories"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/signatories') !== false ? 'selected' : '' ?>">
                         <i class="bi bi-pen me-2"></i> Signatories

@@ -7,8 +7,8 @@ class Student extends Model
     public function create(array $data): bool
     {
         $stmt = $this->db->prepare("
-            INSERT INTO students (student_id, last_name, first_name, email, college, course, year_level, section)
-            VALUES (:student_id, :last_name, :first_name, :email, :college, :course, :year_level, :section)
+            INSERT INTO students (student_id, last_name, first_name, email, college, course, year_level, section, status)
+            VALUES (:student_id, :last_name, :first_name, :email, :college, :course, :year_level, :section, :status)
         ");
         return $stmt->execute([
             ':student_id' => $data['student_id'],
@@ -19,6 +19,39 @@ class Student extends Model
             ':course'     => $data['course'],
             ':year_level' => $data['year_level'],
             ':section'    => $data['section'],
+            ':status'     => $data['status'] ?? 'active',
+        ]);
+    }
+
+    /**
+     * Update an existing student's details (including status).
+     */
+    public function update(int $id, array $data): bool
+    {
+        $stmt = $this->db->prepare("
+            UPDATE students
+            SET student_id = :student_id,
+                last_name  = :last_name,
+                first_name = :first_name,
+                email      = :email,
+                college    = :college,
+                course     = :course,
+                year_level = :year_level,
+                section    = :section,
+                status     = :status
+            WHERE id = :id
+        ");
+        return $stmt->execute([
+            ':student_id' => $data['student_id'],
+            ':last_name'  => $data['last_name'],
+            ':first_name' => $data['first_name'],
+            ':email'      => $data['email'],
+            ':college'    => $data['college'],
+            ':course'     => $data['course'],
+            ':year_level' => $data['year_level'],
+            ':section'    => $data['section'],
+            ':status'     => $data['status'],
+            ':id'         => $id,
         ]);
     }
 
@@ -31,8 +64,8 @@ class Student extends Model
     public function bulkInsertFromCSV(array $rows): array
     {
         $stmt = $this->db->prepare("
-            INSERT IGNORE INTO students (student_id, last_name, first_name, email, college, course, year_level, section)
-            VALUES (:student_id, :last_name, :first_name, :email, :college, :course, :year_level, :section)
+            INSERT IGNORE INTO students (student_id, last_name, first_name, email, college, course, year_level, section, status)
+            VALUES (:student_id, :last_name, :first_name, :email, :college, :course, :year_level, :section, 'active')
         ");
         $inserted = 0;
         $skipped  = 0;
@@ -64,14 +97,54 @@ class Student extends Model
         return [$inserted, $skipped];
     }
 
+    /**
+     * All students visible on the Students management page (active + dropped).
+     * Graduated students are hidden from this view but kept in the database.
+     */
     public function findAll(): array
     {
-        $stmt = $this->db->query("SELECT * FROM students ORDER BY last_name ASC, first_name ASC");
+        $stmt = $this->db->query("
+            SELECT * FROM students
+            WHERE status != 'graduated'
+            ORDER BY last_name ASC, first_name ASC
+        ");
         return $stmt->fetchAll();
     }
 
     /**
-     * Get all students NOT yet enrolled in given clearance.
+     * All active students only — used when enrolling into a clearance.
+     */
+    public function findAllActive(): array
+    {
+        $stmt = $this->db->query("
+            SELECT * FROM students
+            WHERE status = 'active'
+            ORDER BY last_name ASC, first_name ASC
+        ");
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Active students NOT yet enrolled in a given clearance.
+     * Used by "Enroll All Active Students".
+     */
+    public function findNotInClearanceActive(int $clearanceId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT * FROM students
+            WHERE status = 'active'
+              AND id NOT IN (
+                SELECT student_id FROM clearance_students WHERE clearance_id = ?
+              )
+            ORDER BY last_name ASC, first_name ASC
+        ");
+        $stmt->execute([$clearanceId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * All students (any status) NOT yet enrolled in a given clearance.
+     * Used by CSV upload flow.
      */
     public function findNotInClearance(int $clearanceId): array
     {
@@ -84,6 +157,40 @@ class Student extends Model
         ");
         $stmt->execute([$clearanceId]);
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Promote all active students at the end of a school year:
+     *  1. Mark 4th-year actives as 'graduated'
+     *  2. Increment year_level for remaining actives (1→2, 2→3, 3→4)
+     * Returns ['promoted' => int, 'graduated' => int].
+     */
+    public function promoteAll(): array
+    {
+        $this->db->beginTransaction();
+        try {
+            // Step 1: graduate 4th-year students
+            $gradStmt = $this->db->prepare("
+                UPDATE students SET status = 'graduated'
+                WHERE year_level = 4 AND status = 'active'
+            ");
+            $gradStmt->execute();
+            $graduated = $gradStmt->rowCount();
+
+            // Step 2: promote remaining active students up one year
+            $promoteStmt = $this->db->prepare("
+                UPDATE students SET year_level = year_level + 1
+                WHERE status = 'active'
+            ");
+            $promoteStmt->execute();
+            $promoted = $promoteStmt->rowCount();
+
+            $this->db->commit();
+            return ['promoted' => $promoted, 'graduated' => $graduated];
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 
     /**

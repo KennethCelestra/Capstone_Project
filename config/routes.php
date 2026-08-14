@@ -30,8 +30,10 @@ $routes = [
     // ---- Admin: Students ----
     'GET /admin/students'                         => ['AdminController', 'students'],
     'POST /admin/students/add'                    => ['AdminController', 'addStudent'],
+    'POST /admin/students/update'                 => ['AdminController', 'updateStudent'],
     'POST /admin/students/delete'                 => ['AdminController', 'deleteStudent'],
     'POST /admin/students/upload'                 => ['AdminController', 'uploadStudents'],
+    'POST /admin/students/promote'                => ['AdminController', 'promoteStudents'],
 
     // ---- Admin: Enrollment Committee ----
     'GET /admin/enrollment-committees'                         => ['AdminController', 'enrollmentCommittees'],
@@ -69,6 +71,7 @@ $routes = [
 
     // ---- Admin: Clearance – Student management ----
     'POST /admin/clearances/students/upload'      => ['AdminController', 'uploadStudents'],
+    'POST /admin/clearances/students/enroll-all'  => ['AdminController', 'enrollAllStudents'],
     'POST /admin/clearances/students/remove'      => ['AdminController', 'removeStudentFromClearance'],
 
     // ---- Enrollment Committee ----

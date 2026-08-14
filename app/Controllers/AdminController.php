@@ -65,9 +65,11 @@ class AdminController extends Controller
     {
         $this->requireLogin('admin');
         $data = [
-            'students' => $this->studentModel->findAll(),
-            'flash'    => $this->getFlash(),
-            'userName' => $_SESSION['user_name'],
+            'students'  => $this->studentModel->findAll(),
+            'colleges'  => $this->studentModel->getDistinctColleges(),
+            'courses'   => $this->studentModel->getDistinctCourses(),
+            'flash'     => $this->getFlash(),
+            'userName'  => $_SESSION['user_name'],
         ];
         $this->view('layouts/main', array_merge($data, ['content' => 'admin/students']));
     }
@@ -108,6 +110,74 @@ class AdminController extends Controller
         $this->studentModel->delete($id);
         $this->setFlash('success', 'Student deleted.');
         $this->redirect('admin/students');
+    }
+
+    public function updateStudent(): void
+    {
+        $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/students'); return; }
+        $id = (int) $this->getPost('id');
+        if ($id <= 0) {
+            $this->setFlash('error', 'Invalid student ID.');
+            $this->redirect('admin/students');
+            return;
+        }
+        $data = [
+            'student_id' => trim($this->getPost('student_id', '')),
+            'last_name'  => trim($this->getPost('last_name',  '')),
+            'first_name' => trim($this->getPost('first_name', '')),
+            'email'      => trim($this->getPost('email',      '')),
+            'college'    => trim($this->getPost('college',    '')),
+            'course'     => trim($this->getPost('course',     '')),
+            'year_level' => (int) $this->getPost('year_level', 1),
+            'section'    => trim($this->getPost('section',    '')),
+            'status'     => $this->getPost('status', 'active'),
+        ];
+        if (empty($data['student_id']) || empty($data['last_name']) || empty($data['first_name']) || empty($data['email'])) {
+            $this->setFlash('error', 'Required fields are missing.');
+            $this->redirect('admin/students');
+            return;
+        }
+        $this->studentModel->update($id, $data);
+        $this->setFlash('success', 'Student updated successfully.');
+        $this->redirect('admin/students');
+    }
+
+    public function promoteStudents(): void
+    {
+        $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/students'); return; }
+        $result = $this->studentModel->promoteAll();
+        $this->setFlash(
+            'success',
+            "Year-end promotion complete: {$result['promoted']} student(s) moved up one year level, {$result['graduated']} 4th-year student(s) marked as Graduated."
+        );
+        $this->redirect('admin/students');
+    }
+
+    public function enrollAllStudents(): void
+    {
+        $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
+        $clearanceId = (int) $this->getPost('clearance_id');
+        if ($clearanceId <= 0) {
+            $this->setFlash('error', 'Invalid clearance.');
+            $this->redirect('admin/clearances');
+            return;
+        }
+
+        $unEnrolledActive = $this->studentModel->findNotInClearanceActive($clearanceId);
+        if (empty($unEnrolledActive)) {
+            $this->setFlash('success', 'All active students are already enrolled in this clearance.');
+            $this->redirect("admin/clearances/detail?id={$clearanceId}#tab-stu");
+            return;
+        }
+
+        $ids = array_column($unEnrolledActive, 'id');
+        $this->clearanceModel->bulkEnrollStudents($clearanceId, $ids);
+        $count = count($ids);
+        $this->setFlash('success', "{$count} active student(s) enrolled into this clearance.");
+        $this->redirect("admin/clearances/detail?id={$clearanceId}#tab-stu");
     }
 
     public function uploadStudents(): void

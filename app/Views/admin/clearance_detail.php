@@ -133,15 +133,16 @@ $cid = $clearance['id'];
     <div class="section-header">
         <h3>Enrolled Students</h3>
         <button class="btn btn-primary btn-sm"
-                onclick="document.getElementById('uploadCSVModal').style.display='flex'">
-            Upload CSV
+                onclick="document.getElementById('enrollAllModal').style.display='flex'">
+            ⚡ Enroll All Active Students
         </button>
     </div>
     <?php if (empty($students)): ?>
         <div class="empty-state" style="padding:2rem">
-            <p>No students enrolled yet. Please upload a CSV file to enroll students.</p>
-            <p class="text-muted" style="font-size:.8rem">
-                CSV format: <code>student_id, last_name, first_name, email, college, course, year_level, section</code>
+            <p>No students enrolled yet.</p>
+            <p class="text-muted" style="font-size:.85rem;margin-top:.5rem;">
+                Click <strong>⚡ Enroll All Active Students</strong> to enroll everyone already in the database.<br>
+                To add new first-year students, go to <a href="<?= BASE_URL ?>admin/students">Students</a> and upload a CSV first.
             </p>
         </div>
     <?php else: ?>
@@ -310,30 +311,26 @@ $cid = $clearance['id'];
     </div>
 </div>
 
-<!-- ====== Upload CSV Modal ====== -->
-<div id="uploadCSVModal" class="modal" style="display:none;">
-    <div class="modal-box">
+<!-- ====== Enroll All Active Students Modal ====== -->
+<div id="enrollAllModal" class="modal" style="display:none;">
+    <div class="modal-box" style="max-width:420px;">
         <div class="modal-header">
-            <h3>Upload Student CSV</h3>
-            <button onclick="document.getElementById('uploadCSVModal').style.display='none'" class="close-btn">✕</button>
+            <h3>⚡ Enroll All Active Students</h3>
+            <button onclick="document.getElementById('enrollAllModal').style.display='none'" class="close-btn">✕</button>
         </div>
-        <form action="<?= BASE_URL ?>admin/clearances/students/upload" method="POST"
-              enctype="multipart/form-data" class="modal-form">
+        <div style="padding:1.25rem 1.5rem;">
+            <p>This will enroll <strong>all active students</strong> from the database into this clearance — students who are already enrolled will be skipped automatically.</p>
+            <p class="text-muted" style="font-size:.85rem;margin-top:.75rem;">
+                Graduated and dropped students will <strong>not</strong> be enrolled.
+            </p>
+        </div>
+        <form action="<?= BASE_URL ?>admin/clearances/students/enroll-all" method="POST">
             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
-            <input type="hidden" name="tab"          value="tab-stu">
-            <div class="form-group">
-                <label>CSV File</label>
-                <input type="file" name="csv_file" accept=".csv,.txt" required>
-                <small class="text-muted">
-                    Required columns: <code>student_id, last_name, first_name, email, college, course, year_level, section</code><br>
-                    First row = header. Default password = student ID.
-                </small>
-            </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
-                        onclick="document.getElementById('uploadCSVModal').style.display='none'">Cancel</button>
-                <button type="submit" class="btn btn-primary">Upload &amp; Enroll</button>
+                        onclick="document.getElementById('enrollAllModal').style.display='none'">Cancel</button>
+                <button type="submit" class="btn btn-primary">Enroll All Active Students</button>
             </div>
         </form>
     </div>

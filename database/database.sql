@@ -81,9 +81,11 @@ CREATE TABLE IF NOT EXISTS `students` (
     `course`      VARCHAR(100) NOT NULL,
     `year_level`  TINYINT UNSIGNED NOT NULL DEFAULT 1,
     `section`     VARCHAR(20)  NOT NULL,
+    `status`      ENUM('active','graduated','dropped') NOT NULL DEFAULT 'active',
     `created_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX `idx_students_college` (`college`),
-    INDEX `idx_students_course`  (`course`)
+    INDEX `idx_students_course`  (`course`),
+    INDEX `idx_students_status`  (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------
@@ -195,6 +197,10 @@ ALTER TABLE `clearance_status`
 
 ALTER TABLE `clearance_students`
     ADD INDEX IF NOT EXISTS `idx_cst_clearance` (`clearance_id`);
+
+ALTER TABLE `students`
+    ADD COLUMN IF NOT EXISTS `status` ENUM('active','graduated','dropped') NOT NULL DEFAULT 'active' AFTER `section`,
+    ADD INDEX IF NOT EXISTS `idx_students_status` (`status`);
 
 ALTER TABLE `students`
     ADD INDEX IF NOT EXISTS `idx_students_college` (`college`),
