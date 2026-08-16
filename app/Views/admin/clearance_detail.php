@@ -132,18 +132,31 @@ $cid = $clearance['id'];
 <div id="tab-stu" class="tab-content" style="display:none">
     <div class="section-header">
         <h3>Enrolled Students</h3>
-        <button class="btn btn-primary btn-sm"
-                onclick="document.getElementById('enrollAllModal').style.display='flex'">
-            ⚡ Enroll All Active Students
-        </button>
+        <?php if (($clearance['type'] ?? 'regular') === 'exit'): ?>
+            <button class="btn btn-warning btn-sm"
+                    onclick="document.getElementById('enrollFourthYearModal').style.display='flex'">
+                Enroll 4th-Year Students
+            </button>
+        <?php else: ?>
+            <button class="btn btn-primary btn-sm"
+                    onclick="document.getElementById('enrollAllModal').style.display='flex'">
+                Enroll All Active Students
+            </button>
+        <?php endif; ?>
     </div>
     <?php if (empty($students)): ?>
         <div class="empty-state" style="padding:2rem">
             <p>No students enrolled yet.</p>
-            <p class="text-muted" style="font-size:.85rem;margin-top:.5rem;">
-                Click <strong>⚡ Enroll All Active Students</strong> to enroll everyone already in the database.<br>
-                To add new first-year students, go to <a href="<?= BASE_URL ?>admin/students">Students</a> and upload a CSV first.
-            </p>
+            <?php if (($clearance['type'] ?? 'regular') === 'exit'): ?>
+                <p class="text-muted" style="font-size:.85rem;margin-top:.5rem;">
+                    Click <strong>Enroll 4th-Year Students</strong> to enroll all active graduating students into this exit clearance.
+                </p>
+            <?php else: ?>
+                <p class="text-muted" style="font-size:.85rem;margin-top:.5rem;">
+                    Click <strong>Enroll All Active Students</strong> to enroll everyone already in the database.<br>
+                    To add new first-year students, go to <a href="<?= BASE_URL ?>admin/students">Students</a> and upload a CSV first.
+                </p>
+            <?php endif; ?>
         </div>
     <?php else: ?>
         <div class="table-container">
@@ -311,11 +324,36 @@ $cid = $clearance['id'];
     </div>
 </div>
 
+<!-- ====== Enroll 4th-Year Students Modal (Exit Clearances) ====== -->
+<div id="enrollFourthYearModal" class="modal" style="display:none;">
+    <div class="modal-box" style="max-width:440px;">
+        <div class="modal-header">
+            <h3>Enroll 4th-Year Students</h3>
+            <button onclick="document.getElementById('enrollFourthYearModal').style.display='none'" class="close-btn">✕</button>
+        </div>
+        <div style="padding:1.25rem 1.5rem;">
+            <p>This will enroll <strong>all active 4th-year students</strong> from the database into this exit clearance.</p>
+            <p class="text-muted" style="font-size:.85rem;margin-top:.75rem;">
+                Only graduating (4th-year) students will be enrolled. Students already enrolled will be skipped automatically.
+            </p>
+        </div>
+        <form action="<?= BASE_URL ?>admin/clearances/students/enroll-fourth-year" method="POST">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+            <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                        onclick="document.getElementById('enrollFourthYearModal').style.display='none'">Cancel</button>
+                <button type="submit" class="btn btn-warning">Enroll 4th-Year Students</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- ====== Enroll All Active Students Modal ====== -->
 <div id="enrollAllModal" class="modal" style="display:none;">
     <div class="modal-box" style="max-width:420px;">
         <div class="modal-header">
-            <h3>⚡ Enroll All Active Students</h3>
+            <h3>Enroll All Active Students</h3>
             <button onclick="document.getElementById('enrollAllModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <div style="padding:1.25rem 1.5rem;">

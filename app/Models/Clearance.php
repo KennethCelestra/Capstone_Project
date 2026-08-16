@@ -7,13 +7,14 @@ class Clearance extends Model
     public function create(array $data): bool
     {
         $stmt = $this->db->prepare("
-            INSERT INTO clearances (name, description, school_year)
-            VALUES (:name, :description, :school_year)
+            INSERT INTO clearances (name, description, school_year, type)
+            VALUES (:name, :description, :school_year, :type)
         ");
         return $stmt->execute([
             ':name'        => $data['name'],
             ':description' => $data['description'] ?? '',
             ':school_year' => $data['school_year'] ?? '',
+            ':type'        => $data['type'] ?? 'regular',
         ]);
     }
 
@@ -25,13 +26,14 @@ class Clearance extends Model
     public function update(int $id, array $data): bool
     {
         $stmt = $this->db->prepare("
-            UPDATE clearances SET name = :name, description = :description, school_year = :school_year
+            UPDATE clearances SET name = :name, description = :description, school_year = :school_year, type = :type
             WHERE id = :id
         ");
         return $stmt->execute([
             ':name'        => $data['name'],
             ':description' => $data['description'] ?? '',
             ':school_year' => $data['school_year'] ?? '',
+            ':type'        => $data['type'] ?? 'regular',
             ':id'          => $id,
         ]);
     }

@@ -1,7 +1,8 @@
 <?php
-$totalCount   = count($students);
-$activeCount  = count(array_filter($students, fn($s) => $s['status'] === 'active'));
-$droppedCount = $totalCount - $activeCount;
+$totalCount     = count($students);
+$activeCount    = count(array_filter($students, fn($s) => $s['status'] === 'active'));
+$graduatedCount = count(array_filter($students, fn($s) => $s['status'] === 'graduated'));
+$droppedCount   = count(array_filter($students, fn($s) => $s['status'] === 'dropped'));
 ?>
 
 <div class="page-header mb-4 d-flex justify-content-between align-items-center">
@@ -10,20 +11,22 @@ $droppedCount = $totalCount - $activeCount;
         <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.35rem;">
             <span class="badge badge-info" style="font-size:.78rem;">Total: <?= $totalCount ?></span>
             <span class="badge badge-success" style="font-size:.78rem;">Active: <?= $activeCount ?></span>
+            <?php if ($graduatedCount > 0): ?>
+                <span class="badge badge-info" style="font-size:.78rem;">Graduated: <?= $graduatedCount ?></span>
+            <?php endif; ?>
             <?php if ($droppedCount > 0): ?>
                 <span class="badge badge-danger" style="font-size:.78rem;">Dropped: <?= $droppedCount ?></span>
             <?php endif; ?>
-            <span class="badge" style="font-size:.78rem;background:var(--surface2);color:var(--text-muted);">Graduated hidden</span>
         </div>
     </div>
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
         <button class="btn btn-secondary"
                 onclick="document.getElementById('promoteModal').style.display='flex'">
-            🎓 Promote
+            Promote
         </button>
         <button class="btn btn-secondary"
                 onclick="document.getElementById('uploadCSVModal').style.display='flex'">
-            📂 Upload CSV
+            Upload CSV
         </button>
         <button class="btn btn-primary" onclick="document.getElementById('addStudentModal').style.display='flex'">
             + Add Student
@@ -53,11 +56,9 @@ $droppedCount = $totalCount - $activeCount;
     <select id="stu-status" onchange="applyStudentFilters()" style="width:auto;max-width:110px;">
         <option value="">Status</option>
         <option value="active">Active</option>
+        <option value="graduated">Graduated</option>
         <option value="dropped">Dropped</option>
     </select>
-    <span id="stu-count" style="font-size:.82rem;color:var(--text-muted);white-space:nowrap;">
-        Showing <?= $totalCount ?> student(s)
-    </span>
     <button class="btn btn-secondary btn-sm" onclick="clearStudentFilters()" id="stu-clear-btn" style="display:none;">✕ Clear</button>
 </div>
 
@@ -83,6 +84,7 @@ $droppedCount = $totalCount - $activeCount;
                     <?php
                         $statusBadge = match($s['status']) {
                             'active'    => '<span class="badge badge-success">Active</span>',
+                            'graduated' => '<span class="badge badge-info">Graduated</span>',
                             'dropped'   => '<span class="badge badge-danger">Dropped</span>',
                             default     => '<span class="badge badge-warning">' . htmlspecialchars($s['status']) . '</span>',
                         };
@@ -138,7 +140,7 @@ $droppedCount = $totalCount - $activeCount;
 <div id="uploadCSVModal" class="modal" style="display:none;">
     <div class="modal-box">
         <div class="modal-header">
-            <h3>📂 Upload New Students (CSV)</h3>
+            <h3>Upload New Students (CSV)</h3>
             <button onclick="document.getElementById('uploadCSVModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <form action="<?= BASE_URL ?>admin/students/upload" method="POST"
@@ -168,7 +170,7 @@ $droppedCount = $totalCount - $activeCount;
 <div id="promoteModal" class="modal" style="display:none;">
     <div class="modal-box" style="max-width:480px;">
         <div class="modal-header">
-            <h3>🎓 Promote Students — Year-End</h3>
+            <h3>Promote Students — Year-End</h3>
             <button onclick="document.getElementById('promoteModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <div style="padding:1.25rem 1.5rem;">
@@ -180,7 +182,7 @@ $droppedCount = $totalCount - $activeCount;
                 <li>1st-year → 2nd-year</li>
                 <li>2nd-year → 3rd-year</li>
                 <li>3rd-year → 4th-year</li>
-                <li>4th-year → <strong>Graduated</strong> (hidden from active lists)</li>
+                <li>4th-year → <strong>Graduated</strong></li>
             </ul>
             <p class="text-muted" style="font-size:.85rem;">After promotion, upload a CSV to add new first-year students.</p>
         </div>
@@ -339,6 +341,7 @@ $droppedCount = $totalCount - $activeCount;
                 <label>Status</label>
                 <select name="status" id="editStudentStatus">
                     <option value="active">Active</option>
+                    <option value="graduated">Graduated</option>
                     <option value="dropped">Dropped</option>
                 </select>
             </div>
@@ -378,7 +381,6 @@ function applyStudentFilters() {
 
     const rows     = document.querySelectorAll('#stu-tbody tr[data-name]');
     const noMatch  = document.getElementById('stu-no-match');
-    const countEl  = document.getElementById('stu-count');
     const clearBtn = document.getElementById('stu-clear-btn');
 
     const hasFilter = search || college || year || status;
@@ -396,7 +398,6 @@ function applyStudentFilters() {
         if (show) visible++;
     });
 
-    countEl.textContent = 'Showing ' + visible + ' student(s)';
     if (noMatch) noMatch.style.display = (visible === 0 && rows.length > 0) ? '' : 'none';
 }
 

@@ -180,6 +180,31 @@ class AdminController extends Controller
         $this->redirect("admin/clearances/detail?id={$clearanceId}#tab-stu");
     }
 
+    public function enrollFourthYearStudents(): void
+    {
+        $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
+        $clearanceId = (int) $this->getPost('clearance_id');
+        if ($clearanceId <= 0) {
+            $this->setFlash('error', 'Invalid clearance.');
+            $this->redirect('admin/clearances');
+            return;
+        }
+
+        $unEnrolled = $this->studentModel->findFourthYearNotInClearanceActive($clearanceId);
+        if (empty($unEnrolled)) {
+            $this->setFlash('success', 'All active 4th-year students are already enrolled in this exit clearance.');
+            $this->redirect("admin/clearances/detail?id={$clearanceId}#tab-stu");
+            return;
+        }
+
+        $ids = array_column($unEnrolled, 'id');
+        $this->clearanceModel->bulkEnrollStudents($clearanceId, $ids);
+        $count = count($ids);
+        $this->setFlash('success', "{$count} graduating student(s) enrolled into this exit clearance.");
+        $this->redirect("admin/clearances/detail?id={$clearanceId}#tab-stu");
+    }
+
     public function uploadStudents(): void
     {
         $this->requireLogin('admin');
@@ -432,6 +457,7 @@ class AdminController extends Controller
             'name'        => trim($this->getPost('name', '')),
             'description' => trim($this->getPost('description', '')),
             'school_year' => trim($this->getPost('school_year', '')),
+            'type'        => $this->getPost('type', 'regular') === 'exit' ? 'exit' : 'regular',
         ];
         if (empty($data['name']) || empty($data['school_year'])) {
             $this->setFlash('error', 'Clearance name and school year are required.');
@@ -453,6 +479,7 @@ class AdminController extends Controller
             'name'        => trim($this->getPost('name', '')),
             'description' => trim($this->getPost('description', '')),
             'school_year' => trim($this->getPost('school_year', '')),
+            'type'        => $this->getPost('type', 'regular') === 'exit' ? 'exit' : 'regular',
         ];
         if (empty($data['name']) || empty($data['school_year'])) {
             $this->setFlash('error', 'Clearance name and school year are required.');
@@ -517,14 +544,15 @@ class AdminController extends Controller
         }
 
         $data = [
-            'clearance'           => $clearance,
-            'assignedSignatories' => $this->clearanceModel->getSignatories($id),
-            'unassignedSignatories' => $this->signatoryModel->findUnassigned($id),
-            'assignedEnrollmentCommittees' => $this->clearanceModel->getEnrollmentCommittees($id),
+            'clearance'                      => $clearance,
+            'cid'                            => $id,
+            'assignedSignatories'            => $this->clearanceModel->getSignatories($id),
+            'unassignedSignatories'          => $this->signatoryModel->findUnassigned($id),
+            'assignedEnrollmentCommittees'   => $this->clearanceModel->getEnrollmentCommittees($id),
             'unassignedEnrollmentCommittees' => $this->enrollmentCommitteeModel->findUnassigned($id),
-            'students'            => $this->clearanceModel->getStudentsWithStatus($id),
-            'flash'               => $this->getFlash(),
-            'userName'            => $_SESSION['user_name'],
+            'students'                       => $this->clearanceModel->getStudentsWithStatus($id),
+            'flash'                          => $this->getFlash(),
+            'userName'                       => $_SESSION['user_name'],
         ];
         $this->view('layouts/main', array_merge($data, ['content' => 'admin/clearance_detail']));
     }

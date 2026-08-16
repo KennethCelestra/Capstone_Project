@@ -98,14 +98,12 @@ class Student extends Model
     }
 
     /**
-     * All students visible on the Students management page (active + dropped).
-     * Graduated students are hidden from this view but kept in the database.
+     * All students visible on the Students management page (active, dropped, graduated).
      */
     public function findAll(): array
     {
         $stmt = $this->db->query("
             SELECT * FROM students
-            WHERE status != 'graduated'
             ORDER BY last_name ASC, first_name ASC
         ");
         return $stmt->fetchAll();
@@ -133,6 +131,25 @@ class Student extends Model
         $stmt = $this->db->prepare("
             SELECT * FROM students
             WHERE status = 'active'
+              AND id NOT IN (
+                SELECT student_id FROM clearance_students WHERE clearance_id = ?
+              )
+            ORDER BY last_name ASC, first_name ASC
+        ");
+        $stmt->execute([$clearanceId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Active 4th-year students NOT yet enrolled in a given exit clearance.
+     * Used by "Enroll 4th-Year Students".
+     */
+    public function findFourthYearNotInClearanceActive(int $clearanceId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT * FROM students
+            WHERE status = 'active'
+              AND year_level = 4
               AND id NOT IN (
                 SELECT student_id FROM clearance_students WHERE clearance_id = ?
               )

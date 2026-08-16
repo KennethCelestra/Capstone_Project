@@ -11,6 +11,7 @@ $course          = htmlspecialchars($student['course']);
 $section         = htmlspecialchars($student['section']);
 $schoolYear      = htmlspecialchars($clearance['school_year']);
 $clearanceName   = htmlspecialchars($clearance['name']);
+$clearanceType   = $clearance['type'] ?? 'regular';   // 'regular' | 'exit'
 $logoUrl         = BASE_URL . 'css/logo.png';
 
 // Build signatory grid HTML
@@ -332,7 +333,7 @@ $sigHtml = renderSignatories($signatories);
                     </div>
                     <div class="meta-row">
                         <span class="meta-label">Document Code:</span>
-                        <span class="meta-value">QF-VPAA-08</span>
+                        <span class="meta-value"><?= $clearanceType === 'exit' ? 'QF-VPAA-09' : 'QF-VPAA-08' ?></span>
                     </div>
                     <div class="meta-row">
                         <span class="meta-label">Rev. No.:</span>
@@ -346,7 +347,7 @@ $sigHtml = renderSignatories($signatories);
             </div>
 
             <div class="form-title-bar">
-                <h1>STUDENT'S SEMESTRAL CLEARANCE</h1>
+                <h1><?= $clearanceType === 'exit' ? "STUDENT'S EXIT CLEARANCE" : "STUDENT'S SEMESTRAL CLEARANCE" ?></h1>
             </div>
 
             <!-- ══ SEMESTER LINE ══ -->

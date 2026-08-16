@@ -70,9 +70,10 @@ $routes = [
     'POST /admin/clearances/enrollment-committees/remove'           => ['AdminController', 'removeEnrollmentCommittee'],
 
     // ---- Admin: Clearance – Student management ----
-    'POST /admin/clearances/students/upload'      => ['AdminController', 'uploadStudents'],
-    'POST /admin/clearances/students/enroll-all'  => ['AdminController', 'enrollAllStudents'],
-    'POST /admin/clearances/students/remove'      => ['AdminController', 'removeStudentFromClearance'],
+    'POST /admin/clearances/students/upload'            => ['AdminController', 'uploadStudents'],
+    'POST /admin/clearances/students/enroll-all'        => ['AdminController', 'enrollAllStudents'],
+    'POST /admin/clearances/students/enroll-fourth-year'=> ['AdminController', 'enrollFourthYearStudents'],
+    'POST /admin/clearances/students/remove'            => ['AdminController', 'removeStudentFromClearance'],
 
     // ---- Enrollment Committee ----
     'GET /enrollment-committee/dashboard'                      => ['Enrollment_CommitteeController', 'dashboard'],
