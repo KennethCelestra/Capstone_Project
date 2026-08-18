@@ -1,6 +1,6 @@
 <?php
 /**
- * Standalone Printable Regular Semestral Clearance Form (QF-VPAA-08)
+ * Standalone Printable Exit Clearance Form (QF-VPAA-09)
  * Variables available: $student, $clearance, $signatories, $semester, $yearLabel
  */
 
@@ -23,27 +23,28 @@ if (empty($currYearSection)) {
 }
 
 /**
- * Regular semestral signatories grid (QF-VPAA-08 style: 2-column rows of single signature slots, last slot centered if odd)
+ * Render Exit Clearance signatory slots dynamically based on assigned signatories.
+ * Styled with Signature Line + Date Line side-by-side in rows of 2 (last slot centered if odd).
  */
-function renderRegularSignatories(array $signatories): string {
+function renderExitSignatories(array $signatories): string {
     if (empty($signatories)) {
         return '<p style="text-align:center;font-style:italic;padding:8px 0;">No signatories assigned.</p>';
     }
 
     $total = count($signatories);
-    $html = '<div class="reg-sig-section">';
+    $html = '<div class="exit-sig-section">';
 
     for ($i = 0; $i < $total; $i += 2) {
         if ($i + 1 < $total) {
             // Pair of 2
-            $html .= '<div class="reg-sig-row">';
-            $html .= renderRegularSigSlot($signatories[$i]);
-            $html .= renderRegularSigSlot($signatories[$i + 1]);
+            $html .= '<div class="exit-sig-row">';
+            $html .= renderExitSigSlot($signatories[$i]);
+            $html .= renderExitSigSlot($signatories[$i + 1]);
             $html .= '</div>';
         } else {
             // Single remaining signatory (centered)
-            $html .= '<div class="reg-sig-row-center">';
-            $html .= renderRegularSigSlot($signatories[$i], true);
+            $html .= '<div class="exit-sig-row-center">';
+            $html .= renderExitSigSlot($signatories[$i], true);
             $html .= '</div>';
         }
     }
@@ -52,16 +53,27 @@ function renderRegularSignatories(array $signatories): string {
     return $html;
 }
 
-function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
-    $office   = htmlspecialchars($sig['office'] ?? 'Signatory');
+/**
+ * Render a single Exit Clearance signatory slot (signature line + date line)
+ */
+function renderExitSigSlot(array $sig, bool $isCentered = false): string {
+    $label    = htmlspecialchars($sig['office'] ?? 'Signatory');
     $signed   = (!empty($sig) && ($sig['status'] ?? '') === 'cleared');
     $signedAt = ($signed && !empty($sig['signed_at'])) ? date('M j, Y', strtotime($sig['signed_at'])) : '';
 
-    $html = '<div class="reg-sig-item ' . ($isCentered ? 'reg-sig-centered' : '') . '">';
-    $html .= '  <div class="reg-sig-status">' . ($signed ? '<span class="signed-badge">SIGNED</span>' : '&nbsp;') . '</div>';
-    $html .= '  <div class="reg-sig-date-text">' . ($signedAt ? '<span class="date-badge">' . htmlspecialchars($signedAt) . '</span>' : '&nbsp;') . '</div>';
-    $html .= '  <div class="reg-sig-line"></div>';
-    $html .= '  <div class="reg-sig-label">' . $office . '</div>';
+    $html = '<div class="exit-sig-pair ' . ($isCentered ? 'exit-sig-centered' : '') . '">';
+    // Signature block
+    $html .= '<div class="exit-sig-item">';
+    $html .= '  <div class="exit-sig-status">' . ($signed ? '<span class="signed-badge">SIGNED</span>' : '&nbsp;') . '</div>';
+    $html .= '  <div class="exit-sig-line"></div>';
+    $html .= '  <div class="exit-sig-label">' . $label . '</div>';
+    $html .= '</div>';
+    // Date block
+    $html .= '<div class="exit-date-item">';
+    $html .= '  <div class="exit-sig-status">' . ($signedAt ? '<span class="date-badge">' . htmlspecialchars($signedAt) . '</span>' : '&nbsp;') . '</div>';
+    $html .= '  <div class="exit-sig-line"></div>';
+    $html .= '  <div class="exit-sig-label">Date</div>';
+    $html .= '</div>';
     $html .= '</div>';
 
     return $html;
@@ -72,7 +84,7 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student's Semestral Clearance (QF-VPAA-08) — <?= $studentFullName ?></title>
+    <title>Student's Exit Clearance (QF-VPAA-09) — <?= $studentFullName ?></title>
     <style>
         /* ── Reset & Base ── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -223,43 +235,39 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
             padding: 0 4px;
         }
 
-        /* ── Student Info List (QF-VPAA-08 2-Column Exact Layout) ── */
-        .student-info-block-reg {
-            margin: 6px 0 8px;
+        /* ── Student Info List (QF-VPAA-09 Vertical Stacked Layout) ── */
+        .student-info-block {
+            margin: 4px 0 6px;
             font-size: 9.5pt;
         }
-        .info-row-2col {
+        .info-row-aligned {
             display: flex;
-            gap: 20px;
-            margin-bottom: 4px;
             align-items: baseline;
+            margin-bottom: 2px;
         }
-        .info-item-full {
-            display: flex;
-            align-items: baseline;
-            width: 100%;
+        .info-lbl-fixed {
+            width: 175px;
+            min-width: 175px;
+            font-size: 9.5pt;
         }
-        .info-item-left {
-            display: flex;
-            align-items: baseline;
-            flex: 1.1;
+        .info-colon {
+            width: 12px;
+            text-align: left;
+            font-weight: normal;
         }
-        .info-item-right {
-            display: flex;
-            align-items: baseline;
+        .info-line-val {
             flex: 1;
-        }
-        .info-lbl-inline {
-            font-size: 9.5pt;
-            white-space: nowrap;
-            margin-right: 4px;
-        }
-        .info-val-inline {
             border-bottom: 1px solid #000;
             font-weight: bold;
             padding-left: 4px;
             min-height: 14px;
             font-size: 9.5pt;
+        }
+
+        .info-divider-line {
+            border: 0;
+            border-top: 1px solid #000;
+            margin: 6px 0 8px;
         }
 
         /* ── Body Certification ── */
@@ -273,34 +281,43 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
             margin-top: 4px;
         }
 
-        /* ── Regular Clearance Signatories Grid (QF-VPAA-08) ── */
-        .reg-sig-section {
-            margin: 10px 0 6px;
+        /* ── Exit Clearance Signatories Layout (QF-VPAA-09) ── */
+        .exit-sig-section {
+            margin: 8px 0 6px;
         }
-        .reg-sig-row {
+        .exit-sig-row {
             display: flex;
-            justify-content: space-around;
-            gap: 20px;
-            margin-bottom: 12px;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 8px;
         }
-        .reg-sig-row-center {
+        .exit-sig-row-center {
             display: flex;
             justify-content: center;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
-        .reg-sig-item {
-            width: 220px;
+        .exit-sig-pair {
+            display: flex;
+            gap: 16px;
+            flex: 1;
+            max-width: 380px;
+        }
+        .exit-sig-item {
+            flex: 1;
             text-align: center;
         }
-        .reg-sig-status {
+        .exit-date-item {
+            width: 110px;
+            min-width: 110px;
+            text-align: center;
+        }
+        .exit-sig-status {
             min-height: 14px;
             font-size: 8.5pt;
+            line-height: 1.1;
+            margin-bottom: 1px;
             font-weight: bold;
-        }
-        .reg-sig-date-text {
-            font-size: 7.5pt;
-            color: #333;
-            min-height: 12px;
+            color: #000;
         }
         .signed-badge {
             display: inline-block;
@@ -313,12 +330,13 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
             font-size: 8pt;
             color: #000;
         }
-        .reg-sig-line {
+        .exit-sig-line {
             border-top: 1px solid #000;
             margin: 1px 0 2px;
         }
-        .reg-sig-label {
+        .exit-sig-label {
             font-size: 9pt;
+            white-space: nowrap;
         }
 
         /* ── Distributions ── */
@@ -380,7 +398,7 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
 
     <!-- Print Button (Hidden on Print) -->
     <div class="print-bar">
-        <button onclick="window.print()">🖨️ Print Semestral Clearance Form</button>
+        <button onclick="window.print()">🖨️ Print Exit Clearance Form</button>
     </div>
 
     <div class="sheet">
@@ -403,7 +421,7 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
                         <div class="univ-location">La Paz, Iloilo City</div>
                     </div>
                     <div class="header-title-bar">
-                        <h1>STUDENT'S SEMESTRAL CLEARANCE</h1>
+                        <h1>STUDENT'S EXIT CLEARANCE</h1>
                     </div>
                 </div>
 
@@ -415,7 +433,7 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
                     </tr>
                     <tr>
                         <td class="meta-lbl">Document Code:</td>
-                        <td class="meta-val">QF-VPAA-08</td>
+                        <td class="meta-val">QF-VPAA-09</td>
                     </tr>
                     <tr>
                         <td class="meta-lbl">Rev. No.:</td>
@@ -437,57 +455,55 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
                 <span class="underline-box" style="min-width: 100px;"><?= $schoolYear ?></span>
             </div>
 
-            <!-- ══ STUDENT INFO (QF-VPAA-08 2-Column Exact Layout) ══ -->
-            <div class="student-info-block-reg">
-                <div class="info-row-2col">
-                    <div class="info-item-full">
-                        <span class="info-lbl-inline">Student ID No.:</span>
-                        <span class="info-val-inline" style="min-width: 220px;"><?= $studentNumber ?></span>
-                    </div>
+            <!-- ══ STUDENT INFO (QF-VPAA-09 Stacked Vertical Layout) ══ -->
+            <div class="student-info-block">
+                <div class="info-row-aligned">
+                    <div class="info-lbl-fixed">Student ID No.</div>
+                    <div class="info-colon">:</div>
+                    <div class="info-line-val"><?= $studentNumber ?></div>
                 </div>
-                <div class="info-row-2col">
-                    <div class="info-item-left">
-                        <span class="info-lbl-inline">Name of Student:</span>
-                        <span class="info-val-inline" style="flex:1;"><?= $studentFullName ?></span>
-                    </div>
-                    <div class="info-item-right">
-                        <span class="info-lbl-inline">Curriculum Year &amp; Section:</span>
-                        <span class="info-val-inline" style="flex:1;"><?= htmlspecialchars($currYearSection) ?></span>
-                    </div>
+                <div class="info-row-aligned">
+                    <div class="info-lbl-fixed">Name of Student</div>
+                    <div class="info-colon">:</div>
+                    <div class="info-line-val"><?= $studentFullName ?></div>
                 </div>
-                <div class="info-row-2col">
-                    <div class="info-item-left">
-                        <span class="info-lbl-inline">College:</span>
-                        <span class="info-val-inline" style="flex:1;"><?= $college ?></span>
-                    </div>
-                    <div class="info-item-right">
-                        <span class="info-lbl-inline">Department:</span>
-                        <span class="info-val-inline" style="flex:1;"><?= htmlspecialchars($department) ?></span>
-                    </div>
+                <div class="info-row-aligned">
+                    <div class="info-lbl-fixed">Curriculum Year &amp; Section</div>
+                    <div class="info-colon">:</div>
+                    <div class="info-line-val"><?= htmlspecialchars($currYearSection) ?></div>
+                </div>
+                <div class="info-row-aligned">
+                    <div class="info-lbl-fixed">College</div>
+                    <div class="info-colon">:</div>
+                    <div class="info-line-val"><?= $college ?></div>
+                </div>
+                <div class="info-row-aligned">
+                    <div class="info-lbl-fixed">Department</div>
+                    <div class="info-colon">:</div>
+                    <div class="info-line-val"><?= htmlspecialchars($department) ?></div>
                 </div>
             </div>
 
-            <!-- ══ BODY CERTIFICATION (QF-VPAA-08) ══ -->
+            <!-- Solid separator line -->
+            <hr class="info-divider-line">
+
+            <!-- ══ BODY CERTIFICATION ══ -->
             <div class="cert-body">
                 <p>To Whom It May Concern:</p>
                 <p class="cert-indent">
                     This is to certify that Mr./Ms.
-                    <span class="underline-box" style="min-width: 260px; text-align:center; display:inline-block; position:relative; margin-bottom:12px;">
-                        <?= $studentFullName ?>
-                        <span style="position:absolute; top:100%; left:0; right:0; text-align:center; font-size:7.5pt; font-style:italic; font-weight:normal; display:block; margin-top:-1px;">(Name of Student)</span>
-                    </span>
-                    is cleared from any financial
-                    and property accountability as of
-                    <span class="underline-box" style="min-width: 60px; text-align:center;"><?= htmlspecialchars($semester) ?></span>
+                    <span class="underline-box" style="min-width: 220px;"><?= $studentFullName ?></span>
+                    is cleared from any financial and property accountability as of
+                    <span class="underline-box" style="min-width: 70px;"><?= htmlspecialchars($semester) ?></span>
                     Semester/Summer, School Year
-                    <span class="underline-box" style="min-width: 90px; text-align:center;"><?= $schoolYear ?></span>.
+                    <span class="underline-box" style="min-width: 90px;"><?= $schoolYear ?></span>.
                 </p>
             </div>
 
-            <!-- ══ SIGNATORIES (QF-VPAA-08) ══ -->
-            <?= renderRegularSignatories($signatories) ?>
+            <!-- ══ SIGNATORIES (QF-VPAA-09 Paired Signature + Date Lines) ══ -->
+            <?= renderExitSignatories($signatories) ?>
 
-            <!-- ══ DISTRIBUTIONS (QF-VPAA-08) ══ -->
+            <!-- ══ DISTRIBUTIONS ══ -->
             <div class="dist-block">
                 <em>Distributions:</em>
                 <p>1 – Student</p>

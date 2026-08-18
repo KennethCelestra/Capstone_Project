@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once ROOT_PATH . '/app/Models/ClearanceStatus.php';
 
 class ClearanceFormController extends Controller
@@ -69,7 +69,11 @@ class ClearanceFormController extends Controller
         $clearance   = $data['clearance'];
         $signatories = $data['signatories'];
 
-        require_once ROOT_PATH . '/app/Views/clearance_form.php';
+        if (($clearance['type'] ?? 'regular') === 'exit') {
+            require_once ROOT_PATH . '/app/Views/exit_clearance_form.php';
+        } else {
+            require_once ROOT_PATH . '/app/Views/clearance_form.php';
+        }
     }
 
     // ----------------------------------------------------------------

@@ -239,7 +239,7 @@ class SignatoryController extends Controller
         if ($clearanceId && $studentId) {
             $this->statusModel->clearStudent($clearanceId, $studentId, $signatoryId);
 
-            // Fire "fully cleared" email if student is cleared by ALL signatories
+            // Queue "fully cleared" email if student is now cleared by ALL signatories
             if ($this->statusModel->isStudentFullyCleared($clearanceId, $studentId)) {
                 $info = $this->statusModel->getStudentClearanceInfo($clearanceId, $studentId);
                 if ($info) {
@@ -247,9 +247,9 @@ class SignatoryController extends Controller
                         $_SESSION['bg_emails'] = [];
                     }
                     $_SESSION['bg_emails'][] = [
-                        'type' => 'cleared',
+                        'type'         => 'cleared',
                         'clearance_id' => $clearanceId,
-                        'students' => [$info]
+                        'students'     => [$info],
                     ];
                 }
             }
@@ -296,7 +296,7 @@ class SignatoryController extends Controller
 
                 $msg = "{$count} student(s) have been cleared.";
                 if ($fullyClearedCount > 0) {
-                    $msg .= " {$fullyClearedCount} student(s) fully cleared. Emails sending in the background.";
+                    $msg .= " {$fullyClearedCount} student(s) fully cleared. Clearance emails sending in background.";
                 }
                 $this->setFlash('success', $msg);
             } else {
@@ -338,9 +338,9 @@ class SignatoryController extends Controller
                         $_SESSION['bg_emails'] = [];
                     }
                     $_SESSION['bg_emails'][] = [
-                        'type' => 'cleared',
+                        'type'         => 'cleared',
                         'clearance_id' => $clearanceId,
-                        'students' => $infos
+                        'students'     => $infos,
                     ];
                     $fullyClearedCount += count($infos);
                 }

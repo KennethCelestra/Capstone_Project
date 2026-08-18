@@ -376,7 +376,7 @@ $cPending = count($students) - $cFlagged - $cCleared;
         </div>
         <form action="<?= BASE_URL ?>signatory/confirm-all" method="POST" id="confirm-all-form-modal">
             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
-            <input type="hidden" name="clearance_id" value="<?= $selectedCid ?>">
+            <input type="hidden" name="clearance_id" value="<?= $selectedCid ?? 0 ?>">
             <div class="modal-body">
                 <p>This will clear all pending students.</p>
                 <p>Are you sure you want to continue?</p>

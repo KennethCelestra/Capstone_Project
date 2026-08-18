@@ -183,10 +183,18 @@ class ClearanceStatus extends Model
 
         if ($totalAssigned === 0) return false;
 
-        // Count cleared statuses for this student
+        // Count cleared statuses for this student among relevant signatories
         $stmtCleared = $this->db->prepare("
-            SELECT COUNT(*) FROM clearance_status
-            WHERE clearance_id = ? AND student_id = ? AND status = 'cleared'
+            SELECT COUNT(*) FROM clearance_status cs
+            JOIN clearance_signatories csig ON csig.clearance_id = cs.clearance_id AND csig.signatory_id = cs.signatory_id
+            JOIN signatories sg ON sg.id = csig.signatory_id
+            JOIN students st ON st.id = cs.student_id
+            WHERE cs.clearance_id = ? AND cs.student_id = ? AND cs.status = 'cleared'
+              AND (
+                  sg.scope_type IS NULL 
+                  OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
+                  OR (sg.scope_type = 'course' AND sg.scope_value = st.course)
+              )
         ");
         $stmtCleared->execute([$clearanceId, $studentId]);
         $totalCleared = (int)$stmtCleared->fetchColumn();
@@ -234,9 +242,16 @@ class ClearanceStatus extends Model
                   )
             ) = (
                 SELECT COUNT(*) FROM clearance_status cs
+                JOIN clearance_signatories csig ON csig.clearance_id = cs.clearance_id AND csig.signatory_id = cs.signatory_id
+                JOIN signatories sg ON sg.id = csig.signatory_id
                 WHERE cs.clearance_id = ? 
                   AND cs.status = 'cleared'
                   AND cs.student_id = st.id
+                  AND (
+                      sg.scope_type IS NULL 
+                      OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
+                      OR (sg.scope_type = 'course' AND sg.scope_value = st.course)
+                  )
             )
             AND (
                 SELECT COUNT(*) FROM clearance_signatories csig
@@ -300,7 +315,8 @@ class ClearanceStatus extends Model
                 st.section,
                 c.id               AS clearance_id,
                 c.name             AS clearance_name,
-                c.school_year
+                c.school_year,
+                c.type             AS clearance_type
             FROM students st
             JOIN clearances c ON c.id = ?
             WHERE st.id = ?
@@ -314,6 +330,7 @@ class ClearanceStatus extends Model
             'id'          => $row['clearance_id'],
             'name'        => $row['clearance_name'],
             'school_year' => $row['school_year'],
+            'type'        => $row['clearance_type'] ?? 'regular',
         ];
 
         // 2. Fetch all scope-matched signatories with their cleared status for this student
