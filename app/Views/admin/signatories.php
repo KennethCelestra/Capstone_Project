@@ -1,24 +1,24 @@
-<div class="page-header mb-4 d-flex justify-content-between align-items-center">
+<div class="page-header mb-4 d-flex justify-content-between align-items-center" style="padding-bottom: 1.25rem; border-bottom: 1px solid var(--border);">
     <div>
-        <h2>Manage Signatories</h2>
-        <p class="text-muted">Add or edit signatory accounts.</p>
+        <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: .2rem;">Manage Signatories</h2>
+        <p class="text-muted" style="margin: 0; font-size: .95rem;">Add or edit signatory accounts.</p>
     </div>
     <button class="btn btn-primary" onclick="document.getElementById('addSignatoryModal').style.display='flex'">
-        <i class="bi bi-person-plus"></i> Add Signatory
+        Add Signatory
     </button>
 </div>
 
-<div class="blue-card" style="background:#fff; border-radius:8px; overflow:hidden;">
+<div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden;">
     <div class="table-responsive">
         <table class="data-table" style="width: 100%;">
             <thead>
                 <tr style="background: var(--surface2);">
-                    <th class="py-3 px-4" style="min-width: 180px;">Full Name</th>
-                    <th class="py-3 px-4" style="min-width: 180px;">Email</th>
-                    <th class="py-3 px-4">Office</th>
-                    <th class="py-3 px-4">Scope</th>
-                    <th class="py-3 px-4">Password</th>
-                    <th class="py-3 px-4 text-end" style="white-space: nowrap;">Actions</th>
+                    <th style="min-width: 180px;">Full Name</th>
+                    <th style="min-width: 180px;">Email</th>
+                    <th>Office</th>
+                    <th>Scope</th>
+                    <th>Password</th>
+                    <th class="text-end" style="white-space: nowrap;"></th>
                 </tr>
             </thead>
             <tbody>
@@ -26,35 +26,35 @@
                     <tr><td colspan="6" class="text-center py-4 text-muted">No signatories found.</td></tr>
                 <?php else: ?>
                     <?php foreach ($signatories as $s): ?>
-                        <tr class="border-bottom">
-                            <td class="py-3 px-4" data-label="Full Name"><strong><?= htmlspecialchars($s['full_name']) ?></strong></td>
-                            <td class="py-3 px-4" data-label="Email"><?= htmlspecialchars($s['email']) ?></td>
-                            <td class="py-3 px-4" data-label="Office"><span class="badge badge-info"><?= htmlspecialchars($s['office']) ?></span></td>
-                            <td class="py-3 px-4" data-label="Scope">
+                        <tr class="border-bottom" style="transition: background .15s;" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
+                            <td data-label="Full Name"><strong><?= htmlspecialchars($s['full_name']) ?></strong></td>
+                            <td data-label="Email"><?= htmlspecialchars($s['email']) ?></td>
+                            <td data-label="Office"><span class="badge badge-info"><?= htmlspecialchars($s['office']) ?></span></td>
+                            <td data-label="Scope">
                                 <?php if (empty($s['scope_type'])): ?>
                                     <span class="text-muted" style="font-size:0.85rem;">All Students</span>
                                 <?php else: ?>
                                     <?= ucfirst(htmlspecialchars($s['scope_type'])) ?>: <?= htmlspecialchars($s['scope_value']) ?>
                                 <?php endif; ?>
                             </td>
-                            <td class="py-3 px-4" data-label="Password">
+                            <td data-label="Password">
                                 <?php if (!empty($s['temp_password'])): ?>
                                     <span class="badge bg-warning text-dark" style="font-family: monospace;" title="Temporary Password"><?= htmlspecialchars($s['temp_password']) ?></span>
                                 <?php else: ?>
                                     <span class="password-pill">********</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="py-3 px-4 text-end" data-label="Actions">
+                            <td class="text-end" data-label="Actions">
                                 <div class="action-cell">
                                     <button class="btn btn-secondary btn-sm"
                                             onclick="openEditSignatory(<?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['full_name'])) ?>', '<?= htmlspecialchars(addslashes($s['email'])) ?>', '<?= htmlspecialchars(addslashes($s['office'])) ?>', '<?= htmlspecialchars(addslashes($s['scope_type'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($s['scope_value'] ?? '')) ?>')">
-                                        <i class="bi bi-pencil"></i> Edit
+                                        Edit
                                     </button>
                                     <form action="<?= BASE_URL ?>admin/signatories/delete" method="POST" style="margin:0;"
                                           onsubmit="return confirmAction(this, 'Delete this signatory?', 'Delete', 'btn-danger')">
                                         <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                                         <input type="hidden" name="id" value="<?= $s['id'] ?>">
-                                        <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Delete</button>
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                     </form>
                                 </div>
                             </td>

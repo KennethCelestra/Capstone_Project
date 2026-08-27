@@ -5,9 +5,9 @@ $graduatedCount = count(array_filter($students, fn($s) => $s['status'] === 'grad
 $droppedCount   = count(array_filter($students, fn($s) => $s['status'] === 'dropped'));
 ?>
 
-<div class="page-header mb-4 d-flex justify-content-between align-items-center">
+<div class="page-header mb-4 d-flex justify-content-between align-items-center" style="padding-bottom: 1.25rem; border-bottom: 1px solid var(--border);">
     <div>
-        <h2>Students</h2>
+        <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: .2rem;">Students</h2>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.35rem;">
             <span class="badge badge-info" style="font-size:.78rem;">Total: <?= $totalCount ?></span>
             <span class="badge badge-success" style="font-size:.78rem;">Active: <?= $activeCount ?></span>
@@ -62,20 +62,21 @@ $droppedCount   = count(array_filter($students, fn($s) => $s['status'] === 'drop
     <button class="btn btn-secondary btn-sm" onclick="clearStudentFilters()" id="stu-clear-btn" style="display:none;">✕ Clear</button>
 </div>
 
-<div class="table-container">
-    <table class="data-table" id="stu-table">
-        <thead>
-            <tr>
-                <th>Student ID</th>
-                <th>Last Name</th>
-                <th>First Name</th>
-                <th>College</th>
-                <th>Course</th>
-                <th>Year / Section</th>
-                <th>Status</th>
-                <th class="text-end" style="white-space: nowrap;">Action</th>
-            </tr>
-        </thead>
+<div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden;">
+    <div class="table-responsive" style="width:100%;">
+        <table class="data-table" id="stu-table" style="width: 100%;">
+            <thead>
+                <tr style="background: var(--surface2);">
+                    <th style="width: 14%; white-space: nowrap;">Student ID</th>
+                    <th style="width: 15%;">Last Name</th>
+                    <th style="width: 18%;">First Name</th>
+                    <th class="text-center" style="width: 9%;">College</th>
+                    <th class="text-center" style="width: 10%;">Course</th>
+                    <th class="text-center" style="width: 12%; white-space: nowrap;">Year / Section</th>
+                    <th class="text-center" style="width: 10%;">Status</th>
+                    <th class="text-end" style="width: 12%; white-space: nowrap;"></th>
+                </tr>
+            </thead>
         <tbody id="stu-tbody">
             <?php if (empty($students)): ?>
                 <tr><td colspan="8" class="text-center">No students found. Add manually or upload a CSV.</td></tr>
@@ -93,7 +94,8 @@ $droppedCount   = count(array_filter($students, fn($s) => $s['status'] === 'drop
                         data-id="<?= strtolower(htmlspecialchars($s['student_id'])) ?>"
                         data-college="<?= htmlspecialchars($s['college']) ?>"
                         data-year="<?= (int)$s['year_level'] ?>"
-                        data-status="<?= htmlspecialchars($s['status']) ?>">
+                        data-status="<?= htmlspecialchars($s['status']) ?>"
+                        style="transition: background .15s;" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
                         <td data-label="Student ID"><?= htmlspecialchars($s['student_id']) ?></td>
                         <td data-label="Last Name"><?= htmlspecialchars($s['last_name']) ?></td>
                         <td data-label="First Name"><?= htmlspecialchars($s['first_name']) ?></td>
@@ -116,13 +118,13 @@ $droppedCount   = count(array_filter($students, fn($s) => $s['status'] === 'drop
                                             '<?= htmlspecialchars(addslashes($s['section'])) ?>',
                                             '<?= htmlspecialchars($s['status']) ?>'
                                         )">
-                                    <i class="bi bi-pencil"></i> Edit
+                                    Edit
                                 </button>
                                 <form action="<?= BASE_URL ?>admin/students/delete" method="POST" style="margin:0;"
                                       onsubmit="return confirmAction(this, 'Delete this student from the database? This cannot be undone.', 'Delete', 'btn-danger')">
                                     <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                                     <input type="hidden" name="id" value="<?= $s['id'] ?>">
-                                    <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Delete</button>
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                 </form>
                             </div>
                         </td>
@@ -134,6 +136,7 @@ $droppedCount   = count(array_filter($students, fn($s) => $s['status'] === 'drop
             <?php endif; ?>
         </tbody>
     </table>
+    </div>
 </div>
 
 <!-- ====== Upload CSV Modal ====== -->

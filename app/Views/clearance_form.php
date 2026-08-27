@@ -72,7 +72,7 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student's Semestral Clearance (QF-VPAA-08) — <?= $studentFullName ?></title>
+    <title>Semestral Clearance (QF-VPAA-08) — <?= $studentFullName ?></title>
     <style>
         /* ── Reset & Base ── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -413,7 +413,7 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
                         <div class="univ-location">La Paz, Iloilo City</div>
                     </div>
                     <div class="header-title-bar">
-                        <h1>STUDENT'S SEMESTRAL CLEARANCE</h1>
+                        <h1>SEMESTRAL CLEARANCE</h1>
                     </div>
                 </div>
 

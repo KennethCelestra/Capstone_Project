@@ -1,23 +1,23 @@
-<div class="page-header mb-4 d-flex justify-content-between align-items-center">
+<div class="page-header mb-4 d-flex justify-content-between align-items-center" style="padding-bottom: 1.25rem; border-bottom: 1px solid var(--border);">
     <div>
-        <h2>Manage Enrollment Committee</h2>
-        <p class="text-muted">Add or edit enrollment committee members.</p>
+        <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: .2rem;">Manage Enrollment Committee</h2>
+        <p class="text-muted" style="margin: 0; font-size: .95rem;">Add or edit enrollment committee members.</p>
     </div>
     <button class="btn btn-primary" onclick="document.getElementById('addEnrollmentCommitteeModal').style.display='flex'">
-        <i class="bi bi-person-plus"></i> Add Member
+        Add Member
     </button>
 </div>
 
-<div class="gold-card" style="background:#fff; border-radius:8px; overflow:hidden;">
+<div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden;">
     <div class="table-responsive">
         <table class="data-table" style="width: 100%;">
             <thead>
                 <tr style="background: var(--surface2);">
-                    <th class="py-3 px-4" style="min-width: 180px;">Full Name</th>
-                    <th class="py-3 px-4" style="min-width: 180px;">Email</th>
-                    <th class="py-3 px-4">College</th>
-                    <th class="py-3 px-4">Password</th>
-                    <th class="py-3 px-4 text-end" style="white-space: nowrap;">Actions</th>
+                    <th style="width: 28%;">Full Name</th>
+                    <th style="width: 28%;">Email</th>
+                    <th style="width: 16%;">College</th>
+                    <th style="width: 16%;">Password</th>
+                    <th class="text-end" style="width: 12%; white-space: nowrap;"></th>
                 </tr>
             </thead>
             <tbody>
@@ -25,28 +25,28 @@
                     <tr><td colspan="5" class="text-center py-4 text-muted">No enrollment committee members found.</td></tr>
                 <?php else: ?>
                     <?php foreach ($enrollment_committees as $a): ?>
-                        <tr class="border-bottom">
-                            <td class="py-3 px-4" data-label="Full Name"><strong><?= htmlspecialchars($a['full_name']) ?></strong></td>
-                            <td class="py-3 px-4" data-label="Email"><?= htmlspecialchars($a['email']) ?></td>
-                            <td class="py-3 px-4" data-label="College"><span class="badge badge-info"><?= htmlspecialchars($a['department']) ?></span></td>
-                            <td class="py-3 px-4" data-label="Password">
+                        <tr class="border-bottom" style="transition: background .15s;" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
+                            <td data-label="Full Name"><strong><?= htmlspecialchars($a['full_name']) ?></strong></td>
+                            <td data-label="Email"><?= htmlspecialchars($a['email']) ?></td>
+                            <td data-label="College"><span class="badge badge-info"><?= htmlspecialchars($a['department']) ?></span></td>
+                            <td data-label="Password">
                                 <?php if (!empty($a['temp_password'])): ?>
                                     <span class="badge bg-warning text-dark" style="font-family: monospace;" title="Temporary Password"><?= htmlspecialchars($a['temp_password']) ?></span>
                                 <?php else: ?>
                                     <span class="password-pill">********</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="py-3 px-4 text-end" data-label="Actions">
+                            <td class="text-end" data-label="Actions">
                                 <div class="action-cell">
                                     <button class="btn btn-secondary btn-sm"
                                             onclick="openEditEnrollmentCommittee(<?= $a['id'] ?>, '<?= htmlspecialchars(addslashes($a['full_name'])) ?>', '<?= htmlspecialchars(addslashes($a['email'])) ?>', '<?= htmlspecialchars(addslashes($a['department'])) ?>')">
-                                        <i class="bi bi-pencil"></i> Edit
+                                        Edit
                                     </button>
                                     <form action="<?= BASE_URL ?>admin/enrollment-committees/delete" method="POST" style="margin:0;"
                                           onsubmit="return confirmAction(this, 'Delete this enrollment committee member?', 'Delete', 'btn-danger')">
                                         <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                                         <input type="hidden" name="id" value="<?= $a['id'] ?>">
-                                        <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Delete</button>
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                     </form>
                                 </div>
                             </td>

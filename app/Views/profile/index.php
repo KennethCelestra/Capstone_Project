@@ -5,9 +5,9 @@
     </div>
 </div>
 
-<div style="max-width: 600px;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; max-width: 960px;">
     <!-- Account Details Form -->
-    <div style="background:#fff; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow);">
+    <div style="background:#fff; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; box-shadow: var(--shadow);">
         <h3 style="font-size: 1.1rem; margin-bottom: 1rem;"><i class="bi bi-person-badge text-primary me-2"></i> Account Details</h3>
         
         <?php if (!empty($flash) && $flash['type'] === 'success_info'): ?>

@@ -51,7 +51,7 @@ $cid = $clearance['id'];
     <?php else: ?>
         <div class="table-container">
             <table class="data-table">
-                <thead><tr><th>Name</th><th>Office</th><th>Email</th><th>Scope</th><th class="text-end" style="white-space: nowrap;">Action</th></tr></thead>
+                <thead><tr><th>Name</th><th>Office</th><th>Email</th><th>Scope</th><th class="text-end" style="white-space: nowrap;"></th></tr></thead>
                 <tbody>
                     <?php foreach ($assignedSignatories as $s): ?>
                         <tr>
@@ -101,7 +101,7 @@ $cid = $clearance['id'];
     <?php else: ?>
         <div class="table-container">
             <table class="data-table">
-                <thead><tr><th>Name</th><th>College</th><th>Email</th><th class="text-end" style="white-space: nowrap;">Action</th></tr></thead>
+                <thead><tr><th>Name</th><th>College</th><th>Email</th><th class="text-end" style="white-space: nowrap;"></th></tr></thead>
                 <tbody>
                     <?php foreach ($assignedEnrollmentCommittees as $a): ?>
                         <tr>
@@ -169,7 +169,7 @@ $cid = $clearance['id'];
                         <th>College</th>
                         <th>Course</th>
                         <th>Year / Section</th>
-                        <th class="text-end" style="white-space: nowrap;">Action</th>
+                        <th class="text-end" style="white-space: nowrap;"></th>
                     </tr>
                 </thead>
                 <tbody>

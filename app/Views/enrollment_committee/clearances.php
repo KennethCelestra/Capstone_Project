@@ -10,32 +10,32 @@
 <!-- =====================================================
      PHASE 1 — Clearance Selection Cards
      ===================================================== -->
-<div class="page-header mb-4">
+<div class="page-header mb-4 d-flex justify-content-between align-items-center" style="padding-bottom: 1.25rem; border-bottom: 1px solid var(--border);">
     <div>
-        <h2>My Clearances</h2>
-        <p class="text-muted">Select a clearance to view student clearance standing.</p>
+        <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: .2rem;">My Clearances</h2>
+        <p class="text-muted" style="margin: 0; font-size: .95rem;">Select a clearance to view student clearance standing.</p>
     </div>
 </div>
 
 <?php if (empty($clearances)): ?>
-    <div class="empty-state text-center p-5 blue-card" style="background:#fff; border-radius:8px;">
-        <i class="bi bi-folder-x display-1 text-muted mb-3 opacity-50"></i>
-        <h3>No clearances assigned</h3>
-        <p class="text-muted">You haven't been assigned to any clearance yet. Contact your administrator.</p>
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 3rem; text-align: center;">
+        <i class="bi bi-folder-x" style="font-size: 2.5rem; color: var(--text-muted); opacity: .4;"></i>
+        <h3 style="margin-top: .75rem; font-size: 1.1rem;">No clearances assigned</h3>
+        <p class="text-muted" style="font-size: .9rem;">You haven't been assigned to any clearance yet. Contact your administrator.</p>
     </div>
 <?php else: ?>
-    <div class="blue-card" style="background:#fff; border-radius:8px; overflow:hidden;">
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden;">
         <div class="table-responsive">
             <table class="data-table" style="width: 100%;">
                 <thead>
                     <tr style="background: var(--surface2);">
-                        <th class="py-3 px-4">Clearance Name</th>
-                        <th class="py-3 px-4">School Year</th>
-                        <th class="py-3 px-4 text-center">Students</th>
-                        <th class="py-3 px-4 text-center">Pending</th>
-                        <th class="py-3 px-4 text-center">Flagged</th>
-                        <th class="py-3 px-4 text-center">Cleared</th>
-                        <th class="py-3 px-4 text-end">Action</th>
+                        <th>Clearance Name</th>
+                        <th>School Year</th>
+                        <th class="text-center">Students</th>
+                        <th class="text-center">Pending</th>
+                        <th class="text-center">Flagged</th>
+                        <th class="text-center">Cleared</th>
+                        <th class="text-end"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -46,34 +46,34 @@
                         $cleared = $c['cleared_total'];
                         $pending = $c['pending_total'];
                         ?>
-                        <tr class="border-bottom">
-                            <td class="py-3 px-4">
+                        <tr class="border-bottom" style="transition: background .15s;" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
+                            <td>
                                 <strong><?= htmlspecialchars($c['clearance_name']) ?></strong>
                             </td>
-                            <td class="py-3 px-4"><?= htmlspecialchars($c['school_year'] ?? '') ?></td>
-                            <td class="py-3 px-4 text-center"><span class="badge badge-info"><?= $total ?></span></td>
-                            <td class="py-3 px-4 text-center">
+                            <td><?= htmlspecialchars($c['school_year'] ?? '') ?></td>
+                            <td class="text-center"><span class="badge badge-info"><?= $total ?></span></td>
+                            <td class="text-center">
                                 <?php if ($pending > 0): ?>
                                     <span class="badge badge-warning text-dark"><?= $pending ?></span>
                                 <?php else: ?>
                                     <span class="text-muted">—</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="py-3 px-4 text-center">
+                            <td class="text-center">
                                 <?php if ($flagged > 0): ?>
                                     <span class="badge badge-danger"><?= $flagged ?></span>
                                 <?php else: ?>
                                     <span class="text-muted">—</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="py-3 px-4 text-center">
+                            <td class="text-center">
                                 <?php if ($cleared > 0): ?>
                                     <span class="badge badge-success"><?= $cleared ?></span>
                                 <?php else: ?>
                                     <span class="text-muted">—</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="py-3 px-4 text-end">
+                            <td class="text-end">
                                 <a href="<?= BASE_URL ?>enrollment-committee/clearances?cid=<?= $c['clearance_id'] ?>" class="btn btn-primary btn-sm">
                                     <i class="bi bi-eye"></i> View
                                 </a>
@@ -100,12 +100,12 @@ $cCleared  = array_sum(array_map(fn($s) => $s['display_status'] === 'cleared' ? 
 $cPending  = $totalHere - $cFlagged - $cCleared;
 ?>
 
-<div class="page-header mb-4" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+<div class="page-header mb-4" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border);">
     <div>
-        <a href="<?= BASE_URL ?>enrollment-committee/clearances" class="back-link text-decoration-none d-inline-block mb-2"><i class="bi bi-arrow-left"></i> My Clearances</a>
-        <h2><?= htmlspecialchars($c['clearance_name']) ?></h2>
+        <a href="<?= BASE_URL ?>enrollment-committee/clearances" class="back-link text-decoration-none d-inline-block mb-2" style="font-size: .9rem; color: var(--text-muted);"><i class="bi bi-arrow-left"></i> My Clearances</a>
+        <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: .2rem;"><?= htmlspecialchars($c['clearance_name']) ?></h2>
         <?php if (!empty($c['school_year'])): ?>
-            <p class="text-muted" style="margin-top:.25rem"><?= htmlspecialchars($c['school_year']) ?></p>
+            <p class="text-muted" style="margin: 0; font-size: .95rem;"><?= htmlspecialchars($c['school_year']) ?></p>
         <?php endif; ?>
     </div>
 </div>
@@ -121,7 +121,7 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
 </div>
 
 <!-- ===== Filter Bar ===== -->
-<div class="blue-card p-3 mb-4" style="background:#fff; border-radius:8px;">
+<div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 1rem; margin-bottom: 1.25rem;">
     <form method="GET" action="<?= BASE_URL ?>enrollment-committee/clearances" class="filter-bar m-0 d-flex gap-3 align-items-center flex-wrap">
         <input type="hidden" name="cid" value="<?= $selectedCid ?>">
         <div class="filter-group flex-grow-1" style="min-width: 200px;">
@@ -176,18 +176,18 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
         <p class="text-muted fs-5">No students match the current filters.</p>
     </div>
 <?php else: ?>
-    <div class="blue-card" style="background:#fff; border-radius:8px; overflow:hidden;">
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden;">
         <div class="table-responsive">
             <table class="data-table enrollment-table m-0" style="width: 100%;">
                 <thead>
                     <tr style="background: var(--surface2);">
-                        <th class="py-3 px-4">Student ID</th>
-                        <th class="py-3 px-4">Name</th>
-                        <th class="py-3 px-4">College</th>
-                        <th class="py-3 px-4">Course</th>
-                        <th class="py-3 px-4">Year/Sec</th>
-                        <th class="py-3 px-4">Status</th>
-                        <th class="py-3 px-4">Action</th>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>College</th>
+                        <th>Course</th>
+                        <th>Year/Sec</th>
+                        <th>Status</th>
+                        <th class="text-end"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -199,12 +199,12 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
                         $cleared = array_sum(array_map(fn($sg) => $sg['status'] === 'cleared' ? 1 : 0, $s['signatory_detail']));
                         ?>
                         <tr class="border-bottom <?= $flagged > 0 ? 'table-danger' : ($cleared === $totalSig && $totalSig > 0 ? 'table-success' : '') ?>">
-                            <td class="py-3 px-4"><strong><?= htmlspecialchars($s['student_number']) ?></strong></td>
-                            <td class="py-3 px-4"><?= htmlspecialchars($s['last_name']) ?>, <?= htmlspecialchars($s['first_name']) ?></td>
-                            <td class="py-3 px-4"><?= htmlspecialchars($s['college']) ?></td>
-                            <td class="py-3 px-4"><?= htmlspecialchars($s['course']) ?></td>
-                            <td class="py-3 px-4"><?= $s['year_level'] ?>–<?= htmlspecialchars($s['section']) ?></td>
-                            <td class="py-3 px-4">
+                            <td><strong><?= htmlspecialchars($s['student_number']) ?></strong></td>
+                            <td><?= htmlspecialchars($s['last_name']) ?>, <?= htmlspecialchars($s['first_name']) ?></td>
+                            <td><?= htmlspecialchars($s['college']) ?></td>
+                            <td><?= htmlspecialchars($s['course']) ?></td>
+                            <td><?= $s['year_level'] ?>–<?= htmlspecialchars($s['section']) ?></td>
+                            <td>
                                 <?php if ($flagged > 0): ?>
                                     <span class="badge bg-danger">FLAG</span>
                                 <?php elseif ($cleared === $totalSig && $totalSig > 0): ?>
@@ -213,7 +213,7 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
                                     <span class="badge bg-warning text-dark">PENDING</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="py-3 px-4">
+                            <td class="text-end">
                                 <button type="button" class="btn btn-outline-primary btn-sm"
                                         onclick="toggleDetail('<?= $rowId ?>')">
                                     <i class="bi bi-eye"></i> View
