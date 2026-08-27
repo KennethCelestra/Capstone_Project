@@ -98,12 +98,15 @@ function renderExitSigSlot(array $sig, bool $isCentered = false): string {
             line-height: 1.25;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
+            overflow-x: hidden;
         }
 
         .page-wrapper {
             width: 100%;
-            max-width: 820px;
+            max-width: 840px;
             margin: 0 auto;
+            overflow: hidden;
+            padding: 0 8px;
         }
 
         .print-bar {
@@ -130,6 +133,9 @@ function renderExitSigSlot(array $sig, bool $isCentered = false): string {
             padding: 14px 20px;
             box-shadow: 0 3px 12px rgba(0,0,0,0.08);
             border: 1px solid #ccc;
+            width: 800px;
+            margin: 0 auto;
+            transform-origin: top left;
         }
 
         .form-copy {
@@ -370,13 +376,17 @@ function renderExitSigSlot(array $sig, bool $isCentered = false): string {
                 background: #fff;
                 padding: 0;
                 font-size: 9pt;
+                overflow: visible !important;
             }
             .print-bar { display: none !important; }
-            .page-wrapper { max-width: 100%; }
+            .page-wrapper { max-width: 100% !important; min-width: 0 !important; padding: 0 !important; overflow: visible !important; height: auto !important; }
             .sheet {
-                box-shadow: none;
-                border: none;
-                padding: 0;
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                min-width: 0 !important;
+                width: 100% !important;
+                transform: none !important;
             }
             @page {
                 size: A4 portrait;
@@ -522,6 +532,37 @@ function renderExitSigSlot(array $sig, bool $isCentered = false): string {
     </div><!-- /.sheet -->
 
 </div><!-- /.page-wrapper -->
+
+<script>
+function autoFitSheet() {
+    var wrapper = document.querySelector('.page-wrapper');
+    var sheet = document.querySelector('.sheet');
+    var printBar = document.querySelector('.print-bar');
+    if (!wrapper || !sheet) return;
+    
+    if (window.matchMedia && window.matchMedia('print').matches) return;
+
+    var containerWidth = wrapper.clientWidth - 16;
+    if (containerWidth < 800 && containerWidth > 0) {
+        var scale = containerWidth / 800;
+        sheet.style.transform = 'scale(' + scale + ')';
+        sheet.style.transformOrigin = 'top left';
+        sheet.style.marginLeft = '0';
+        sheet.style.marginRight = '0';
+        var printBarHeight = printBar ? printBar.offsetHeight + 15 : 0;
+        var scaledHeight = sheet.offsetHeight * scale;
+        wrapper.style.height = (scaledHeight + printBarHeight + 20) + 'px';
+    } else {
+        sheet.style.transform = 'none';
+        sheet.style.marginLeft = 'auto';
+        sheet.style.marginRight = 'auto';
+        wrapper.style.height = 'auto';
+    }
+}
+window.addEventListener('DOMContentLoaded', autoFitSheet);
+window.addEventListener('load', autoFitSheet);
+window.addEventListener('resize', autoFitSheet);
+</script>
 
 </body>
 </html>

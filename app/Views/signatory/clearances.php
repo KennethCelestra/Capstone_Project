@@ -369,19 +369,19 @@ $cPending = count($students) - $cFlagged - $cCleared;
 
 <!-- ===== Confirm All Modal ===== -->
 <div id="confirm-all-modal" class="modal" style="display:none;" onclick="closeConfirmAllModalOnOverlay(event)">
-    <div class="modal-box">
-        <div class="modal-header">
+    <div class="modal-box" style="max-width: 440px; padding: 1.25rem 1.5rem;">
+        <div class="modal-header" style="margin-bottom: 0.75rem;">
             <h3>Confirm All</h3>
             <button type="button" class="modal-close" onclick="closeConfirmAllModal()">✕</button>
         </div>
         <form action="<?= BASE_URL ?>signatory/confirm-all" method="POST" id="confirm-all-form-modal">
             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <input type="hidden" name="clearance_id" value="<?= $selectedCid ?? 0 ?>">
-            <div class="modal-body">
-                <p>This will clear all pending students.</p>
-                <p>Are you sure you want to continue?</p>
+            <div class="modal-body" style="padding: 0; margin-bottom: 1rem;">
+                <p style="margin-bottom: 0.25rem;">This will clear all pending students.</p>
+                <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Are you sure you want to continue?</p>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" style="padding-top: 0; margin-top: 1rem; border-top: none; display: flex; justify-content: flex-end; gap: 0.5rem;">
                 <button type="button" class="btn btn-secondary" onclick="closeConfirmAllModal()">Cancel</button>
                 <button type="submit" class="btn btn-primary" id="confirm-all-btn-modal" onclick="this.disabled=true; this.innerHTML='<span class=\'spinner-border spinner-border-sm\'></span> Processing...'; this.form.submit();">Confirm All</button>
             </div>

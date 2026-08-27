@@ -57,6 +57,7 @@
                                           onsubmit="return confirmAction(this, 'PERMANENTLY delete this clearance? All student data, flags, and statuses will be gone forever. This cannot be undone.', 'Permanently Delete', 'btn-danger')">
                                         <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                                         <input type="hidden" name="id" value="<?= $c['id'] ?>">
+                                        <input type="hidden" name="redirect_to" value="admin/archived-clearances">
                                         <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Delete</button>
                                     </form>
                                 </div>

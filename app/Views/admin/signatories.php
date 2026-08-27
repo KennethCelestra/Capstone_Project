@@ -77,19 +77,19 @@
             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <div class="form-group">
                 <label>Full Name *</label>
-                <input type="text" name="full_name" required placeholder="Ms. Maria Santos">
+                <input type="text" name="full_name" required>
             </div>
             <div class="form-group">
                 <label>Email *</label>
-                <input type="email" name="email" required placeholder="signatory@school.edu">
+                <input type="email" name="email" required>
             </div>
             <div class="form-group">
                 <label>Office / Department *</label>
-                <input type="text" name="office" required placeholder="Registrar's Office">
+                <input type="text" name="office" required>
             </div>
             <div class="form-group">
                 <label>Password *</label>
-                <input type="text" name="password" required placeholder="Set login password">
+                <input type="text" name="password" required>
             </div>
 
             <!-- Add Scope Selection -->
@@ -98,22 +98,22 @@
                 <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-top:8px;">
                     <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;">
                         <input type="radio" name="scope_type" value="" checked onchange="toggleAddScopeInputs(this.value)" style="margin:0; accent-color:var(--primary);">
-                        <span style="font-weight:600; font-size:0.85rem; line-height:1.2;">All Students<br><small style="font-weight:400; color:var(--text-muted);">Default Scope</small></span>
+                        <span style="font-weight:600; font-size:0.85rem;">All Students</span>
                     </label>
                     <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;">
                         <input type="radio" name="scope_type" value="college" onchange="toggleAddScopeInputs(this.value)" style="margin:0; accent-color:#0ea5e9;">
-                        <span style="font-weight:600; font-size:0.85rem; line-height:1.2;">By College<br><small style="font-weight:400; color:var(--text-muted);">e.g. Dean</small></span>
+                        <span style="font-weight:600; font-size:0.85rem;">By College</span>
                     </label>
                     <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;">
                         <input type="radio" name="scope_type" value="course" onchange="toggleAddScopeInputs(this.value)" style="margin:0; accent-color:#22c55e;">
-                        <span style="font-weight:600; font-size:0.85rem; line-height:1.2;">By Course<br><small style="font-weight:400; color:var(--text-muted);">e.g. Dept. Head</small></span>
+                        <span style="font-weight:600; font-size:0.85rem;">By Course</span>
                     </label>
                 </div>
                 <div id="add_scope_college_container" style="display:none; margin-top:10px;">
-                    <input type="text" name="scope_college" id="add_scope_college_input" list="college_list" placeholder="Type or select a college (e.g. CCI)" style="width:100%;">
+                    <input type="text" name="scope_college" id="add_scope_college_input" list="college_list" style="width:100%;">
                 </div>
                 <div id="add_scope_course_container" style="display:none; margin-top:10px;">
-                    <input type="text" name="scope_course" id="add_scope_course_input" list="course_list" placeholder="Type or select a course (e.g. BSIT)" style="width:100%;">
+                    <input type="text" name="scope_course" id="add_scope_course_input" list="course_list" style="width:100%;">
                 </div>
             </div>
 

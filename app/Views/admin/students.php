@@ -152,10 +152,6 @@ $droppedCount   = count(array_filter($students, fn($s) => $s['status'] === 'drop
             <div class="form-group">
                 <label>CSV File</label>
                 <input type="file" name="csv_file" accept=".csv,.txt" required>
-                <small class="text-muted">
-                    Required columns: <code>student_id, last_name, first_name, email, college, course, year_level, section</code><br>
-                    First row must be the header row.
-                </small>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
@@ -209,7 +205,7 @@ $droppedCount   = count(array_filter($students, fn($s) => $s['status'] === 'drop
             <div class="form-row">
                 <div class="form-group">
                     <label>Student ID *</label>
-                    <input type="text" name="student_id" required placeholder="e.g. 2024-00001">
+                    <input type="text" name="student_id" required placeholder="e.g. 2023-2706-A">
                 </div>
                 <div class="form-group">
                     <label>Last Name *</label>

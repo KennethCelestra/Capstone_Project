@@ -101,12 +101,12 @@ $cid = $clearance['id'];
     <?php else: ?>
         <div class="table-container">
             <table class="data-table">
-                <thead><tr><th>Name</th><th>Department</th><th>Email</th><th class="text-end" style="white-space: nowrap;">Action</th></tr></thead>
+                <thead><tr><th>Name</th><th>College</th><th>Email</th><th class="text-end" style="white-space: nowrap;">Action</th></tr></thead>
                 <tbody>
                     <?php foreach ($assignedEnrollmentCommittees as $a): ?>
                         <tr>
                             <td data-label="Name"><?= htmlspecialchars($a['full_name']) ?></td>
-                            <td data-label="Department"><?= htmlspecialchars($a['department']) ?></td>
+                            <td data-label="College"><?= htmlspecialchars($a['department']) ?></td>
                             <td data-label="Email"><?= htmlspecialchars($a['email']) ?></td>
                             <td class="text-end" data-label="Action">
                                 <div class="action-cell">
@@ -262,7 +262,6 @@ $cid = $clearance['id'];
                     <p class="text-muted" style="margin-top: 0;">No available signatories to assign. Please create more in the Signatories menu.</p>
                 <?php else: ?>
                     <select name="signatory_id" required>
-                        <option value="">-- Choose Signatory --</option>
                         <option value="all" style="font-weight: bold; color: var(--primary);">-- Assign All Signatories --</option>
                         <?php foreach ($unassignedSignatories as $us): ?>
                             <option value="<?= $us['id'] ?>">
@@ -303,7 +302,6 @@ $cid = $clearance['id'];
                     <p class="text-muted" style="margin-top: 0;">No available enrollment committee members to assign. Please create more in the Enrollment Committee menu.</p>
                 <?php else: ?>
                     <select name="enrollment_committee_id" required>
-                        <option value="">-- Choose Member --</option>
                         <option value="all" style="font-weight: bold; color: var(--primary);">-- Assign All Enrollment Committees --</option>
                         <?php foreach ($unassignedEnrollmentCommittees as $ua): ?>
                             <option value="<?= $ua['id'] ?>">

@@ -15,7 +15,7 @@
                 <tr style="background: var(--surface2);">
                     <th class="py-3 px-4" style="min-width: 180px;">Full Name</th>
                     <th class="py-3 px-4" style="min-width: 180px;">Email</th>
-                    <th class="py-3 px-4">Department</th>
+                    <th class="py-3 px-4">College</th>
                     <th class="py-3 px-4">Password</th>
                     <th class="py-3 px-4 text-end" style="white-space: nowrap;">Actions</th>
                 </tr>
@@ -28,7 +28,7 @@
                         <tr class="border-bottom">
                             <td class="py-3 px-4" data-label="Full Name"><strong><?= htmlspecialchars($a['full_name']) ?></strong></td>
                             <td class="py-3 px-4" data-label="Email"><?= htmlspecialchars($a['email']) ?></td>
-                            <td class="py-3 px-4" data-label="Department"><span class="badge badge-info"><?= htmlspecialchars($a['department']) ?></span></td>
+                            <td class="py-3 px-4" data-label="College"><span class="badge badge-info"><?= htmlspecialchars($a['department']) ?></span></td>
                             <td class="py-3 px-4" data-label="Password">
                                 <?php if (!empty($a['temp_password'])): ?>
                                     <span class="badge bg-warning text-dark" style="font-family: monospace;" title="Temporary Password"><?= htmlspecialchars($a['temp_password']) ?></span>
@@ -69,19 +69,19 @@
             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <div class="form-group">
                 <label>Full Name *</label>
-                <input type="text" name="full_name" required placeholder="Prof. Juan Dela Cruz">
+                <input type="text" name="full_name" required>
             </div>
             <div class="form-group">
                 <label>Email *</label>
-                <input type="email" name="email" required placeholder="committee@school.edu">
+                <input type="email" name="email" required>
             </div>
             <div class="form-group">
-                <label>Department *</label>
-                <input type="text" name="department" required placeholder="College of Computing">
+                <label>College *</label>
+                <input type="text" name="department" required>
             </div>
             <div class="form-group">
                 <label>Password *</label>
-                <input type="text" name="password" required placeholder="Set login password">
+                <input type="text" name="password" required>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
@@ -111,7 +111,7 @@
                 <input type="email" name="email" id="editAdvEmail" required>
             </div>
             <div class="form-group">
-                <label>Department *</label>
+                <label>College *</label>
                 <input type="text" name="department" id="editAdvDept" required>
             </div>
             <div class="modal-footer">

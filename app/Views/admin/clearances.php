@@ -19,61 +19,61 @@
     </div>
 <?php else: ?>
     <div class="gold-card" style="background:#fff; border-radius:8px;">
-        <div class="table-responsive" style="overflow-x:auto; width:100%;">
-            <table class="data-table" style="width: 100%;">
-                <thead>
-                    <tr style="background: var(--surface2);">
-                        <th class="py-3 px-3">Clearance Name</th>
-                        <th class="py-3 px-2 text-center" style="width: 80px;">Type</th>
-                        <th class="py-3 px-2 text-center" style="width: 105px;">School Year</th>
-                        <th class="py-3 px-2 text-center" style="width: 95px;">Signatories</th>
-                        <th class="py-3 px-2 text-center" style="width: 140px;">Enrollment Committee</th>
-                        <th class="py-3 px-2 text-center" style="width: 85px;">Students</th>
-                        <th class="py-3 px-3 text-end" style="width: 1%; white-space: nowrap;">Actions</th>
+    <div class="table-responsive" style="width:100%;">
+        <table class="data-table" style="width: 100%; font-size: 0.86rem;">
+            <thead>
+                <tr style="background: var(--surface2);">
+                    <th class="py-2.5 px-2">Clearance Name</th>
+                    <th class="py-2.5 px-2 text-center" style="width: 90px;">Type</th>
+                    <th class="py-2.5 px-2 text-center" style="width: 95px;">School Year</th>
+                    <th class="py-2.5 px-2 text-center" style="width: 80px;">Signatories</th>
+                    <th class="py-2.5 px-2 text-center" style="width: 125px;">Enrollment Committee</th>
+                    <th class="py-2.5 px-2 text-center" style="width: 75px;">Students</th>
+                    <th class="py-2.5 px-2 text-end" style="width: 1%; white-space: nowrap;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($clearances as $c): ?>
+                    <tr class="border-bottom">
+                        <td class="py-2.5 px-2" data-label="Clearance Name">
+                            <strong><?= htmlspecialchars($c['name']) ?></strong>
+                            <?php if (!empty($c['description'])): ?>
+                                <br><small class="text-muted" style="font-size:0.78rem;"><?= htmlspecialchars($c['description']) ?></small>
+                            <?php endif; ?>
+                        </td>
+                        <td class="py-2.5 px-2 text-center" data-label="Type">
+                            <?php if (($c['type'] ?? 'regular') === 'exit'): ?>
+                                <span class="badge badge-warning" style="font-size:.7rem; padding: 3px 6px;">Exit</span>
+                            <?php else: ?>
+                                <span class="badge badge-info" style="font-size:.7rem; padding: 3px 6px;">Semestral</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="py-2.5 px-2 text-center" data-label="School Year" style="white-space:nowrap;"><?= htmlspecialchars($c['school_year']) ?></td>
+                        <td class="py-2.5 px-2 text-center" data-label="Signatories"><span class="badge badge-info" style="font-size:.72rem;"><i class="bi bi-pen"></i> <?= $c['signatory_count'] ?></span></td>
+                        <td class="py-2.5 px-2 text-center" data-label="Enrollment Committee"><span class="badge badge-info" style="font-size:.72rem;"><i class="bi bi-people"></i> <?= $c['enrollment_committee_count'] ?></span></td>
+                        <td class="py-2.5 px-2 text-center" data-label="Students"><span class="badge badge-info" style="font-size:.72rem;"><i class="bi bi-mortarboard"></i> <?= $c['student_count'] ?></span></td>
+                        <td class="py-2.5 px-2 text-end" data-label="Actions" style="white-space: nowrap;">
+                            <div class="action-cell" style="gap: .25rem; justify-content: flex-end;">
+                                <a href="<?= BASE_URL ?>admin/clearances/detail?id=<?= $c['id'] ?>"
+                                   class="btn btn-primary btn-sm" style="padding: 2px 7px; font-size: 0.78rem;"><i class="bi bi-gear"></i> Manage</a>
+                                <button class="btn btn-secondary btn-sm" style="padding: 2px 7px; font-size: 0.78rem;"
+                                        onclick="openEditClearance(<?= $c['id'] ?>, '<?= htmlspecialchars(addslashes($c['name'])) ?>', '<?= htmlspecialchars(addslashes($c['description'])) ?>', '<?= htmlspecialchars($c['school_year']) ?>', '<?= $c['type'] ?? 'regular' ?>')">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+                                <form action="<?= BASE_URL ?>admin/clearances/archive" method="POST" style="margin:0; display:inline;"
+                                      onsubmit="return confirmAction(this, 'Archive this clearance? It will be hidden from active list but all data is preserved.', 'Archive', 'btn-warning')">
+                                    <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                                    <input type="hidden" name="id" value="<?= $c['id'] ?>">
+                                    <button type="submit" class="btn btn-warning btn-sm" style="padding: 2px 7px; font-size: 0.78rem;"><i class="bi bi-archive"></i> Archive</button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($clearances as $c): ?>
-                        <tr class="border-bottom">
-                            <td class="py-3 px-3" data-label="Clearance Name">
-                                <strong><?= htmlspecialchars($c['name']) ?></strong>
-                                <?php if (!empty($c['description'])): ?>
-                                    <br><small class="text-muted"><?= htmlspecialchars($c['description']) ?></small>
-                                <?php endif; ?>
-                            </td>
-                            <td class="py-3 px-2 text-center" data-label="Type">
-                                <?php if (($c['type'] ?? 'regular') === 'exit'): ?>
-                                    <span class="badge badge-warning" style="font-size:.75rem;">Exit</span>
-                                <?php else: ?>
-                                    <span class="badge badge-info" style="font-size:.75rem;">Regular</span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="py-3 px-2 text-center" data-label="School Year"><?= htmlspecialchars($c['school_year']) ?></td>
-                            <td class="py-3 px-2 text-center" data-label="Signatories"><span class="badge badge-info"><i class="bi bi-pen"></i> <?= $c['signatory_count'] ?></span></td>
-                            <td class="py-3 px-2 text-center" data-label="Enrollment Committee"><span class="badge badge-info"><i class="bi bi-people"></i> <?= $c['enrollment_committee_count'] ?></span></td>
-                            <td class="py-3 px-2 text-center" data-label="Students"><span class="badge badge-info"><i class="bi bi-mortarboard"></i> <?= $c['student_count'] ?></span></td>
-                            <td class="py-3 px-3 text-end" data-label="Actions" style="white-space: nowrap;">
-                                <div class="action-cell" style="gap: .35rem;">
-                                    <a href="<?= BASE_URL ?>admin/clearances/detail?id=<?= $c['id'] ?>"
-                                       class="btn btn-primary btn-sm"><i class="bi bi-gear"></i> Manage</a>
-                                    <button class="btn btn-secondary btn-sm"
-                                            onclick="openEditClearance(<?= $c['id'] ?>, '<?= htmlspecialchars(addslashes($c['name'])) ?>', '<?= htmlspecialchars(addslashes($c['description'])) ?>', '<?= htmlspecialchars($c['school_year']) ?>', '<?= $c['type'] ?? 'regular' ?>')">
-                                        <i class="bi bi-pencil"></i> Edit
-                                    </button>
-                                    <form action="<?= BASE_URL ?>admin/clearances/archive" method="POST" style="margin:0; display:inline;"
-                                          onsubmit="return confirmAction(this, 'Archive this clearance? It will be hidden from active list but all data is preserved.', 'Archive', 'btn-warning')">
-                                        <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
-                                        <input type="hidden" name="id" value="<?= $c['id'] ?>">
-                                        <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-archive"></i> Archive</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
+</div>
 <?php endif; ?>
 
 <!-- ====== Create Clearance Modal ====== -->
@@ -97,10 +97,10 @@
                 <label>Clearance Type <span class="required">*</span></label>
                 <div style="display:flex;gap:1rem;margin-top:.4rem;">
                     <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;">
-                        <input type="radio" name="type" value="regular" checked> Regular (Semestral)
+                        <input type="radio" name="type" value="regular" checked> Semestral Clearance
                     </label>
                     <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;">
-                        <input type="radio" name="type" value="exit"> Exit Clearance (Graduating)
+                        <input type="radio" name="type" value="exit"> Exit Clearance
                     </label>
                 </div>
             </div>
@@ -139,10 +139,10 @@
                 <label>Clearance Type <span class="required">*</span></label>
                 <div style="display:flex;gap:1rem;margin-top:.4rem;">
                     <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;">
-                        <input type="radio" name="type" id="editTypeRegular" value="regular"> Regular (Semestral)
+                        <input type="radio" name="type" id="editTypeRegular" value="regular"> Semestral Clearance
                     </label>
                     <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;">
-                        <input type="radio" name="type" id="editTypeExit" value="exit"> Exit Clearance (Graduating)
+                        <input type="radio" name="type" id="editTypeExit" value="exit"> Exit Clearance
                     </label>
                 </div>
             </div>

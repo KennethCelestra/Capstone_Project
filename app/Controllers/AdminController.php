@@ -494,11 +494,16 @@ class AdminController extends Controller
     public function deleteClearance(): void
     {
         $this->requireLogin('admin');
-        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
+        $redirectTo = $this->getPost('redirect_to', '');
+        if (empty($redirectTo)) {
+            $referer = $_SERVER['HTTP_REFERER'] ?? '';
+            $redirectTo = (strpos($referer, 'archived-clearances') !== false) ? 'admin/archived-clearances' : 'admin/clearances';
+        }
+        if (!$this->validateCsrfToken()) { $this->redirect($redirectTo); return; }
         $id = (int) $this->getPost('id');
         $this->clearanceModel->delete($id);
         $this->setFlash('success', 'Clearance deleted.');
-        $this->redirect('admin/clearances');
+        $this->redirect($redirectTo);
     }
 
     public function archiveClearance(): void
