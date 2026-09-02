@@ -22,11 +22,11 @@ $droppedCount   = count(array_filter($students, fn($s) => $s['status'] === 'drop
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
         <button class="btn btn-secondary"
                 onclick="document.getElementById('promoteModal').style.display='flex'">
-            Promote
+            New School Year
         </button>
         <button class="btn btn-secondary"
                 onclick="document.getElementById('uploadCSVModal').style.display='flex'">
-            Upload CSV
+            Upload Students
         </button>
         <button class="btn btn-primary" onclick="document.getElementById('addStudentModal').style.display='flex'">
             + Add Student
