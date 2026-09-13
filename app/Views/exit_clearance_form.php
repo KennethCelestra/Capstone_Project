@@ -408,7 +408,7 @@ function renderExitSigSlot(array $sig, bool $isCentered = false): string {
 
     <!-- Print Button (Hidden on Print) -->
     <div class="print-bar">
-        <button onclick="window.print()">🖨️ Print Exit Clearance Form</button>
+        <button onclick="window.print()">Download Clearance</button>
     </div>
 
     <div class="sheet">

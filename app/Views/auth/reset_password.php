@@ -62,6 +62,8 @@
         }
         .input-group {
             position: relative;
+            display: flex;
+            align-items: center;
         }
         .input-group i {
             position: absolute;
@@ -69,9 +71,18 @@
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
+            font-size: 1.1rem;
+            pointer-events: none;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.25rem;
+            height: 1.25rem;
         }
-        .input-group .form-control {
-            padding-left: 2.75rem;
+        .input-group .form-control,
+        .input-group input {
+            padding: 0.75rem 1rem 0.75rem 2.85rem !important;
         }
         .btn-login {
             background-color: var(--primary);
