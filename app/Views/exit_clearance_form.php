@@ -409,7 +409,9 @@ function renderExitSigSlot(array $sig, bool $isCentered = false): string {
     <!-- Print Button (Hidden on Print) -->
     <div class="print-bar">
         <button onclick="window.print()">Download Clearance</button>
+        <button onclick="openStLogs()" style="margin-left:8px;">View Logs</button>
     </div>
+    <?php include ROOT_PATH . '/app/Views/student_form_tools.php'; ?>
 
     <div class="sheet">
 

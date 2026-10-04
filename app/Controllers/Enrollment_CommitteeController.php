@@ -202,4 +202,24 @@ class Enrollment_CommitteeController extends Controller
         if ($total > 0 && $cleared === $total) return 'cleared';
         return 'pending';
     }
+
+    /** JSON: log history of a student, only for clearances assigned to this member. */
+    public function studentLogs(): void
+    {
+        $this->requireLogin('enrollment_committee');
+        $cid = (int) $this->getGet('clearance_id');
+        $sid = (int) $this->getGet('student_id');
+        header('Content-Type: application/json');
+
+        $assigned = array_column(
+            $this->groupClearances($this->statusModel->getClearancesForEnrollmentCommittee($_SESSION['user_id'])),
+            'clearance_id'
+        );
+        if (!$cid || !$sid || !in_array($cid, $assigned)) {
+            http_response_code(403);
+            echo json_encode(['logs' => [], 'error' => 'Not allowed']);
+            return;
+        }
+        echo json_encode(['logs' => $this->statusModel->getLogsForStudent($cid, $sid)]);
+    }
 }

@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS `clearances` (
     `description` TEXT,
     `school_year` VARCHAR(20)  NOT NULL DEFAULT '',
     `archived`    TINYINT(1)   NOT NULL DEFAULT 0,
+    `started_at`  DATETIME     NULL DEFAULT NULL,
     `created_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -166,6 +167,31 @@ CREATE TABLE IF NOT EXISTS `clearance_status` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------
+-- Table: clearance_logs
+-- Append-only history of flag / clear actions per student.
+-- signatory name/office are snapshots so history survives edits/deletes.
+-- (Existing databases: just run this CREATE TABLE once.)
+-- ------------------------------------------------
+CREATE TABLE IF NOT EXISTS `clearance_logs` (
+    `id`             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `clearance_id`   INT UNSIGNED NOT NULL,
+    `student_id`     INT UNSIGNED NOT NULL,
+    `signatory_id`   INT UNSIGNED NULL,
+    `signatory_name` VARCHAR(150) NOT NULL,
+    `office`         VARCHAR(150) NOT NULL,
+    `action`         ENUM('flagged','cleared') NOT NULL,
+    `flag_note`      TEXT NULL,
+    `created_at`     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX `idx_cl_student_clearance` (`clearance_id`, `student_id`, `created_at`),
+    CONSTRAINT `fk_cl_clearance`
+        FOREIGN KEY (`clearance_id`) REFERENCES `clearances`(`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_cl_student`
+        FOREIGN KEY (`student_id`)   REFERENCES `students`(`id`)   ON DELETE CASCADE,
+    CONSTRAINT `fk_cl_signatory`
+        FOREIGN KEY (`signatory_id`) REFERENCES `signatories`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------
 -- Default Admin Account
 -- Email: admin@school.edu
 -- Password: admin123
@@ -205,3 +231,7 @@ ALTER TABLE `students`
 ALTER TABLE `students`
     ADD INDEX IF NOT EXISTS `idx_students_college` (`college`),
     ADD INDEX IF NOT EXISTS `idx_students_course`  (`course`);
+
+-- 4. Track when signing of a clearance was started (Start Clearance button)
+ALTER TABLE `clearances`
+    ADD COLUMN IF NOT EXISTS `started_at` DATETIME NULL DEFAULT NULL AFTER `archived`;

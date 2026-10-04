@@ -21,6 +21,16 @@ $cid = $clearance['id'];
                 onclick="openEditClearanceDetail(<?= $cid ?>, '<?= htmlspecialchars(addslashes($clearance['name'])) ?>', '<?= htmlspecialchars(addslashes($clearance['description'])) ?>', '<?= htmlspecialchars($clearance['school_year']) ?>')">
             Edit Info
         </button>
+        <?php if (!empty($clearance['started_at'])): ?>
+            <span class="badge badge-success" title="Signing started">
+                Started <?= date('M j, Y g:i A', strtotime($clearance['started_at'])) ?>
+            </span>
+        <?php else: ?>
+            <button class="btn btn-primary btn-sm" id="startClearanceBtn"
+                    onclick="document.getElementById('startClearanceModal').style.display='flex'">
+                Start Clearance
+            </button>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -196,6 +206,10 @@ $cid = $clearance['id'];
                             <td data-label="Year / Section"><?= $s['year_level'] ?> – <?= htmlspecialchars($s['section']) ?></td>
                             <td class="text-end" data-label="Action">
                                 <div class="action-cell">
+                                    <button type="button" class="btn btn-secondary btn-sm"
+                                            onclick="openStudentLogs(<?= (int)$cid ?>, <?= (int)$s['id'] ?>, <?= htmlspecialchars(json_encode($s['last_name'] . ', ' . $s['first_name']), ENT_QUOTES) ?>)">
+                                        Logs
+                                    </button>
                                     <form action="<?= BASE_URL ?>admin/clearances/students/remove"
                                           method="POST" onsubmit="return confirmAction(this, 'Remove student from clearance?', 'Remove', 'btn-danger')">
                                          <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
@@ -213,6 +227,31 @@ $cid = $clearance['id'];
         </div>
     <?php endif; ?>
 </div>
+
+<!-- ====== Start Clearance Modal ====== -->
+<?php if (empty($clearance['started_at'])): ?>
+<div id="startClearanceModal" class="modal" style="display:none;">
+    <div class="modal-box" style="max-width:440px;">
+        <div class="modal-header">
+            <h3>Start Clearance</h3>
+            <button onclick="document.getElementById('startClearanceModal').style.display='none'" class="close-btn">✕</button>
+        </div>
+        <div style="padding:1.25rem 1.5rem;">
+            <p>This will email <strong><?= count($students) ?> enrolled student(s)</strong> that signing has started, with a link to their clearance form where they can follow their progress.</p>
+            <p class="text-muted" style="font-size:.85rem;margin-top:.75rem;">This can only be done once per clearance.</p>
+        </div>
+        <form action="<?= BASE_URL ?>admin/clearances/start" method="POST">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+            <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                        onclick="document.getElementById('startClearanceModal').style.display='none'">Cancel</button>
+                <button type="submit" class="btn btn-primary">Start &amp; Send Emails</button>
+            </div>
+        </form>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- ====== Edit Clearance Modal ====== -->
 <div id="editClearanceDetailModal" class="modal" style="display:none;">
@@ -371,6 +410,8 @@ $cid = $clearance['id'];
         </form>
     </div>
 </div>
+
+<?php $logsUrl = BASE_URL . 'admin/clearances/student-logs'; include ROOT_PATH . '/app/Views/layouts/student_logs_modal.php'; ?>
 
 <script>
 /* ---- Tab switching ---- */

@@ -41,13 +41,14 @@ class ClearanceFormController extends Controller
             return;
         }
 
-        // 4. Guard: student must be fully cleared by all signatories
+        // 4. Progress summary for the student-side status panel.
+        //    (The form is viewable any time; signatory slots stay blank until 'cleared'.)
+        $progress = ['cleared' => 0, 'total' => count($data['signatories']), 'flagged' => 0];
         foreach ($data['signatories'] as $sig) {
-            if ($sig['status'] !== 'cleared') {
-                $this->renderError(403, 'Your clearance is not yet complete. The form will be available once all offices have signed off.');
-                return;
-            }
+            if ($sig['status'] === 'cleared') $progress['cleared']++;
+            if ($sig['status'] === 'flagged') $progress['flagged']++;
         }
+        $logsUrl = BASE_URL . "clearance/logs?cid={$cid}&sid={$sid}&token={$token}";
 
         // 5. Derive semester from clearance name
         $clearanceName = strtolower($data['clearance']['name']);
@@ -74,6 +75,29 @@ class ClearanceFormController extends Controller
         } else {
             require_once ROOT_PATH . '/app/Views/clearance_form.php';
         }
+    }
+
+    // ----------------------------------------------------------------
+    // Public JSON: log history for the student (same HMAC token as the form)
+    // GET /clearance/logs?cid=N&sid=N&token=HASH
+    // ----------------------------------------------------------------
+
+    public function logs(): void
+    {
+        $cid   = (int) ($_GET['cid'] ?? 0);
+        $sid   = (int) ($_GET['sid'] ?? 0);
+        $token = trim($_GET['token'] ?? '');
+
+        header('Content-Type: application/json');
+
+        $expected = hash_hmac('sha256', "cid={$cid}&sid={$sid}", APP_SECRET);
+        if ($cid <= 0 || $sid <= 0 || $token === '' || !hash_equals($expected, $token)) {
+            http_response_code(403);
+            echo json_encode(['logs' => [], 'error' => 'Invalid link']);
+            return;
+        }
+
+        echo json_encode(['logs' => $this->statusModel->getLogsForStudent($cid, $sid)]);
     }
 
     // ----------------------------------------------------------------

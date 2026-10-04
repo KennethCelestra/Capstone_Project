@@ -415,6 +415,9 @@ class SignatoryController extends Controller
             if ($job['type'] === 'deficiency') {
                 $ok = Mailer::sendBulkDeficiencyEmail($job['students'], $job['officeName'] ?? 'Office');
                 $ok ? $sent++ : $errors++;
+            } elseif ($job['type'] === 'started') {
+                $ok = Mailer::sendBulkStartedEmail($job['students']);
+                $ok ? $sent++ : $errors++;
             } elseif ($job['type'] === 'cleared') {
                 $ok = Mailer::sendBulkClearedEmail($job['students']);
                 $ok ? $sent++ : $errors++;

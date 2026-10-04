@@ -54,10 +54,12 @@ $routes = [
     'POST /admin/clearances/delete'               => ['AdminController', 'deleteClearance'],
     'POST /admin/clearances/archive'              => ['AdminController', 'archiveClearance'],
     'POST /admin/clearances/unarchive'            => ['AdminController', 'unarchiveClearance'],
+    'POST /admin/clearances/start'                => ['AdminController', 'startClearance'],
     'GET /admin/archived-clearances'              => ['AdminController', 'archivedClearances'],
 
     // ---- Admin: Clearance Detail (dynamic ID via GET param) ----
     'GET /admin/clearances/detail'                => ['AdminController', 'clearanceDetail'],
+    'GET /admin/clearances/student-logs'          => ['AdminController', 'studentLogs'],
 
     // ---- Admin: Clearance – Signatory assignment ----
     'POST /admin/clearances/signatories/assign'        => ['AdminController', 'assignSignatory'],
@@ -78,6 +80,7 @@ $routes = [
     // ---- Enrollment Committee ----
     'GET /enrollment-committee/dashboard'                      => ['Enrollment_CommitteeController', 'dashboard'],
     'GET /enrollment-committee/clearances'                     => ['Enrollment_CommitteeController', 'clearances'],
+    'GET /enrollment-committee/clearances/student-logs'        => ['Enrollment_CommitteeController', 'studentLogs'],
 
     // ---- Signatory ----
     'GET /signatory/dashboard'                    => ['SignatoryController', 'dashboard'],
@@ -92,4 +95,5 @@ $routes = [
 
     // ---- Public: Printable Clearance Form (token-secured, no login required) ----
     'GET /clearance/form'                         => ['ClearanceFormController', 'show'],
+    'GET /clearance/logs'                         => ['ClearanceFormController', 'logs'],
 ];

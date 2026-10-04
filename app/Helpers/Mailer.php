@@ -123,6 +123,65 @@ class Mailer
 
         return self::sendEmail($studentEmail, $studentName, $subject, $body);
     }
+    /**
+     * Send a "signing has started" notification with a live link to the clearance form.
+     */
+    private static function sendStartedEmail(
+        string $studentEmail,
+        string $studentName,
+        string $clearanceName,
+        int    $studentDbId,
+        int    $clearanceId
+    ): bool {
+        $subject = "Clearance Signing Has Started — {$clearanceName}";
+
+        $token   = hash_hmac('sha256', "cid={$clearanceId}&sid={$studentDbId}", APP_SECRET);
+        $formUrl = BASE_URL . "clearance/form?cid={$clearanceId}&sid={$studentDbId}&token={$token}";
+
+        $body = "
+            <div style=\"font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; color: #333;\">
+                <p>Dear <strong>" . htmlspecialchars($studentName) . "</strong>,</p>
+                <p>The signing of your <strong>" . htmlspecialchars($clearanceName) . "</strong> clearance has now started. Offices will begin to sign off or flag any deficiencies on your record.</p>
+                <p>You can check your clearance progress at any time using the button below. The page updates as offices clear or flag you, and you can also view the activity logs there:</p>
+                <p style=\"text-align: center; margin: 28px 0;\">
+                    <a href=\"" . htmlspecialchars($formUrl) . "\"
+                       style=\"background-color: #1a56a0; color: #ffffff; text-decoration: none;
+                              padding: 14px 32px; border-radius: 6px; font-size: 15px;
+                              font-weight: bold; display: inline-block;\">
+                        📄 View My Clearance Form
+                    </a>
+                </p>
+                <p style=\"font-size: 13px; color: #777;\">If the button does not work, copy and paste this link into your browser:<br>
+                    <a href=\"" . htmlspecialchars($formUrl) . "\" style=\"color: #1a56a0;\">" . htmlspecialchars($formUrl) . "</a>
+                </p>
+                <p style=\"font-size: 13px; color: #777;\">Keep this email — the link is personal to you, so please do not share it.</p>
+                <br>
+                <p><small>This is an automated message from the AutoClear Clearance System. Do not reply to this email.</small></p>
+            </div>
+        ";
+
+        return self::sendEmail($studentEmail, $studentName, $subject, $body);
+    }
+
+    public static function sendBulkStartedEmail(array $studentsData): bool
+    {
+        if (empty($studentsData)) return true;
+
+        $allOk = true;
+        foreach ($studentsData as $student) {
+            $ok = self::sendStartedEmail(
+                $student['email'],
+                $student['full_name'],
+                $student['clearance_name'],
+                (int) ($student['student_id'] ?? 0),
+                (int) ($student['clearance_id'] ?? 0)
+            );
+            if (!$ok) $allOk = false;
+        }
+
+        return $allOk;
+    }
+
     public static function sendBulkDeficiencyEmail(array $flaggedStudents, string $officeName): bool
     {
         if (empty($flaggedStudents)) return true;

@@ -3,6 +3,7 @@ require_once ROOT_PATH . '/app/Models/Student.php';
 require_once ROOT_PATH . '/app/Models/Enrollment_Committee.php';
 require_once ROOT_PATH . '/app/Models/Signatory.php';
 require_once ROOT_PATH . '/app/Models/Clearance.php';
+require_once ROOT_PATH . '/app/Models/ClearanceStatus.php';
 require_once ROOT_PATH . '/app/Models/Admin.php';
 
 class AdminController extends Controller
@@ -535,6 +536,57 @@ class AdminController extends Controller
             'userName'   => $_SESSION['user_name'],
         ];
         $this->view('layouts/main', array_merge($data, ['content' => 'admin/archived_clearances']));
+    }
+
+    public function startClearance(): void
+    {
+        $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
+        $id        = (int) $this->getPost('clearance_id');
+        $clearance = $this->clearanceModel->findById($id);
+        $back      = "admin/clearances/detail?id={$id}";
+
+        if (!$clearance) {
+            $this->setFlash('error', 'Clearance not found.');
+            $this->redirect('admin/clearances');
+            return;
+        }
+
+        $students = $this->clearanceModel->getEnrolledStudentsForEmail($id);
+        if (empty($students)) {
+            $this->setFlash('error', 'Enroll students first before starting the clearance.');
+            $this->redirect($back);
+            return;
+        }
+
+        // Atomic: only the first call succeeds, so emails are never queued twice.
+        if (!$this->clearanceModel->markStarted($id)) {
+            $this->setFlash('info', 'This clearance has already been started.');
+            $this->redirect($back);
+            return;
+        }
+
+        if (!isset($_SESSION['bg_emails'])) {
+            $_SESSION['bg_emails'] = [];
+        }
+        $_SESSION['bg_emails'][] = ['type' => 'started', 'students' => $students];
+
+        $this->setFlash('success', 'Clearance started. Emails to ' . count($students) . ' student(s) are sending in the background.');
+        $this->redirect($back);
+    }
+
+    /** JSON: log history of one student in a clearance. */
+    public function studentLogs(): void
+    {
+        $this->requireLogin('admin');
+        $cid = (int) $this->getGet('clearance_id');
+        $sid = (int) $this->getGet('student_id');
+        header('Content-Type: application/json');
+        if (!$cid || !$sid) {
+            echo json_encode(['logs' => []]);
+            return;
+        }
+        echo json_encode(['logs' => (new ClearanceStatus())->getLogsForStudent($cid, $sid)]);
     }
 
     public function clearanceDetail(): void

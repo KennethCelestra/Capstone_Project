@@ -23,6 +23,34 @@ class Clearance extends Model
         return (int) $this->db->lastInsertId();
     }
 
+    /**
+     * Mark a clearance as started. Returns true only if THIS call started it
+     * (false if it was already started), so emails are never sent twice.
+     */
+    public function markStarted(int $id): bool
+    {
+        $stmt = $this->db->prepare("UPDATE clearances SET started_at = NOW() WHERE id = ? AND started_at IS NULL");
+        $stmt->execute([$id]);
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * Students enrolled in a clearance, shaped for the email queue.
+     */
+    public function getEnrolledStudentsForEmail(int $clearanceId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT st.id AS student_id, CONCAT(st.first_name, ' ', st.last_name) AS full_name, st.email,
+                   c.id AS clearance_id, c.name AS clearance_name
+            FROM clearance_students cst
+            JOIN students st ON st.id = cst.student_id
+            JOIN clearances c ON c.id = cst.clearance_id
+            WHERE cst.clearance_id = ?
+        ");
+        $stmt->execute([$clearanceId]);
+        return $stmt->fetchAll();
+    }
+
     public function update(int $id, array $data): bool
     {
         $stmt = $this->db->prepare("

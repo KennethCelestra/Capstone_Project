@@ -214,6 +214,10 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
                                 <?php endif; ?>
                             </td>
                             <td class="text-end">
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="openStudentLogs(<?= (int)$selectedCid ?>, <?= (int)$s['id'] ?>, <?= htmlspecialchars(json_encode($s['last_name'] . ', ' . $s['first_name']), ENT_QUOTES) ?>)">
+                                    <i class="bi bi-clock-history"></i> Logs
+                                </button>
                                 <button type="button" class="btn btn-outline-primary btn-sm"
                                         onclick="toggleDetail('<?= $rowId ?>')">
                                     <i class="bi bi-eye"></i> View
@@ -257,6 +261,8 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
     </div>
 <?php endif; ?>
 <?php endif; ?>
+
+<?php if ($phase === 'detail') { $logsUrl = BASE_URL . 'enrollment-committee/clearances/student-logs'; include ROOT_PATH . '/app/Views/layouts/student_logs_modal.php'; } ?>
 
 <script>
 function toggleDetail(rowId) {

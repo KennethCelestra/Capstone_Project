@@ -106,17 +106,54 @@ class ClearanceStatus extends Model
     // SIGNATORY: Actions
     // ----------------------------------------------------------------
 
+    // ----------------------------------------------------------------
+    // LOGGING helpers (clearance_logs)
+    // ----------------------------------------------------------------
+
+    /** Current status + note for one student/signatory pair, or null. */
+    private function currentRow(int $clearanceId, int $studentId, int $signatoryId): ?array
+    {
+        $stmt = $this->db->prepare("
+            SELECT status, flag_note FROM clearance_status
+            WHERE clearance_id = ? AND student_id = ? AND signatory_id = ?
+        ");
+        $stmt->execute([$clearanceId, $studentId, $signatoryId]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    /** Insert a log entry (signatory name/office are snapshotted). Never throws. */
+    private function writeLog(int $clearanceId, int $studentId, int $signatoryId, string $action, ?string $note = null): void
+    {
+        try {
+            $stmt = $this->db->prepare("
+                INSERT INTO clearance_logs
+                    (clearance_id, student_id, signatory_id, signatory_name, office, action, flag_note)
+                SELECT ?, ?, sg.id, sg.full_name, sg.office, ?, ?
+                FROM signatories sg WHERE sg.id = ?
+            ");
+            $stmt->execute([$clearanceId, $studentId, $action, $note, $signatoryId]);
+        } catch (\Throwable $e) {
+            // Logging must never break the clearance workflow.
+        }
+    }
+
     /**
      * Flag a student with a deficiency note.
      */
     public function flagStudent(int $clearanceId, int $studentId, int $signatoryId, string $note): bool
     {
+        $prev = $this->currentRow($clearanceId, $studentId, $signatoryId);
         $stmt = $this->db->prepare("
             INSERT INTO clearance_status (clearance_id, student_id, signatory_id, status, flag_note, signed_at)
             VALUES (?, ?, ?, 'flagged', ?, NULL)
             ON DUPLICATE KEY UPDATE status = 'flagged', flag_note = VALUES(flag_note), signed_at = NULL
         ");
-        return $stmt->execute([$clearanceId, $studentId, $signatoryId, $note]);
+        $ok = $stmt->execute([$clearanceId, $studentId, $signatoryId, $note]);
+        if ($ok && (!$prev || $prev['status'] !== 'flagged' || $prev['flag_note'] !== $note)) {
+            $this->writeLog($clearanceId, $studentId, $signatoryId, 'flagged', $note);
+        }
+        return $ok;
     }
 
     /**
@@ -135,8 +172,13 @@ class ClearanceStatus extends Model
 
         $count = 0;
         foreach ($studentIds as $studentId) {
-            if ($stmt->execute([$clearanceId, (int)$studentId, $signatoryId, $note])) {
+            $studentId = (int)$studentId;
+            $prev = $this->currentRow($clearanceId, $studentId, $signatoryId);
+            if ($stmt->execute([$clearanceId, $studentId, $signatoryId, $note])) {
                 $count++;
+                if (!$prev || $prev['status'] !== 'flagged' || $prev['flag_note'] !== $note) {
+                    $this->writeLog($clearanceId, $studentId, $signatoryId, 'flagged', $note);
+                }
             }
         }
         return $count;
@@ -147,12 +189,32 @@ class ClearanceStatus extends Model
      */
     public function clearStudent(int $clearanceId, int $studentId, int $signatoryId): bool
     {
+        $prev = $this->currentRow($clearanceId, $studentId, $signatoryId);
         $stmt = $this->db->prepare("
             INSERT INTO clearance_status (clearance_id, student_id, signatory_id, status, flag_note, signed_at)
             VALUES (?, ?, ?, 'cleared', NULL, NOW())
             ON DUPLICATE KEY UPDATE status = 'cleared', flag_note = NULL, signed_at = NOW()
         ");
-        return $stmt->execute([$clearanceId, $studentId, $signatoryId]);
+        $ok = $stmt->execute([$clearanceId, $studentId, $signatoryId]);
+        if ($ok && (!$prev || $prev['status'] !== 'cleared')) {
+            $this->writeLog($clearanceId, $studentId, $signatoryId, 'cleared');
+        }
+        return $ok;
+    }
+
+    /**
+     * Log history for one student in a clearance (newest first).
+     */
+    public function getLogsForStudent(int $clearanceId, int $studentId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT signatory_name, office, action, flag_note, created_at
+            FROM clearance_logs
+            WHERE clearance_id = ? AND student_id = ?
+            ORDER BY created_at DESC, id DESC
+        ");
+        $stmt->execute([$clearanceId, $studentId]);
+        return $stmt->fetchAll();
     }
 
 
@@ -498,6 +560,7 @@ class ClearanceStatus extends Model
             foreach ($studentIds as $sId) {
                 if ($clearStmt->execute([$clearanceId, (int)$sId, $signatoryId])) {
                     $clearedIds[] = (int)$sId;
+                    $this->writeLog($clearanceId, (int)$sId, $signatoryId, 'cleared');
                 }
             }
             $this->db->commit();
