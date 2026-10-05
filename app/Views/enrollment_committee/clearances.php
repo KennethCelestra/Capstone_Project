@@ -214,10 +214,6 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
                                 <?php endif; ?>
                             </td>
                             <td class="text-end">
-                                <button type="button" class="btn btn-outline-secondary btn-sm"
-                                        onclick="openStudentLogs(<?= (int)$selectedCid ?>, <?= (int)$s['id'] ?>, <?= htmlspecialchars(json_encode($s['last_name'] . ', ' . $s['first_name']), ENT_QUOTES) ?>)">
-                                    <i class="bi bi-clock-history"></i> Logs
-                                </button>
                                 <button type="button" class="btn btn-outline-primary btn-sm"
                                         onclick="toggleDetail('<?= $rowId ?>')">
                                     <i class="bi bi-eye"></i> View
@@ -243,6 +239,13 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
                                                     <?php endif; ?>
                                                 </div>
                                                 <div class="text-muted small mb-2"><i class="bi bi-person"></i> <?= htmlspecialchars($sg['signatory_name']) ?></div>
+                                                <?php if (in_array($sg['status'], ['flagged', 'cleared'], true) && !empty($sg['action_at'])): ?>
+                                                    <div class="text-muted small mb-2">
+                                                        <i class="bi bi-calendar-event"></i>
+                                                        <?= $sg['status'] === 'flagged' ? 'Flagged' : 'Cleared' ?> on
+                                                        <?= date('M j, Y g:i A', strtotime($sg['action_at'])) ?>
+                                                    </div>
+                                                <?php endif; ?>
                                                 <?php if ($sg['status'] === 'flagged' && !empty($sg['flag_note'])): ?>
                                                     <div class="alert alert-danger p-2 mb-0 small">
                                                         <i class="bi bi-exclamation-triangle"></i> <?= nl2br(htmlspecialchars($sg['flag_note'])) ?>
@@ -262,7 +265,7 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
 <?php endif; ?>
 <?php endif; ?>
 
-<?php if ($phase === 'detail') { $logsUrl = BASE_URL . 'enrollment-committee/clearances/student-logs'; include ROOT_PATH . '/app/Views/layouts/student_logs_modal.php'; } ?>
+
 
 <script>
 function toggleDetail(rowId) {

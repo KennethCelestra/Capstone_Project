@@ -488,7 +488,8 @@ class ClearanceStatus extends Model
         $stmt = $this->db->prepare("
             SELECT sg.full_name AS signatory_name, sg.office,
                    COALESCE(cs.status, 'pending') AS status,
-                   cs.flag_note, cs.signed_at
+                   cs.flag_note, cs.signed_at,
+                   COALESCE(cs.signed_at, cs.updated_at, cs.created_at) AS action_at
             FROM clearance_signatories csig
             JOIN signatories sg ON sg.id = csig.signatory_id
             JOIN students st ON st.id = ?
