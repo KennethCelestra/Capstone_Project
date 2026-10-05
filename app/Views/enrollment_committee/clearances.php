@@ -121,8 +121,8 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
 </div>
 
 <!-- ===== Filter Bar ===== -->
-<div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 1rem; margin-bottom: 1.25rem;">
-    <form method="GET" action="<?= BASE_URL ?>enrollment-committee/clearances" class="filter-bar m-0 d-flex gap-3 align-items-center flex-wrap">
+<div>
+    <form method="GET" action="<?= BASE_URL ?>enrollment-committee/clearances" class="filter-bar">
         <input type="hidden" name="cid" value="<?= $selectedCid ?>">
         <div class="filter-group flex-grow-1" style="min-width: 200px;">
             <input type="text" name="search" value="<?= htmlspecialchars($search) ?>"
@@ -194,26 +194,33 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
                     <?php foreach ($students as $s): ?>
                         <?php 
                         $rowId = 'detail-' . $selectedCid . '-' . $s['id'];
-                        $flagged = array_sum(array_map(fn($sg) => $sg['status'] === 'flagged' ? 1 : 0, $s['signatory_detail']));
-                        $totalSig = count($s['signatory_detail']);
-                        $cleared = array_sum(array_map(fn($sg) => $sg['status'] === 'cleared' ? 1 : 0, $s['signatory_detail']));
+                        $status = $s['display_status'] ?? 'pending';
+                        $rowClass = match($status) {
+                            'flagged' => 'table-danger',
+                            'cleared' => 'table-success',
+                            default   => '',
+                        };
                         ?>
-                        <tr class="border-bottom <?= $flagged > 0 ? 'table-danger' : ($cleared === $totalSig && $totalSig > 0 ? 'table-success' : '') ?>">
+                        <tr class="border-bottom <?= $rowClass ?>">
                             <td><strong><?= htmlspecialchars($s['student_number']) ?></strong></td>
                             <td><?= htmlspecialchars($s['last_name']) ?>, <?= htmlspecialchars($s['first_name']) ?></td>
                             <td><?= htmlspecialchars($s['college']) ?></td>
                             <td><?= htmlspecialchars($s['course']) ?></td>
                             <td><?= $s['year_level'] ?>–<?= htmlspecialchars($s['section']) ?></td>
                             <td>
-                                <?php if ($flagged > 0): ?>
+                                <?php if ($status === 'flagged'): ?>
                                     <span class="badge bg-danger">FLAG</span>
-                                <?php elseif ($cleared === $totalSig && $totalSig > 0): ?>
+                                <?php elseif ($status === 'cleared'): ?>
                                     <span class="badge bg-success">CLEARED</span>
                                 <?php else: ?>
                                     <span class="badge bg-warning text-dark">PENDING</span>
                                 <?php endif; ?>
                             </td>
                             <td class="text-end">
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="openStudentLogs(<?= (int)$selectedCid ?>, <?= (int)$s['id'] ?>, <?= htmlspecialchars(json_encode($s['last_name'] . ', ' . $s['first_name']), ENT_QUOTES) ?>)">
+                                    <i class="bi bi-clock-history"></i> Logs
+                                </button>
                                 <button type="button" class="btn btn-outline-primary btn-sm"
                                         onclick="toggleDetail('<?= $rowId ?>')">
                                     <i class="bi bi-eye"></i> View
@@ -265,13 +272,18 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
 <?php endif; ?>
 <?php endif; ?>
 
-
+<?php if ($phase === 'detail'): ?>
+    <?php 
+    $logsUrl = BASE_URL . 'enrollment-committee/clearances/student-logs';
+    include ROOT_PATH . '/app/Views/layouts/student_logs_modal.php'; 
+    ?>
+<?php endif; ?>
 
 <script>
 function toggleDetail(rowId) {
     const row = document.getElementById(rowId);
     if (!row) return;
-    const btn = row.previousElementSibling?.querySelector('button');
+    const btn = row.previousElementSibling?.querySelector('button[onclick*="toggleDetail"]');
     if (row.style.display === 'none') {
         row.style.display = '';
         if (btn) btn.innerHTML = '<i class="bi bi-eye-slash"></i> Hide';

@@ -7,8 +7,8 @@
     <title><?= APP_NAME ?></title>
     <!-- Add Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>css/style.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>css/isatu.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>css/style.css?v=<?= file_exists(ROOT_PATH . '/css/style.css') ? filemtime(ROOT_PATH . '/css/style.css') : '1.0' ?>">
+    <link rel="stylesheet" href="<?= BASE_URL ?>css/isatu.css?v=<?= file_exists(ROOT_PATH . '/css/isatu.css') ? filemtime(ROOT_PATH . '/css/isatu.css') : '1.0' ?>">
 </head>
 
 <body>
@@ -32,55 +32,55 @@
                 <?php if ($_SESSION['user_role'] === 'admin'): ?>
                     <a href="<?= BASE_URL ?>admin/dashboard"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/dashboard') !== false ? 'selected' : '' ?>">
-                        <i class="bi bi-house me-2"></i> Dashboard
+                        <i class="bi bi-house me-2"></i> <span>Dashboard</span>
                     </a>
                     <a href="<?= BASE_URL ?>admin/clearances"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/clearances') !== false && strpos($_SERVER['REQUEST_URI'], '/archived') === false ? 'selected' : '' ?>">
-                        <i class="bi bi-file-earmark-text me-2"></i> Clearances
+                        <i class="bi bi-file-earmark-text me-2"></i> <span>Clearances</span>
                     </a>
                     <a href="<?= BASE_URL ?>admin/archived-clearances"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/archived-clearances') !== false ? 'selected' : '' ?>">
-                        <i class="bi bi-archive me-2"></i> Archived
+                        <i class="bi bi-archive me-2"></i> <span>Archived</span>
                     </a>
                     <a href="<?= BASE_URL ?>admin/students"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/students') !== false ? 'selected' : '' ?>">
-                        <i class="bi bi-mortarboard me-2"></i> Students
+                        <i class="bi bi-mortarboard me-2"></i> <span>Students</span>
                     </a>
                     <a href="<?= BASE_URL ?>admin/signatories"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/signatories') !== false ? 'selected' : '' ?>">
-                        <i class="bi bi-pen me-2"></i> Signatories
+                        <i class="bi bi-pen me-2"></i> <span>Signatories</span>
                     </a>
                     <a href="<?= BASE_URL ?>admin/enrollment-committees"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/enrollment-committees') !== false ? 'selected' : '' ?>">
-                        <i class="bi bi-people me-2"></i> Enrollment Committee
+                        <i class="bi bi-people me-2"></i> <span>Enrollment Committee</span>
                     </a>
                 <?php elseif ($_SESSION['user_role'] === 'enrollment_committee'): ?>
                     <a href="<?= BASE_URL ?>enrollment-committee/dashboard"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/dashboard') !== false ? 'selected' : '' ?>">
-                        <i class="bi bi-house me-2"></i> Dashboard
+                        <i class="bi bi-house me-2"></i> <span>Dashboard</span>
                     </a>
                     <a href="<?= BASE_URL ?>enrollment-committee/clearances"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/clearances') !== false ? 'selected' : '' ?>">
-                        <i class="bi bi-file-earmark-check me-2"></i> My Clearances
+                        <i class="bi bi-file-earmark-check me-2"></i> <span>My Clearances</span>
                     </a>
                 <?php elseif ($_SESSION['user_role'] === 'signatory'): ?>
                     <a href="<?= BASE_URL ?>signatory/dashboard"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/dashboard') !== false ? 'selected' : '' ?>">
-                        <i class="bi bi-house me-2"></i> Dashboard
+                        <i class="bi bi-house me-2"></i> <span>Dashboard</span>
                     </a>
                     <a href="<?= BASE_URL ?>signatory/clearances"
                        class="nav-link <?= (strpos($_SERVER['REQUEST_URI'], '/clearances') !== false) ? 'selected' : '' ?>">
-                        <i class="bi bi-file-earmark-check me-2"></i> My Clearances
+                        <i class="bi bi-file-earmark-check me-2"></i> <span>My Clearances</span>
                     </a>
                 <?php endif; ?>
 
                 <div class="nav-divider" style="height: 1px; background: var(--border); margin: 1rem 0;"></div>
                 <a href="<?= BASE_URL ?>profile"
-                   class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/profile') !== false ? 'selected' : '' ?>">
-                    <i class="bi bi-person me-2"></i> Profile / Password
+                    class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/profile') !== false ? 'selected' : '' ?>">
+                    <i class="bi bi-person me-2"></i> <span>Profile / Password</span>
                 </a>
                 <a href="<?= BASE_URL ?>logout" class="nav-link text-danger mt-auto">
-                    <i class="bi bi-box-arrow-right me-2"></i> Logout
+                    <i class="bi bi-box-arrow-right me-2"></i> <span>Logout</span>
                 </a>
             </nav>
         </aside>

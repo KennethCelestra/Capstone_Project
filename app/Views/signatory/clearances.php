@@ -123,8 +123,8 @@ $cPending = count($students) - $cFlagged - $cCleared;
 </div>
 
 <!-- ===== Filter Bar (client-side, no page reload) ===== -->
-<div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 1rem; margin-bottom: 1.25rem;">
-    <div class="filter-bar m-0 d-flex gap-3 align-items-center flex-wrap">
+<div>
+    <div class="filter-bar">
         <div class="filter-group flex-grow-1" style="min-width: 200px;">
             <input type="text" id="sig-search"
                    placeholder="Search by name or ID…" class="form-control"

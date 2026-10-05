@@ -34,32 +34,65 @@ $droppedCount   = count(array_filter($students, fn($s) => $s['status'] === 'drop
     </div>
 </div>
 
-<!-- Filter Bar -->
-<div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;">
-    <input type="text" id="stu-search"
-           placeholder="Search name or ID..."
-           style="flex:1;min-width:180px;max-width:280px;"
-           oninput="applyStudentFilters()">
-    <select id="stu-college" onchange="applyStudentFilters()" style="width:auto;max-width:130px;">
-        <option value="">College</option>
-        <?php foreach ($colleges as $col): ?>
-            <option value="<?= htmlspecialchars($col) ?>"><?= htmlspecialchars($col) ?></option>
-        <?php endforeach; ?>
-    </select>
-    <select id="stu-year" onchange="applyStudentFilters()" style="width:auto;max-width:110px;">
-        <option value="">Year</option>
-        <option value="1">1st Year</option>
-        <option value="2">2nd Year</option>
-        <option value="3">3rd Year</option>
-        <option value="4">4th Year</option>
-    </select>
-    <select id="stu-status" onchange="applyStudentFilters()" style="width:auto;max-width:110px;">
-        <option value="">Status</option>
-        <option value="active">Active</option>
-        <option value="graduated">Graduated</option>
-        <option value="dropped">Dropped</option>
-    </select>
-    <button class="btn btn-secondary btn-sm" onclick="clearStudentFilters()" id="stu-clear-btn" style="display:none;">✕ Clear</button>
+<?php
+$courseList = array_values(array_unique(array_filter(array_column($students, 'course'))));
+sort($courseList);
+$yearList = array_values(array_unique(array_filter(array_map(fn($s) => (string)(int)$s['year_level'], $students))));
+sort($yearList);
+?>
+<!-- Filter Bar (client-side, no page reload) -->
+<div>
+    <div class="filter-bar">
+        <div class="filter-group flex-grow-1" style="min-width: 200px;">
+            <input type="text" id="stu-search" placeholder="Search by name or ID…"
+                   class="form-control" oninput="applyStudentFilters()">
+        </div>
+        <div class="filter-group">
+            <select id="stu-status" class="form-select" onchange="applyStudentFilters()">
+                <option value="all">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="graduated">Graduated</option>
+                <option value="dropped">Dropped</option>
+            </select>
+        </div>
+        <?php if (!empty($colleges)): ?>
+        <div class="filter-group">
+            <input type="text" list="stu-college-list" id="stu-college" class="form-control"
+                   placeholder="All Colleges" style="max-width: 140px;" oninput="applyStudentFilters()">
+            <datalist id="stu-college-list">
+                <?php foreach ($colleges as $col): ?>
+                    <option value="<?= htmlspecialchars($col) ?>">
+                <?php endforeach; ?>
+            </datalist>
+        </div>
+        <?php endif; ?>
+        <?php if (!empty($courseList)): ?>
+        <div class="filter-group">
+            <input type="text" list="stu-course-list" id="stu-course" class="form-control"
+                   placeholder="All Courses" style="max-width: 140px;" oninput="applyStudentFilters()">
+            <datalist id="stu-course-list">
+                <?php foreach ($courseList as $course): ?>
+                    <option value="<?= htmlspecialchars($course) ?>">
+                <?php endforeach; ?>
+            </datalist>
+        </div>
+        <?php endif; ?>
+        <?php if (!empty($yearList)): ?>
+        <div class="filter-group">
+            <input type="text" list="stu-year-list" id="stu-year" class="form-control"
+                   placeholder="All Years" style="max-width: 110px;" oninput="applyStudentFilters()">
+            <datalist id="stu-year-list">
+                <?php foreach ($yearList as $yr): ?>
+                    <option value="<?= $yr ?>">
+                <?php endforeach; ?>
+            </datalist>
+        </div>
+        <?php endif; ?>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="clearStudentFilters()"
+                title="Clear all filters" id="stu-clear-btn" style="display:none;">
+            <i class="bi bi-x-lg"></i> Clear
+        </button>
+    </div>
 </div>
 
 <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden;">
@@ -92,7 +125,8 @@ $droppedCount   = count(array_filter($students, fn($s) => $s['status'] === 'drop
                     ?>
                     <tr data-name="<?= strtolower(htmlspecialchars($s['last_name'] . ' ' . $s['first_name'])) ?>"
                         data-id="<?= strtolower(htmlspecialchars($s['student_id'])) ?>"
-                        data-college="<?= htmlspecialchars($s['college']) ?>"
+                        data-college="<?= strtolower(htmlspecialchars($s['college'])) ?>"
+                        data-course="<?= strtolower(htmlspecialchars($s['course'])) ?>"
                         data-year="<?= (int)$s['year_level'] ?>"
                         data-status="<?= htmlspecialchars($s['status']) ?>"
                         style="transition: background .15s;" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
@@ -374,25 +408,27 @@ function openEditStudentModal(id, studentId, lastName, firstName, email, college
 
 function applyStudentFilters() {
     const search  = document.getElementById('stu-search').value.trim().toLowerCase();
-    const college = document.getElementById('stu-college').value;
-    const year    = document.getElementById('stu-year').value;
-    const status  = document.getElementById('stu-status').value;
+    const status  = document.getElementById('stu-status').value || 'all';
+    const college = (document.getElementById('stu-college')?.value || '').trim().toLowerCase();
+    const course  = (document.getElementById('stu-course')?.value  || '').trim().toLowerCase();
+    const year    = (document.getElementById('stu-year')?.value    || '').trim();
 
     const rows     = document.querySelectorAll('#stu-tbody tr[data-name]');
     const noMatch  = document.getElementById('stu-no-match');
     const clearBtn = document.getElementById('stu-clear-btn');
 
-    const hasFilter = search || college || year || status;
-    clearBtn.style.display = hasFilter ? 'inline-flex' : 'none';
+    const hasFilter = search || status !== 'all' || college || course || year;
+    clearBtn.style.display = hasFilter ? '' : 'none';
 
     let visible = 0;
     rows.forEach(row => {
         const nameMatch    = !search  || row.dataset.name.includes(search) || row.dataset.id.includes(search);
+        const statusMatch  = status === 'all' || row.dataset.status === status;
         const collegeMatch = !college || row.dataset.college === college;
+        const courseMatch  = !course  || row.dataset.course  === course;
         const yearMatch    = !year    || row.dataset.year    === year;
-        const statusMatch  = !status  || row.dataset.status  === status;
 
-        const show = nameMatch && collegeMatch && yearMatch && statusMatch;
+        const show = nameMatch && statusMatch && collegeMatch && courseMatch && yearMatch;
         row.style.display = show ? '' : 'none';
         if (show) visible++;
     });
@@ -401,10 +437,11 @@ function applyStudentFilters() {
 }
 
 function clearStudentFilters() {
-    document.getElementById('stu-search').value  = '';
-    document.getElementById('stu-college').value = '';
-    document.getElementById('stu-year').value    = '';
-    document.getElementById('stu-status').value  = '';
+    ['stu-search', 'stu-college', 'stu-course', 'stu-year'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    document.getElementById('stu-status').value = 'all';
     applyStudentFilters();
 }
 </script>

@@ -150,15 +150,36 @@ body {
 .sidebar .nav-link {
     color: #333;
     padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    font-size: 0.95rem;
     border-radius: 0;
     border-left: 0;
     background: transparent;
-    transition: background-color 0.3s, padding-left 0.3s;
+    text-decoration: none;
+    transition: background-color 0.25s, padding-left 0.25s;
+}
+
+.sidebar .nav-link i {
+    font-size: 1.15rem;
+    width: 1.25rem;
+    margin: 0 8px 0 0 !important;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.me-2 {
+    margin-right: 0.5rem !important;
 }
 
 .sidebar .nav-link:hover {
     background-color: #e9ecef;
-    padding-left: 28px;
+    padding-left: 24px;
     color: #333;
 }
 
