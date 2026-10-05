@@ -246,13 +246,6 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
                                                     <?php endif; ?>
                                                 </div>
                                                 <div class="text-muted small mb-2"><i class="bi bi-person"></i> <?= htmlspecialchars($sg['signatory_name']) ?></div>
-                                                <?php if (in_array($sg['status'], ['flagged', 'cleared'], true) && !empty($sg['action_at'])): ?>
-                                                    <div class="text-muted small mb-2">
-                                                        <i class="bi bi-calendar-event"></i>
-                                                        <?= $sg['status'] === 'flagged' ? 'Flagged' : 'Cleared' ?> on
-                                                        <?= date('M j, Y g:i A', strtotime($sg['action_at'])) ?>
-                                                    </div>
-                                                <?php endif; ?>
                                                 <?php if ($sg['status'] === 'flagged' && !empty($sg['flag_note'])): ?>
                                                     <div class="alert alert-danger p-2 mb-0 small">
                                                         <i class="bi bi-exclamation-triangle"></i> <?= nl2br(htmlspecialchars($sg['flag_note'])) ?>
