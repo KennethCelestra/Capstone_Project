@@ -200,38 +200,5 @@ INSERT INTO `admins` (`full_name`, `email`, `password`) VALUES
 ('System Admin', 'admin@school.edu', '$2y$10$KVHKn8fH2ONqumArf3T2CuhqqoMK0H4i3Yv5g2/4aFtFFkFoAPfvS')
 ON DUPLICATE KEY UPDATE `id` = `id`;
 -- Default credentials: admin@school.edu / admin123
--- To change password, run: c:\xampp2\php\php.exe -r "echo password_hash('yourpassword', PASSWORD_DEFAULT);"
+-- To manage admins via CLI, run: C:\xampp2\php\php.exe cli.php admin:list
 
--- ================================================
--- LIVE DATABASE UPGRADE SCRIPT
--- Run these on an existing database (skip for fresh installs)
--- ================================================
-
--- 1. Add scope columns to signatories (if not already present)
-ALTER TABLE `signatories`
-    ADD COLUMN IF NOT EXISTS `scope_type`  VARCHAR(20)  DEFAULT NULL AFTER `temp_password`,
-    ADD COLUMN IF NOT EXISTS `scope_value` VARCHAR(150) DEFAULT NULL AFTER `scope_type`;
-
--- 2. Drop password column from students (students don't log in)
-ALTER TABLE `students`
-    DROP COLUMN IF EXISTS `password`;
-
--- 3. Add performance indexes (safe to run even if they already exist — IF NOT EXISTS)
-ALTER TABLE `clearance_status`
-    ADD INDEX IF NOT EXISTS `idx_cs_clearance_signatory` (`clearance_id`, `signatory_id`),
-    ADD INDEX IF NOT EXISTS `idx_cs_student_clearance`   (`student_id`,   `clearance_id`);
-
-ALTER TABLE `clearance_students`
-    ADD INDEX IF NOT EXISTS `idx_cst_clearance` (`clearance_id`);
-
-ALTER TABLE `students`
-    ADD COLUMN IF NOT EXISTS `status` ENUM('active','graduated','dropped') NOT NULL DEFAULT 'active' AFTER `section`,
-    ADD INDEX IF NOT EXISTS `idx_students_status` (`status`);
-
-ALTER TABLE `students`
-    ADD INDEX IF NOT EXISTS `idx_students_college` (`college`),
-    ADD INDEX IF NOT EXISTS `idx_students_course`  (`course`);
-
--- 4. Track when signing of a clearance was started (Start Clearance button)
-ALTER TABLE `clearances`
-    ADD COLUMN IF NOT EXISTS `started_at` DATETIME NULL DEFAULT NULL AFTER `archived`;
