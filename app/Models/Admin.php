@@ -17,6 +17,17 @@ class Admin extends Model
         return $stmt->fetch();
     }
 
+    public function create(string $fullName, string $email, string $hashedPassword): int|false
+    {
+        $stmt = $this->db->prepare("INSERT INTO {$this->table} (full_name, email, password) VALUES (:full_name, :email, :password)");
+        $success = $stmt->execute([
+            ':full_name' => $fullName,
+            ':email'     => $email,
+            ':password'  => $hashedPassword,
+        ]);
+        return $success ? (int) $this->db->lastInsertId() : false;
+    }
+
     public function updatePassword(int $id, string $hashedPassword): bool
     {
         $stmt = $this->db->prepare("UPDATE {$this->table} SET password = :password WHERE id = :id");

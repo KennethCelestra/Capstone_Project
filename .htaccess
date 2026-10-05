@@ -32,7 +32,7 @@ DirectoryIndex index.php
 RewriteEngine On
 
 # Block direct access to sensitive environment & system files
-<FilesMatch "^\.(env|env\.example|git|gitignore|yml|yaml|json|sql|log)$">
+<FilesMatch "^(cli\.php|\.(env|env\.example|git|gitignore|yml|yaml|json|sql|log))$">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>
