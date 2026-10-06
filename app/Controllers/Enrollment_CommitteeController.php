@@ -162,6 +162,119 @@ class Enrollment_CommitteeController extends Controller
         $this->view('layouts/main', array_merge($data, ['content' => 'enrollment_committee/clearances']));
     }
 
+    public function archivedClearances(): void
+    {
+        $this->requireLogin('enrollment_committee');
+
+        $selectedCid   = (int)$this->getGet('cid', 0);
+        $rows          = $this->statusModel->getClearancesForEnrollmentCommittee($_SESSION['user_id'], 1);
+        $allClearances = $this->groupClearances($rows);
+
+        // Phase 2: a specific archived clearance is selected
+        if ($selectedCid > 0) {
+            $validCids = array_column($allClearances, 'clearance_id');
+            if (!in_array($selectedCid, $validCids)) {
+                $this->setFlash('error', 'You are not assigned to that clearance.');
+                $this->redirect('enrollment-committee/archived-clearances');
+                return;
+            }
+
+            // Filters
+            $search        = trim($this->getGet('search', ''));
+            $filterStatus  = $this->getGet('status', 'all');
+            $filterCollege = $this->getGet('college', '');
+            $filterCourse  = $this->getGet('course', '');
+            $filterYear    = $this->getGet('year', '');
+
+            // Find the selected clearance group
+            $selectedClearance = null;
+            foreach ($allClearances as $c) {
+                if ((int)$c['clearance_id'] === $selectedCid) {
+                    $selectedClearance = $c;
+                    break;
+                }
+            }
+
+            // Attach signatory detail + resolve display status
+            $colleges   = [];
+            $courses    = [];
+            $yearLevels = [];
+            foreach ($selectedClearance['students'] as &$s) {
+                $s['display_status']   = $this->resolveDisplayStatus($s);
+                $s['signatory_detail'] = $this->statusModel->getSignatoryDetailForStudent(
+                    $selectedCid,
+                    $s['id']
+                );
+                $colleges[]   = $s['college'];
+                $courses[]    = $s['course'];
+                $yearLevels[] = (string) $s['year_level'];
+            }
+            unset($s);
+
+            // Filter students
+            $selectedClearance['students'] = array_values(array_filter(
+                $selectedClearance['students'],
+                function ($s) use ($search, $filterStatus, $filterCollege, $filterCourse, $filterYear) {
+                    if ($search !== '') {
+                        $haystack = strtolower($s['last_name'] . ' ' . $s['first_name'] . ' ' . $s['student_number']);
+                        if (strpos($haystack, strtolower($search)) === false) return false;
+                    }
+                    if ($filterStatus !== 'all' && $s['display_status'] !== $filterStatus) return false;
+                    if ($filterCollege !== '' && $s['college'] !== $filterCollege) return false;
+                    if ($filterCourse !== '' && $s['course'] !== $filterCourse) return false;
+                    if ($filterYear !== '' && (string)$s['year_level'] !== $filterYear) return false;
+                    return true;
+                }
+            ));
+
+            $colleges   = array_unique($colleges);
+            $courses    = array_unique($courses);
+            $yearLevels = array_unique($yearLevels);
+            sort($colleges);
+            sort($courses);
+            sort($yearLevels);
+
+            $data = [
+                'phase'             => 'detail',
+                'selectedCid'       => $selectedCid,
+                'selectedClearance' => $selectedClearance,
+                'flash'             => $this->getFlash(),
+                'userName'          => $_SESSION['user_name'],
+                'search'            => $search,
+                'filterStatus'      => $filterStatus,
+                'filterCollege'     => $filterCollege,
+                'filterCourse'      => $filterCourse,
+                'filterYear'        => $filterYear,
+                'colleges'          => $colleges,
+                'courses'           => $courses,
+                'yearLevels'        => $yearLevels,
+            ];
+            $this->view('layouts/main', array_merge($data, ['content' => 'enrollment_committee/archived_clearances']));
+            return;
+        }
+
+        // Phase 1: clearance selection list
+        foreach ($allClearances as &$c) {
+            $flagged = $cleared = 0;
+            foreach ($c['students'] as $s) {
+                $status = $this->resolveDisplayStatus($s);
+                if ($status === 'flagged') $flagged++;
+                elseif ($status === 'cleared') $cleared++;
+            }
+            $c['flagged_total'] = $flagged;
+            $c['cleared_total'] = $cleared;
+            $c['pending_total'] = count($c['students']) - $flagged - $cleared;
+        }
+        unset($c);
+
+        $data = [
+            'phase'      => 'select',
+            'clearances' => $allClearances,
+            'flash'      => $this->getFlash(),
+            'userName'   => $_SESSION['user_name'],
+        ];
+        $this->view('layouts/main', array_merge($data, ['content' => 'enrollment_committee/archived_clearances']));
+    }
 
     // ----------------------------------------------------------------
     // Helpers
@@ -203,7 +316,7 @@ class Enrollment_CommitteeController extends Controller
         return 'pending';
     }
 
-    /** JSON: log history of a student, only for clearances assigned to this member. */
+    /** JSON: log history of a student, for clearances assigned to this member (active or archived). */
     public function studentLogs(): void
     {
         $this->requireLogin('enrollment_committee');
@@ -211,10 +324,10 @@ class Enrollment_CommitteeController extends Controller
         $sid = (int) $this->getGet('student_id');
         header('Content-Type: application/json');
 
-        $assigned = array_column(
-            $this->groupClearances($this->statusModel->getClearancesForEnrollmentCommittee($_SESSION['user_id'])),
-            'clearance_id'
-        );
+        $active   = array_column($this->groupClearances($this->statusModel->getClearancesForEnrollmentCommittee($_SESSION['user_id'], 0)), 'clearance_id');
+        $archived = array_column($this->groupClearances($this->statusModel->getClearancesForEnrollmentCommittee($_SESSION['user_id'], 1)), 'clearance_id');
+        $assigned = array_merge($active, $archived);
+
         if (!$cid || !$sid || !in_array($cid, $assigned)) {
             http_response_code(403);
             echo json_encode(['logs' => [], 'error' => 'Not allowed']);

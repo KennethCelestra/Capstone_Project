@@ -128,6 +128,10 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
 
         .form-copy {
             padding: 2px 4px;
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         /* ── Header Box ── */
@@ -282,6 +286,10 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
         /* ── Regular Clearance Signatories Grid (QF-VPAA-08) ── */
         .reg-sig-section {
             margin: 10px 0 6px;
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         .reg-sig-row {
             display: flex;
@@ -345,41 +353,80 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
         .cut-line {
             text-align: center;
             border-top: 1px dashed #666;
-            margin: 8px 0 8px;
-            padding-top: 3px;
+            margin: 14px 0;
+            padding-top: 4px;
             font-size: 8pt;
             color: #555;
             letter-spacing: 2px;
         }
 
-        /* ── Print Setup (Fits 2 copies on exact 1 A4 Page) ── */
+        /* ── Print Setup (Fits 2 equal half-sheet copies on A4 Paper: 210mm x 297mm) ── */
+        @page {
+            size: A4 portrait;
+            margin: 6mm 10mm;
+        }
+
         @media print {
             body {
                 background: #fff;
                 padding: 0;
-                font-size: 9pt;
+                margin: 0;
+                font-size: 9.5pt;
                 overflow: visible !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
             .print-bar { display: none !important; }
-            .page-wrapper { max-width: 100% !important; min-width: 0 !important; padding: 0 !important; overflow: visible !important; height: auto !important; }
+            .page-wrapper {
+                max-width: 100% !important;
+                min-width: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+                height: auto !important;
+            }
             .sheet {
                 box-shadow: none !important;
                 border: none !important;
                 padding: 0 !important;
                 min-width: 0 !important;
                 width: 100% !important;
+                height: 283mm !important;
+                max-height: 285mm !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
                 transform: none !important;
             }
-            @page {
-                size: A4 portrait;
-                margin: 8mm 12mm;
-            }
             .form-copy {
-                page-break-inside: avoid;
+                height: 138mm !important;
+                max-height: 138mm !important;
+                min-height: 138mm !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                page-break-inside: avoid !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+            }
+            .reg-sig-section {
+                margin: 8px 0 4px !important;
+                flex: 1 1 auto !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
             }
             .cut-line {
-                page-break-inside: avoid;
-                margin: 6px 0 6px;
+                page-break-inside: avoid !important;
+                height: 7mm !important;
+                margin: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 8pt !important;
+                color: #555 !important;
+                border-top: 1px dashed #666 !important;
             }
         }
     </style>

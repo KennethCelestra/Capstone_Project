@@ -80,6 +80,7 @@ $routes = [
     // ---- Enrollment Committee ----
     'GET /enrollment-committee/dashboard'                      => ['Enrollment_CommitteeController', 'dashboard'],
     'GET /enrollment-committee/clearances'                     => ['Enrollment_CommitteeController', 'clearances'],
+    'GET /enrollment-committee/archived-clearances'            => ['Enrollment_CommitteeController', 'archivedClearances'],
     'GET /enrollment-committee/clearances/student-logs'        => ['Enrollment_CommitteeController', 'studentLogs'],
 
     // ---- Signatory ----

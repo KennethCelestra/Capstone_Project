@@ -415,7 +415,13 @@ class ClearanceStatus extends Model
                   OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
                   OR (sg.scope_type = 'course'  AND sg.scope_value = st.course)
               )
-            ORDER BY sg.office ASC
+            ORDER BY 
+                CASE 
+                    WHEN LOWER(sg.office) LIKE '%dean%' THEN 3
+                    WHEN LOWER(sg.office) LIKE '%dept%' OR LOWER(sg.office) LIKE '%department%' THEN 2
+                    ELSE 1
+                END ASC,
+                sg.office ASC
         ");
         $sigStmt->execute([$studentId, $studentId, $clearanceId]);
         $signatories = $sigStmt->fetchAll();
@@ -434,7 +440,7 @@ class ClearanceStatus extends Model
     /**
      * Get clearances an enrollment committee member is assigned to, with per-student flag detail.
      */
-    public function getClearancesForEnrollmentCommittee(int $enrollmentCommitteeId): array
+    public function getClearancesForEnrollmentCommittee(int $enrollmentCommitteeId, int $archived = 0): array
     {
         $stmt = $this->db->prepare("
             SELECT
@@ -464,7 +470,7 @@ class ClearanceStatus extends Model
                 ON cs.clearance_id = c.id
                AND cs.student_id   = st.id
                AND cs.signatory_id = csig.signatory_id
-            WHERE ca.enrollment_committee_id = ? AND c.archived = 0
+            WHERE ca.enrollment_committee_id = ? AND c.archived = ?
               AND (
                   sg.scope_type IS NULL 
                   OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
@@ -475,7 +481,7 @@ class ClearanceStatus extends Model
                      st.course, st.year_level, st.section
             ORDER BY c.name ASC, st.last_name ASC, st.first_name ASC
         ");
-        $stmt->execute([$enrollmentCommitteeId]);
+        $stmt->execute([$enrollmentCommitteeId, $archived]);
         return $stmt->fetchAll();
     }
 
@@ -503,7 +509,13 @@ class ClearanceStatus extends Model
                   OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
                   OR (sg.scope_type = 'course' AND sg.scope_value = st.course)
               )
-            ORDER BY sg.office ASC
+            ORDER BY 
+                CASE 
+                    WHEN LOWER(sg.office) LIKE '%dean%' THEN 3
+                    WHEN LOWER(sg.office) LIKE '%dept%' OR LOWER(sg.office) LIKE '%department%' THEN 2
+                    ELSE 1
+                END ASC,
+                sg.office ASC
         ");
         $stmt->execute([$studentId, $clearanceId]);
         return $stmt->fetchAll();

@@ -60,8 +60,12 @@
                         <i class="bi bi-house me-2"></i> <span>Dashboard</span>
                     </a>
                     <a href="<?= BASE_URL ?>enrollment-committee/clearances"
-                       class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/clearances') !== false ? 'selected' : '' ?>">
+                       class="nav-link <?= (strpos($_SERVER['REQUEST_URI'], '/clearances') !== false && strpos($_SERVER['REQUEST_URI'], '/archived') === false) ? 'selected' : '' ?>">
                         <i class="bi bi-file-earmark-check me-2"></i> <span>My Clearances</span>
+                    </a>
+                    <a href="<?= BASE_URL ?>enrollment-committee/archived-clearances"
+                       class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/archived-clearances') !== false ? 'selected' : '' ?>">
+                        <i class="bi bi-archive me-2"></i> <span>Archived</span>
                     </a>
                 <?php elseif ($_SESSION['user_role'] === 'signatory'): ?>
                     <a href="<?= BASE_URL ?>signatory/dashboard"
