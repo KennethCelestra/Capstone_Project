@@ -219,7 +219,7 @@ $cPending = count($students) - $cFlagged - $cCleared;
                         <th>Course</th>
                         <th>Year/Sec</th>
                         <th>Standing</th>
-                        <th style="width:22%;">Deficiency Note</th>
+                        <th style="width:22%;">Flag Note</th>
                         <th class="text-end"></th>
                     </tr>
                 </thead>
@@ -297,7 +297,7 @@ $cPending = count($students) - $cFlagged - $cCleared;
 <div id="flag-modal" class="modal" style="display:none;" onclick="closeFlagModalOnOverlay(event)">
     <div class="modal-box">
         <div class="modal-header">
-            <h3>Flag Student for Deficiency</h3>
+            <h3>Flag Student with Remark</h3>
             <button type="button" class="modal-close" onclick="closeFlagModal()">✕</button>
         </div>
         <form action="<?= BASE_URL ?>signatory/students/flag" method="POST" id="flag-form">
@@ -306,9 +306,9 @@ $cPending = count($students) - $cFlagged - $cCleared;
             <input type="hidden" name="student_id"   id="modal-student-id">
             <div class="modal-body">
                 <p>You are flagging: <strong id="modal-student-name"></strong></p>
-                <label for="flag-note-input" class="form-label">Deficiency Reason</label>
+                <label for="flag-note-input" class="form-label">Flag Reason / Remark</label>
                 <textarea id="flag-note-input" name="flag_note" class="form-control" rows="4"
-                          placeholder="Describe the deficiency or requirement the student needs to fulfill…"
+                          placeholder="Describe the issue or requirement the student needs to fulfill…"
                           required></textarea>
             </div>
             <div class="modal-footer">
@@ -327,8 +327,8 @@ $cPending = count($students) - $cFlagged - $cCleared;
             <button type="button" class="modal-close" onclick="closeBulkFlagModal()">✕</button>
         </div>
         <div class="modal-body">
-            <p>You are flagging <strong id="bulk-flag-count">0</strong> selected student(s) with the same deficiency reason.</p>
-            <label for="bulk-flag-note" class="form-label">Shared Deficiency Reason</label>
+            <p>You are flagging <strong id="bulk-flag-count">0</strong> selected student(s) with the same flag reason.</p>
+            <label for="bulk-flag-note" class="form-label">Shared Flag Reason</label>
             <textarea id="bulk-flag-note" class="form-control" rows="4"
                       placeholder="e.g. Unpaid tuition fees, Missing library clearance…"
                       required></textarea>
@@ -349,7 +349,7 @@ $cPending = count($students) - $cFlagged - $cCleared;
 <div id="unflag-modal" class="modal" style="display:none;" onclick="closeUnflagModalOnOverlay(event)">
     <div class="modal-box">
         <div class="modal-header">
-            <h3>Clear Deficiency</h3>
+            <h3>Clear Flag</h3>
             <button type="button" class="modal-close" onclick="closeUnflagModal()">✕</button>
         </div>
         <form action="<?= BASE_URL ?>signatory/students/clear" method="POST" id="unflag-form">
@@ -357,7 +357,7 @@ $cPending = count($students) - $cFlagged - $cCleared;
             <input type="hidden" name="clearance_id" id="unflag-modal-clearance-id">
             <input type="hidden" name="student_id"   id="unflag-modal-student-id">
             <div class="modal-body">
-                <p>Are you sure you want to clear the deficiency for <strong id="unflag-modal-student-name"></strong>?</p>
+                <p>Are you sure you want to clear the flag for <strong id="unflag-modal-student-name"></strong>?</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeUnflagModal()">Cancel</button>

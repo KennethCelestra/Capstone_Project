@@ -190,7 +190,7 @@ $cid = $clearance['id'];
                         $pending  = (int) $s['pending_count'];
 
                         if ($flagged > 0) {
-                            $overallBadge = '<span class="badge badge-danger">Has Deficiency</span>';
+                            $overallBadge = '<span class="badge badge-danger">Has Issue</span>';
                         } elseif ($totalSig > 0 && $cleared === $totalSig) {
                             $overallBadge = '<span class="badge badge-success">Fully Cleared</span>';
                         } else {

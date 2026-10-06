@@ -114,7 +114,7 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
 <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin-bottom:1.25rem;">
     <span class="badge bg-info text-dark"><i class="bi bi-people"></i> <?= $totalHere ?> students</span>
     <?php if ($cFlagged > 0): ?>
-        <span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> <?= $cFlagged ?> with deficiency</span>
+        <span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> <?= $cFlagged ?> flagged</span>
     <?php endif; ?>
     <span class="badge bg-success"><i class="bi bi-check-circle"></i> <?= $cCleared ?> cleared</span>
     <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> <?= $cPending ?> pending</span>
@@ -131,7 +131,7 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
         <div class="filter-group">
             <select name="status" class="form-select" id="adv-status-filter" onchange="this.form.submit()">
                 <option value="all"     <?= $filterStatus === 'all'     ? 'selected' : '' ?>>All Statuses</option>
-                <option value="flagged" <?= $filterStatus === 'flagged' ? 'selected' : '' ?>>Has Deficiency</option>
+                <option value="flagged" <?= $filterStatus === 'flagged' ? 'selected' : '' ?>>Has Flag / Issue</option>
                 <option value="cleared" <?= $filterStatus === 'cleared' ? 'selected' : '' ?>>Fully Cleared</option>
                 <option value="pending" <?= $filterStatus === 'pending' ? 'selected' : '' ?>>In Progress</option>
             </select>

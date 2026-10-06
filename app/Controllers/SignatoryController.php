@@ -132,7 +132,7 @@ class SignatoryController extends Controller
         if ($clearanceId && $studentId && $note !== '') {
             $this->statusModel->flagStudent($clearanceId, $studentId, $signatoryId, $note);
             
-            // Send deficiency email immediately
+            // Send flag notification email immediately
             $signatoryRecord = $this->signatoryModel->findById($signatoryId);
             $officeName      = $signatoryRecord ? $signatoryRecord['office'] : 'Office';
             $info            = $this->statusModel->getStudentClearanceInfo($clearanceId, $studentId);
@@ -142,7 +142,7 @@ class SignatoryController extends Controller
                     $_SESSION['bg_emails'] = [];
                 }
                 $_SESSION['bg_emails'][] = [
-                    'type' => 'deficiency',
+                    'type' => 'flag',
                     'officeName' => $officeName,
                     'students' => [[
                         'email' => $info['email'],
@@ -162,7 +162,7 @@ class SignatoryController extends Controller
     }
 
     // ----------------------------------------------------------------
-    // Bulk flag multiple students with a shared deficiency note
+    // Bulk flag multiple students with a shared flag note / remark
     // ----------------------------------------------------------------
 
     public function bulkFlagStudents(): void
@@ -180,14 +180,14 @@ class SignatoryController extends Controller
         $studentIds = array_filter(array_map('intval', $studentIds));
 
         if (!$clearanceId || empty($studentIds) || $note === '') {
-            $this->setFlash('error', 'Please select at least one student and provide a deficiency reason.');
+            $this->setFlash('error', 'Please select at least one student and provide a flag reason.');
             $this->redirect("signatory/clearances?cid={$clearanceId}");
             return;
         }
 
         $count = $this->statusModel->bulkFlagStudents($clearanceId, $studentIds, $signatoryId, $note);
 
-        // Queue one bulk deficiency email job for all flagged students
+        // Queue one bulk flag email job for all flagged students
         if ($count > 0) {
             $signatoryRecord = $this->signatoryModel->findById($signatoryId);
             $officeName      = $signatoryRecord ? $signatoryRecord['office'] : 'Office';
@@ -210,13 +210,13 @@ class SignatoryController extends Controller
                     $_SESSION['bg_emails'] = [];
                 }
                 $_SESSION['bg_emails'][] = [
-                    'type'       => 'deficiency',
+                    'type'       => 'flag',
                     'officeName' => $officeName,
                     'students'   => $studentsInfo,
                 ];
             }
 
-            $this->setFlash('warning', "{$count} student(s) flagged. Deficiency emails sending in the background.");
+            $this->setFlash('warning', "{$count} student(s) flagged. Flag notification emails sending in the background.");
         } else {
             $this->setFlash('error', 'No students were flagged. Please try again.');
         }
@@ -308,7 +308,7 @@ class SignatoryController extends Controller
     }
 
     // ----------------------------------------------------------------
-    // Confirm All — bulk clear pending + send deficiency emails to flagged
+    // Confirm All — bulk clear pending + send flag notification emails to flagged
     // ----------------------------------------------------------------
 
     public function confirmAll(): void
@@ -347,7 +347,7 @@ class SignatoryController extends Controller
             }
         }
 
-        // 2) Send deficiency emails to all flagged students
+        // 2) Send flag notification emails to all flagged students
         $signatoryRecord = $this->signatoryModel->findById($signatoryId);
         $officeName      = $signatoryRecord ? $signatoryRecord['office'] : 'Office';
         $flagged         = $this->statusModel->getFlaggedStudentsForConfirmation($signatoryId, $clearanceId);
@@ -359,7 +359,7 @@ class SignatoryController extends Controller
                 $_SESSION['bg_emails'] = [];
             }
             $_SESSION['bg_emails'][] = [
-                'type' => 'deficiency',
+                'type' => 'flag',
                 'officeName' => $officeName,
                 'students' => $flagged
             ];
@@ -375,7 +375,7 @@ class SignatoryController extends Controller
             $parts[] = "{$fullyClearedCount} student(s) fully cleared. Emails are sending in the background.";
         }
         if ($sent > 0) {
-            $parts[] = "Deficiency emails for {$sent} student(s) are sending in the background.";
+            $parts[] = "Flag notification emails for {$sent} student(s) are sending in the background.";
         }
         if ($errors > 0) {
             $parts[] = "{$errors} email(s) failed — check mail config.";
@@ -412,8 +412,8 @@ class SignatoryController extends Controller
         $errors = 0;
 
         foreach ($queue as $job) {
-            if ($job['type'] === 'deficiency') {
-                $ok = Mailer::sendBulkDeficiencyEmail($job['students'], $job['officeName'] ?? 'Office');
+            if ($job['type'] === 'flag') {
+                $ok = Mailer::sendBulkFlagEmail($job['students'], $job['officeName'] ?? 'Office');
                 $ok ? $sent++ : $errors++;
             } elseif ($job['type'] === 'started') {
                 $ok = Mailer::sendBulkStartedEmail($job['students']);
@@ -449,7 +449,7 @@ class SignatoryController extends Controller
                 $_SESSION['bg_emails'] = [];
             }
             $_SESSION['bg_emails'][] = [
-                'type' => 'deficiency',
+                'type' => 'flag',
                 'officeName' => $officeName,
                 'students' => $flagged
             ];
@@ -457,7 +457,7 @@ class SignatoryController extends Controller
         }
 
         if ($sent > 0) {
-            $this->setFlash('success', "Deficiency emails for {$sent} student(s) sending in background.");
+            $this->setFlash('success', "Flag notification emails for {$sent} student(s) sending in background.");
         } else {
             $this->setFlash('warning', "No flagged students to email.");
         }

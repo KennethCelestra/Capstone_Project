@@ -139,7 +139,7 @@ class ClearanceStatus extends Model
     }
 
     /**
-     * Flag a student with a deficiency note.
+     * Flag a student with a flag note / remark.
      */
     public function flagStudent(int $clearanceId, int $studentId, int $signatoryId, string $note): bool
     {
@@ -157,7 +157,7 @@ class ClearanceStatus extends Model
     }
 
     /**
-     * Bulk-flag multiple students with a single shared deficiency note.
+     * Bulk-flag multiple students with a single shared flag note / remark.
      * Returns the number of rows actually flagged.
      */
     public function bulkFlagStudents(int $clearanceId, array $studentIds, int $signatoryId, string $note): int

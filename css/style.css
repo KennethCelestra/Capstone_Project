@@ -1404,7 +1404,7 @@ code {
     border: 1px solid #fde68a;
 }
 
-.deficiency-list {
+.flag-note-list {
     margin: 0;
     padding: 0 0 0 1rem;
     font-size: .82rem;
@@ -1413,11 +1413,11 @@ code {
     line-height: 1.5;
 }
 
-.deficiency-list li {
+.flag-note-list li {
     margin-bottom: .25rem;
 }
 
-.deficiency-list li strong {
+.flag-note-list li strong {
     color: var(--text);
     font-style: normal;
 }

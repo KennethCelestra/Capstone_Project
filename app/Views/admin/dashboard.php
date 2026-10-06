@@ -95,7 +95,7 @@
                                 </div>
                                 <div class="mini-stats d-flex gap-2" style="font-size: 0.75rem;">
                                     <span title="Fully Cleared" class="text-success"><i class="bi bi-check-circle-fill"></i> <?= $cCleared ?></span>
-                                    <span title="With Deficiency" class="text-danger"><i class="bi bi-exclamation-circle-fill"></i> <?= $cFlagged ?></span>
+                                    <span title="Has Flag / Issue" class="text-danger"><i class="bi bi-exclamation-circle-fill"></i> <?= $cFlagged ?></span>
                                     <span title="In Progress" class="text-warning"><i class="bi bi-clock-fill"></i> <?= $cPending ?></span>
                                 </div>
                             </td>

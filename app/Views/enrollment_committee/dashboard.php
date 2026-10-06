@@ -49,7 +49,7 @@ $totalPending = $totalStudents - $totalFlagged - $totalCleared;
     <div class="stat-card" style="border-top: 4px solid var(--danger); border-radius: 10px; padding: 1.25rem 1.5rem; background: var(--surface); box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: transform .2s, box-shadow .2s;">
         <div class="stat-info" style="flex: 1;">
             <span class="stat-value" style="font-size: 2rem; font-weight: 800; color: var(--danger);"><?= $totalFlagged ?></span>
-            <span class="stat-label" style="font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-top: .3rem;">With Deficiency</span>
+            <span class="stat-label" style="font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-top: .3rem;">Has Flag / Issue</span>
         </div>
         <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(220,38,38,0.08); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
             <i class="bi bi-exclamation-triangle" style="font-size: 1.4rem; color: var(--danger);"></i>
@@ -71,7 +71,7 @@ $totalPending = $totalStudents - $totalFlagged - $totalCleared;
         <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.5rem; color: var(--warning); flex-shrink: 0;"></i>
         <div>
             <h5 style="margin: 0 0 .15rem; font-size: .95rem; font-weight: 700;">Attention Needed</h5>
-            <span style="font-size: .9rem; color: var(--text-muted);">You have <strong style="color: var(--text);"><?= $totalFlagged ?></strong> student(s) with deficiencies across your assigned clearances.</span>
+            <span style="font-size: .9rem; color: var(--text-muted);">You have <strong style="color: var(--text);"><?= $totalFlagged ?></strong> student(s) with flagged issues across your assigned clearances.</span>
         </div>
     </div>
 <?php endif; ?>
@@ -127,7 +127,7 @@ $totalPending = $totalStudents - $totalFlagged - $totalCleared;
                                 </div>
                                 <div class="mini-stats d-flex gap-2" style="font-size: 0.75rem;">
                                     <span title="Fully Cleared" class="text-success"><i class="bi bi-check-circle-fill"></i> <?= $cCleared ?></span>
-                                    <span title="With Deficiency" class="text-danger"><i class="bi bi-exclamation-circle-fill"></i> <?= $cFlagged ?></span>
+                                    <span title="Has Flag / Issue" class="text-danger"><i class="bi bi-exclamation-circle-fill"></i> <?= $cFlagged ?></span>
                                     <span title="In Progress" class="text-warning"><i class="bi bi-clock-fill"></i> <?= $cPending ?></span>
                                 </div>
                             </td>

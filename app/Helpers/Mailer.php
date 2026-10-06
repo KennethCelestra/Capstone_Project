@@ -61,24 +61,29 @@ class Mailer
     }
 
     /**
-     * Send a deficiency notification to a flagged student.
+     * Send a notification to a student who has missing or pending requirements.
      */
-    private static function sendDeficiencyEmail(
+    private static function sendFlagEmail(
         string $studentEmail,
         string $studentName,
         string $officeName,
         string $note,
         string $clearanceName
     ): bool {
-        $subject = "Clearance Deficiency Notice — {$clearanceName}";
+        $subject = "Missing Clearance Requirement — {$clearanceName}";
 
         $body = "
-            <p>Dear <strong>" . htmlspecialchars($studentName) . "</strong>,</p>
-            <p>You have been flagged for a deficiency by the <strong>" . htmlspecialchars($officeName) . "</strong> office in relation to your <em>" . htmlspecialchars($clearanceName) . "</em> clearance.</p>
-            <p><strong>Deficiency Reason:</strong><br>" . nl2br(htmlspecialchars($note)) . "</p>
-            <p>Please visit the <strong>" . htmlspecialchars($officeName) . "</strong> office at your earliest convenience to resolve this deficiency and have it removed before your clearance can be completed.</p>
-            <br>
-            <p><small>This is an automated message from the AutoClear Clearance System. Do not reply to this email.</small></p>
+            <div style=\"font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;\">
+                <p>Dear <strong>" . htmlspecialchars($studentName) . "</strong>,</p>
+                <p>You have missing or pending requirements with the <strong>" . htmlspecialchars($officeName) . "</strong> office for your <em>" . htmlspecialchars($clearanceName) . "</em> clearance.</p>
+                <div style=\"background: #fff8e6; border-left: 4px solid #f59e0b; padding: 12px 16px; margin: 18px 0; border-radius: 4px;\">
+                    <strong style=\"color: #b45309; font-size: 14px;\">Requirement / Note from Office:</strong>
+                    <div style=\"margin-top: 6px; color: #1f2937; font-size: 14px;\">" . nl2br(htmlspecialchars($note)) . "</div>
+                </div>
+                <p>Please coordinate with or visit the <strong>" . htmlspecialchars($officeName) . "</strong> office at your earliest convenience to fulfill these requirements so your clearance can proceed.</p>
+                <br>
+                <p style=\"font-size: 13px; color: #777;\"><small>This is an automated message from the AutoClear Clearance System. Do not reply to this email.</small></p>
+            </div>
         ";
 
         return self::sendEmail($studentEmail, $studentName, $subject, $body);
@@ -141,8 +146,8 @@ class Mailer
         $body = "
             <div style=\"font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; color: #333;\">
                 <p>Dear <strong>" . htmlspecialchars($studentName) . "</strong>,</p>
-                <p>The signing of your <strong>" . htmlspecialchars($clearanceName) . "</strong> clearance has now started. Offices will begin to sign off or flag any deficiencies on your record.</p>
-                <p>You can check your clearance progress at any time using the button below. The page updates as offices clear or flag you, and you can also view the activity logs there:</p>
+                <p>The signing of your <strong>" . htmlspecialchars($clearanceName) . "</strong> clearance has now started. Offices will begin reviewing your record and will sign off or notify you if you have any missing requirements.</p>
+                <p>You can check your clearance progress at any time using the button below. The page updates as offices sign off or note requirements, and you can also view the activity logs there:</p>
                 <p style=\"text-align: center; margin: 28px 0;\">
                     <a href=\"" . htmlspecialchars($formUrl) . "\"
                        style=\"background-color: #1a56a0; color: #ffffff; text-decoration: none;
@@ -182,13 +187,13 @@ class Mailer
         return $allOk;
     }
 
-    public static function sendBulkDeficiencyEmail(array $flaggedStudents, string $officeName): bool
+    public static function sendBulkFlagEmail(array $flaggedStudents, string $officeName): bool
     {
         if (empty($flaggedStudents)) return true;
 
         $allOk = true;
         foreach ($flaggedStudents as $f) {
-            $ok = self::sendDeficiencyEmail(
+            $ok = self::sendFlagEmail(
                 $f['email'],
                 $f['full_name'],
                 $officeName,
