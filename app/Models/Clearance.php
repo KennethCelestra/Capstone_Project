@@ -6,16 +6,34 @@ class Clearance extends Model
 
     public function create(array $data): bool
     {
-        $stmt = $this->db->prepare("
-            INSERT INTO clearances (name, description, school_year, type)
-            VALUES (:name, :description, :school_year, :type)
-        ");
-        return $stmt->execute([
-            ':name'        => $data['name'],
-            ':description' => $data['description'] ?? '',
-            ':school_year' => $data['school_year'] ?? '',
-            ':type'        => $data['type'] ?? 'regular',
-        ]);
+        try {
+            $stmt = $this->db->prepare("
+                INSERT INTO clearances (name, description, school_year, type)
+                VALUES (:name, :description, :school_year, :type)
+            ");
+            return $stmt->execute([
+                ':name'        => $data['name'],
+                ':description' => $data['description'] ?? '',
+                ':school_year' => $data['school_year'] ?? '',
+                ':type'        => $data['type'] ?? 'regular',
+            ]);
+        } catch (\PDOException $e) {
+            // Auto-heal if 'type' column is missing in the database
+            if (strpos($e->getMessage(), "Unknown column 'type'") !== false) {
+                $this->db->exec("ALTER TABLE clearances ADD COLUMN `type` ENUM('regular', 'exit') NOT NULL DEFAULT 'regular' AFTER `school_year`");
+                $stmt = $this->db->prepare("
+                    INSERT INTO clearances (name, description, school_year, type)
+                    VALUES (:name, :description, :school_year, :type)
+                ");
+                return $stmt->execute([
+                    ':name'        => $data['name'],
+                    ':description' => $data['description'] ?? '',
+                    ':school_year' => $data['school_year'] ?? '',
+                    ':type'        => $data['type'] ?? 'regular',
+                ]);
+            }
+            throw $e;
+        }
     }
 
     public function getLastInsertId(): int
@@ -53,17 +71,35 @@ class Clearance extends Model
 
     public function update(int $id, array $data): bool
     {
-        $stmt = $this->db->prepare("
-            UPDATE clearances SET name = :name, description = :description, school_year = :school_year, type = :type
-            WHERE id = :id
-        ");
-        return $stmt->execute([
-            ':name'        => $data['name'],
-            ':description' => $data['description'] ?? '',
-            ':school_year' => $data['school_year'] ?? '',
-            ':type'        => $data['type'] ?? 'regular',
-            ':id'          => $id,
-        ]);
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE clearances SET name = :name, description = :description, school_year = :school_year, type = :type
+                WHERE id = :id
+            ");
+            return $stmt->execute([
+                ':name'        => $data['name'],
+                ':description' => $data['description'] ?? '',
+                ':school_year' => $data['school_year'] ?? '',
+                ':type'        => $data['type'] ?? 'regular',
+                ':id'          => $id,
+            ]);
+        } catch (\PDOException $e) {
+            if (strpos($e->getMessage(), "Unknown column 'type'") !== false) {
+                $this->db->exec("ALTER TABLE clearances ADD COLUMN `type` ENUM('regular', 'exit') NOT NULL DEFAULT 'regular' AFTER `school_year`");
+                $stmt = $this->db->prepare("
+                    UPDATE clearances SET name = :name, description = :description, school_year = :school_year, type = :type
+                    WHERE id = :id
+                ");
+                return $stmt->execute([
+                    ':name'        => $data['name'],
+                    ':description' => $data['description'] ?? '',
+                    ':school_year' => $data['school_year'] ?? '',
+                    ':type'        => $data['type'] ?? 'regular',
+                    ':id'          => $id,
+                ]);
+            }
+            throw $e;
+        }
     }
 
     public function findAllWithCounts(): array

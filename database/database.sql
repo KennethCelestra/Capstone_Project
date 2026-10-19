@@ -96,6 +96,7 @@ CREATE TABLE IF NOT EXISTS `clearances` (
     `name`        VARCHAR(200) NOT NULL,
     `description` TEXT,
     `school_year` VARCHAR(20)  NOT NULL DEFAULT '',
+    `type`        ENUM('regular', 'exit') NOT NULL DEFAULT 'regular',
     `archived`    TINYINT(1)   NOT NULL DEFAULT 0,
     `started_at`  DATETIME     NULL DEFAULT NULL,
     `created_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
