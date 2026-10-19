@@ -71,6 +71,7 @@ if (!empty($appUrl)) {
 
 // Database Configuration
 define('DB_HOST', get_env_var('DB_HOST', 'localhost'));
+define('DB_PORT', get_env_var('DB_PORT', '3306'));
 define('DB_USER', get_env_var('DB_USER', 'root'));
 define('DB_PASS', get_env_var('DB_PASS', ''));
 define('DB_NAME', get_env_var('DB_NAME', 'clearance_system'));

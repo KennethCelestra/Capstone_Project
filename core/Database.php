@@ -7,13 +7,23 @@ class Database
     public static function getInstance(): PDO
     {
         if (self::$instance === null) {
-            $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4';
+            $port = (defined('DB_PORT') && DB_PORT !== '') ? ';port=' . DB_PORT : '';
+            $dsn = 'mysql:host=' . DB_HOST . $port . ';dbname=' . DB_NAME . ';charset=utf8mb4';
             try {
-                self::$instance = new PDO($dsn, DB_USER, DB_PASS, [
+                $options = [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                     PDO::ATTR_EMULATE_PREPARES => false,
-                ]);
+                ];
+
+                // Auto-enable SSL/TLS if CA certificates exist (required by TiDB Cloud & Aiven)
+                if (defined('PDO::MYSQL_ATTR_SSL_CA') && file_exists('/etc/ssl/certs/ca-certificates.crt')) {
+                    $options[PDO::MYSQL_ATTR_SSL_CA] = '/etc/ssl/certs/ca-certificates.crt';
+                } elseif (defined('PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT') && DB_HOST !== 'localhost' && DB_HOST !== '127.0.0.1') {
+                    $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
+                }
+
+                self::$instance = new PDO($dsn, DB_USER, DB_PASS, $options);
             } catch (PDOException $e) {
                 error_log('Database connection failed: ' . $e->getMessage());
                 if (defined('APP_ENV') && APP_ENV === 'development') {
