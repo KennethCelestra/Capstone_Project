@@ -55,6 +55,13 @@ if (APP_ENV === 'production') {
 // Base URL calculation (Supports APP_URL override and HTTPS proxy/Cloudflare detection)
 $appUrl = trim(get_env_var('APP_URL'));
 if (!empty($appUrl)) {
+    if (!preg_match('~^https?://~i', $appUrl)) {
+        $appUrl = 'https://' . $appUrl;
+    }
+    if ((isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
+        (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) === 'on')) {
+        $appUrl = preg_replace('/^http:\/\//i', 'https://', $appUrl);
+    }
     define('BASE_URL', rtrim($appUrl, '/') . '/');
 } else {
     $isHttps = (
