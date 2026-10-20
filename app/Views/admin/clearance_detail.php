@@ -1,5 +1,6 @@
 <?php
 $cid = $clearance['id'];
+$isStarted = !empty($clearance['started_at']);
 ?>
 
 <!-- ========================================================
@@ -17,10 +18,12 @@ $cid = $clearance['id'];
         </p>
     </div>
     <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
-        <button class="btn btn-secondary btn-sm"
-                onclick="openEditClearanceDetail(<?= $cid ?>, '<?= htmlspecialchars(addslashes($clearance['name'])) ?>', '<?= htmlspecialchars(addslashes($clearance['description'])) ?>', '<?= htmlspecialchars($clearance['school_year']) ?>')">
-            Edit Info
-        </button>
+        <?php if (empty($clearance['started_at'])): ?>
+            <button class="btn btn-secondary btn-sm"
+                    onclick="openEditClearanceDetail(<?= $cid ?>, '<?= htmlspecialchars(addslashes($clearance['name'])) ?>', '<?= htmlspecialchars(addslashes($clearance['description'])) ?>', '<?= htmlspecialchars($clearance['school_year']) ?>')">
+                Edit Info
+            </button>
+        <?php endif; ?>
         <?php if (!empty($clearance['started_at'])): ?>
             <span class="badge badge-success" title="Signing started">
                 Started <?= date('M j, Y g:i A', strtotime($clearance['started_at'])) ?>
@@ -33,6 +36,8 @@ $cid = $clearance['id'];
         <?php endif; ?>
     </div>
 </div>
+
+
 
 <!-- ===== TABS ===== -->
 <div class="tabs">
@@ -51,10 +56,12 @@ $cid = $clearance['id'];
 <div id="tab-sig" class="tab-content active">
     <div class="section-header">
         <h3>Assigned Signatories</h3>
-        <button class="btn btn-primary btn-sm"
-                onclick="document.getElementById('assignSigModal').style.display='flex'">
-            + Assign Signatory
-        </button>
+        <?php if (!$isStarted): ?>
+            <button class="btn btn-primary btn-sm"
+                    onclick="document.getElementById('assignSigModal').style.display='flex'">
+                + Assign Signatory
+            </button>
+        <?php endif; ?>
     </div>
     <?php if (empty($assignedSignatories)): ?>
         <p class="text-muted">No signatories assigned yet.</p>
@@ -79,14 +86,16 @@ $cid = $clearance['id'];
                             </td>
                             <td class="text-end" data-label="Action">
                                 <div class="action-cell">
-                                    <form action="<?= BASE_URL ?>admin/clearances/signatories/remove"
-                                          method="POST" onsubmit="return confirmAction(this, 'Remove this signatory?', 'Remove', 'btn-danger')">
-                                         <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
-                                         <input type="hidden" name="clearance_id" value="<?= $cid ?>">
-                                         <input type="hidden" name="signatory_id" value="<?= $s['id'] ?>">
-                                         <input type="hidden" name="tab"          value="tab-sig">
-                                         <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                                    </form>
+                                    <?php if (!$isStarted): ?>
+                                        <form action="<?= BASE_URL ?>admin/clearances/signatories/remove"
+                                              method="POST" onsubmit="return confirmAction(this, 'Remove this signatory?', 'Remove', 'btn-danger')">
+                                             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                                             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+                                             <input type="hidden" name="signatory_id" value="<?= $s['id'] ?>">
+                                             <input type="hidden" name="tab"          value="tab-sig">
+                                             <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                        </form>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -101,10 +110,12 @@ $cid = $clearance['id'];
 <div id="tab-adv" class="tab-content" style="display:none">
     <div class="section-header">
         <h3>Assigned Enrollment Committee</h3>
-        <button class="btn btn-primary btn-sm"
-                onclick="document.getElementById('assignAdvModal').style.display='flex'">
-            + Assign Member
-        </button>
+        <?php if (!$isStarted): ?>
+            <button class="btn btn-primary btn-sm"
+                    onclick="document.getElementById('assignAdvModal').style.display='flex'">
+                + Assign Member
+            </button>
+        <?php endif; ?>
     </div>
     <?php if (empty($assignedEnrollmentCommittees)): ?>
         <p class="text-muted">No enrollment committee members assigned yet (optional).</p>
@@ -120,14 +131,16 @@ $cid = $clearance['id'];
                             <td data-label="Email"><?= htmlspecialchars($a['email']) ?></td>
                             <td class="text-end" data-label="Action">
                                 <div class="action-cell">
-                                    <form action="<?= BASE_URL ?>admin/clearances/enrollment-committees/remove"
-                                          method="POST" onsubmit="return confirmAction(this, 'Remove this member?', 'Remove', 'btn-danger')">
-                                         <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
-                                         <input type="hidden" name="clearance_id" value="<?= $cid ?>">
-                                         <input type="hidden" name="enrollment_committee_id"   value="<?= $a['id'] ?>">
-                                         <input type="hidden" name="tab"          value="tab-adv">
-                                         <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                                    </form>
+                                    <?php if (!$isStarted): ?>
+                                        <form action="<?= BASE_URL ?>admin/clearances/enrollment-committees/remove"
+                                              method="POST" onsubmit="return confirmAction(this, 'Remove this member?', 'Remove', 'btn-danger')">
+                                             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                                             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+                                             <input type="hidden" name="enrollment_committee_id"   value="<?= $a['id'] ?>">
+                                             <input type="hidden" name="tab"          value="tab-adv">
+                                             <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                        </form>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -142,16 +155,18 @@ $cid = $clearance['id'];
 <div id="tab-stu" class="tab-content" style="display:none">
     <div class="section-header">
         <h3>Enrolled Students</h3>
-        <?php if (($clearance['type'] ?? 'regular') === 'exit'): ?>
-            <button class="btn btn-warning btn-sm"
-                    onclick="document.getElementById('enrollFourthYearModal').style.display='flex'">
-                Enroll 4th-Year Students
-            </button>
-        <?php else: ?>
-            <button class="btn btn-primary btn-sm"
-                    onclick="document.getElementById('enrollAllModal').style.display='flex'">
-                Enroll All Active Students
-            </button>
+        <?php if (!$isStarted): ?>
+            <?php if (($clearance['type'] ?? 'regular') === 'exit'): ?>
+                <button class="btn btn-warning btn-sm"
+                        onclick="document.getElementById('enrollFourthYearModal').style.display='flex'">
+                    Enroll 4th-Year Students
+                </button>
+            <?php else: ?>
+                <button class="btn btn-primary btn-sm"
+                        onclick="document.getElementById('enrollAllModal').style.display='flex'">
+                    Enroll All Active Students
+                </button>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
     <?php if (empty($students)): ?>
@@ -210,14 +225,16 @@ $cid = $clearance['id'];
                                             onclick="openStudentLogs(<?= (int)$cid ?>, <?= (int)$s['id'] ?>, <?= htmlspecialchars(json_encode($s['last_name'] . ', ' . $s['first_name']), ENT_QUOTES) ?>)">
                                         Logs
                                     </button>
-                                    <form action="<?= BASE_URL ?>admin/clearances/students/remove"
-                                          method="POST" onsubmit="return confirmAction(this, 'Remove student from clearance?', 'Remove', 'btn-danger')">
-                                         <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
-                                         <input type="hidden" name="clearance_id" value="<?= $cid ?>">
-                                         <input type="hidden" name="student_id"   value="<?= $s['id'] ?>">
-                                         <input type="hidden" name="tab"          value="tab-stu">
-                                         <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                                    </form>
+                                    <?php if (!$isStarted): ?>
+                                        <form action="<?= BASE_URL ?>admin/clearances/students/remove"
+                                              method="POST" onsubmit="return confirmAction(this, 'Remove student from clearance?', 'Remove', 'btn-danger')">
+                                             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                                             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+                                             <input type="hidden" name="student_id"   value="<?= $s['id'] ?>">
+                                             <input type="hidden" name="tab"          value="tab-stu">
+                                             <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                        </form>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -231,14 +248,21 @@ $cid = $clearance['id'];
 <!-- ====== Start Clearance Modal ====== -->
 <?php if (empty($clearance['started_at'])): ?>
 <div id="startClearanceModal" class="modal" style="display:none;">
-    <div class="modal-box" style="max-width:440px;">
+    <div class="modal-box" style="max-width:460px;">
         <div class="modal-header">
             <h3>Start Clearance</h3>
             <button onclick="document.getElementById('startClearanceModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <div style="padding:1.25rem 1.5rem;">
-            <p>This will email <strong><?= count($students) ?> enrolled student(s)</strong> that signing has started, with a link to their clearance form where they can follow their progress.</p>
-            <p class="text-muted" style="font-size:.85rem;margin-top:.75rem;">This can only be done once per clearance.</p>
+            <p style="margin-bottom:0.75rem;">
+                Are you sure you want to start this clearance?
+            </p>
+            <div style="background: rgba(220, 53, 69, 0.08); border-left: 4px solid #dc3545; padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 1rem; color: #b02a37; font-size: 0.9rem;">
+                <strong>Warning:</strong> Once this clearance is started, you can no longer edit it. You will not be able to add or delete students, signatories, or enrollment committee members.
+            </div>
+            <p class="text-muted" style="font-size:.85rem;margin:0;">
+                Notification emails will be sent to <strong><?= count($students) ?> enrolled student(s)</strong> and the clearance will become visible to assigned signatories and enrollment committee members.
+            </p>
         </div>
         <form action="<?= BASE_URL ?>admin/clearances/start" method="POST">
             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
@@ -246,7 +270,7 @@ $cid = $clearance['id'];
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
                         onclick="document.getElementById('startClearanceModal').style.display='none'">Cancel</button>
-                <button type="submit" class="btn btn-primary">Start &amp; Send Emails</button>
+                <button type="submit" class="btn btn-primary">Start Clearance</button>
             </div>
         </form>
     </div>
@@ -254,6 +278,7 @@ $cid = $clearance['id'];
 <?php endif; ?>
 
 <!-- ====== Edit Clearance Modal ====== -->
+<?php if (!$isStarted): ?>
 <div id="editClearanceDetailModal" class="modal" style="display:none;">
     <div class="modal-box">
         <div class="modal-header">
@@ -410,6 +435,7 @@ $cid = $clearance['id'];
         </form>
     </div>
 </div>
+<?php endif; ?>
 
 <?php $logsUrl = BASE_URL . 'admin/clearances/student-logs'; include ROOT_PATH . '/app/Views/layouts/student_logs_modal.php'; ?>
 

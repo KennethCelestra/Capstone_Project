@@ -167,6 +167,12 @@ class AdminController extends Controller
             return;
         }
 
+        if ($this->isClearanceStarted($clearanceId)) {
+            $this->setFlash('error', 'Cannot enroll students because this clearance has already been started.');
+            $this->redirect("admin/clearances/detail?id={$clearanceId}#tab-stu");
+            return;
+        }
+
         $unEnrolledActive = $this->studentModel->findNotInClearanceActive($clearanceId);
         if (empty($unEnrolledActive)) {
             $this->setFlash('success', 'All active students are already enrolled in this clearance.');
@@ -192,6 +198,12 @@ class AdminController extends Controller
             return;
         }
 
+        if ($this->isClearanceStarted($clearanceId)) {
+            $this->setFlash('error', 'Cannot enroll students because this clearance has already been started.');
+            $this->redirect("admin/clearances/detail?id={$clearanceId}#tab-stu");
+            return;
+        }
+
         $unEnrolled = $this->studentModel->findFourthYearNotInClearanceActive($clearanceId);
         if (empty($unEnrolled)) {
             $this->setFlash('success', 'All active 4th-year students are already enrolled in this exit clearance.');
@@ -214,6 +226,13 @@ class AdminController extends Controller
 
         $tab = $this->getPost('tab', 'tab-stu');
         $hash = $tab ? "#{$tab}" : '#tab-stu';
+
+        if ($clearanceId > 0 && $this->isClearanceStarted($clearanceId)) {
+            $this->setFlash('error', 'Cannot add students to this clearance because it has already been started.');
+            $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
+            return;
+        }
+
         if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
             $this->setFlash('error', 'Please select a valid CSV file.');
             $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
@@ -476,6 +495,17 @@ class AdminController extends Controller
         $this->requireLogin('admin');
         if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $id = (int) $this->getPost('id');
+        $clearance = $this->clearanceModel->findById($id);
+        if (!$clearance) {
+            $this->setFlash('error', 'Clearance not found.');
+            $this->redirect('admin/clearances');
+            return;
+        }
+        if (!empty($clearance['started_at'])) {
+            $this->setFlash('error', 'This clearance has already been started and can no longer be edited.');
+            $this->redirect("admin/clearances/detail?id={$id}");
+            return;
+        }
         $data = [
             'name'        => trim($this->getPost('name', '')),
             'description' => trim($this->getPost('description', '')),
@@ -622,6 +652,14 @@ class AdminController extends Controller
         if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $clearanceId  = (int) $this->getPost('clearance_id');
         $signatoryVal = $this->getPost('signatory_id');
+        $tab = $this->getPost('tab', 'tab-sig');
+        $hash = $tab ? "#{$tab}" : '#tab-sig';
+
+        if ($this->isClearanceStarted($clearanceId)) {
+            $this->setFlash('error', 'Cannot assign signatories because this clearance has already been started.');
+            $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
+            return;
+        }
 
         if ($signatoryVal === 'all') {
             $unassigned = $this->signatoryModel->findUnassigned($clearanceId);
@@ -648,6 +686,14 @@ class AdminController extends Controller
         if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $clearanceId  = (int) $this->getPost('clearance_id');
         $signatoryIds = $this->getPost('signatory_ids', []);
+        $tab = $this->getPost('tab', 'tab-sig');
+        $hash = $tab ? "#{$tab}" : '#tab-sig';
+
+        if ($this->isClearanceStarted($clearanceId)) {
+            $this->setFlash('error', 'Cannot assign signatories because this clearance has already been started.');
+            $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
+            return;
+        }
 
         if (!empty($signatoryIds)) {
             foreach ((array) $signatoryIds as $sid) {
@@ -669,6 +715,15 @@ class AdminController extends Controller
         if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $clearanceId = (int) $this->getPost('clearance_id');
         $signatoryId = (int) $this->getPost('signatory_id');
+        $tab = $this->getPost('tab', 'tab-sig');
+        $hash = $tab ? "#{$tab}" : '#tab-sig';
+
+        if ($this->isClearanceStarted($clearanceId)) {
+            $this->setFlash('error', 'Cannot remove signatories because this clearance has already been started.');
+            $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
+            return;
+        }
+
         $this->clearanceModel->removeSignatory($clearanceId, $signatoryId);
         $this->setFlash('success', 'Signatory removed from clearance.');
         $tab = $this->getPost('tab', 'tab-sig');
@@ -684,6 +739,14 @@ class AdminController extends Controller
         if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $clearanceId  = (int) $this->getPost('clearance_id');
         $committeeVal = $this->getPost('enrollment_committee_id');
+        $tab = $this->getPost('tab', 'tab-adv');
+        $hash = $tab ? "#{$tab}" : '#tab-adv';
+
+        if ($this->isClearanceStarted($clearanceId)) {
+            $this->setFlash('error', 'Cannot assign enrollment committee members because this clearance has already been started.');
+            $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
+            return;
+        }
 
         if ($committeeVal === 'all') {
             $unassigned = $this->enrollmentCommitteeModel->findUnassigned($clearanceId);
@@ -710,6 +773,14 @@ class AdminController extends Controller
         if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $clearanceId = (int) $this->getPost('clearance_id');
         $enrollmentCommitteeIds = $this->getPost('enrollment_committee_ids', []);
+        $tab = $this->getPost('tab', 'tab-adv');
+        $hash = $tab ? "#{$tab}" : '#tab-adv';
+
+        if ($this->isClearanceStarted($clearanceId)) {
+            $this->setFlash('error', 'Cannot assign enrollment committee members because this clearance has already been started.');
+            $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
+            return;
+        }
         
         if (!empty($enrollmentCommitteeIds)) {
             foreach ((array) $enrollmentCommitteeIds as $aid) {
@@ -731,6 +802,15 @@ class AdminController extends Controller
         if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $clearanceId = (int) $this->getPost('clearance_id');
         $enrollmentCommitteeId = (int) $this->getPost('enrollment_committee_id');
+        $tab = $this->getPost('tab', 'tab-adv');
+        $hash = $tab ? "#{$tab}" : '#tab-adv';
+
+        if ($this->isClearanceStarted($clearanceId)) {
+            $this->setFlash('error', 'Cannot remove enrollment committee members because this clearance has already been started.');
+            $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
+            return;
+        }
+
         $this->clearanceModel->removeEnrollmentCommittee($clearanceId, $enrollmentCommitteeId);
         $this->setFlash('success', 'Enrollment Committee member removed from clearance.');
         $tab = $this->getPost('tab', 'tab-adv');
@@ -746,10 +826,26 @@ class AdminController extends Controller
         if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
         $clearanceId = (int) $this->getPost('clearance_id');
         $studentId   = (int) $this->getPost('student_id');
-        $this->clearanceModel->removeStudent($clearanceId, $studentId);
-        $this->setFlash('success', 'Student removed from clearance.');
         $tab = $this->getPost('tab', 'tab-stu');
         $hash = $tab ? "#{$tab}" : '#tab-stu';
+
+        if ($this->isClearanceStarted($clearanceId)) {
+            $this->setFlash('error', 'Cannot remove students because this clearance has already been started.');
+            $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
+            return;
+        }
+
+        $this->clearanceModel->removeStudent($clearanceId, $studentId);
+        $this->setFlash('success', 'Student removed from clearance.');
         $this->redirect("admin/clearances/detail?id={$clearanceId}{$hash}");
+    }
+
+    /**
+     * Check if a clearance has already been started.
+     */
+    private function isClearanceStarted(int $clearanceId): bool
+    {
+        $clearance = $this->clearanceModel->findById($clearanceId);
+        return $clearance && !empty($clearance['started_at']);
     }
 }

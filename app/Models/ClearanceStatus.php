@@ -20,6 +20,7 @@ class ClearanceStatus extends Model
                    COALESCE(cs.status, 'pending') AS status,
                    cs.flag_note, cs.signed_at, cs.updated_at
             FROM clearance_students cst
+            JOIN clearances c ON c.id = cst.clearance_id
             JOIN students st ON st.id = cst.student_id
             JOIN clearance_signatories csig ON csig.clearance_id = cst.clearance_id AND csig.signatory_id = ?
             JOIN signatories sg ON sg.id = csig.signatory_id
@@ -28,6 +29,8 @@ class ClearanceStatus extends Model
                AND cs.clearance_id = cst.clearance_id
                AND cs.signatory_id = ?
             WHERE cst.clearance_id = ?
+              AND c.archived = 0
+              AND c.started_at IS NOT NULL
               AND (
                   sg.scope_type IS NULL 
                   OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
@@ -41,6 +44,7 @@ class ClearanceStatus extends Model
 
     /**
      * Get all clearances a signatory is assigned to, with summary counts.
+     * Only returns clearances that have been started by the admin.
      */
     public function getClearancesForSignatory(int $signatoryId): array
     {
@@ -59,7 +63,7 @@ class ClearanceStatus extends Model
                 ON cs.clearance_id = c.id
                AND cs.student_id   = cst.student_id
                AND cs.signatory_id = ?
-            WHERE csig.signatory_id = ? AND c.archived = 0
+            WHERE csig.signatory_id = ? AND c.archived = 0 AND c.started_at IS NOT NULL
               AND (
                   sg.scope_type IS NULL 
                   OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
@@ -86,7 +90,7 @@ class ClearanceStatus extends Model
             FROM clearance_status cs
             JOIN clearances c  ON c.id  = cs.clearance_id
             JOIN students   st ON st.id = cs.student_id
-            WHERE cs.signatory_id = ? AND cs.status = 'flagged'
+            WHERE cs.signatory_id = ? AND cs.status = 'flagged' AND c.started_at IS NOT NULL
         ";
         $params = [$signatoryId];
 
@@ -470,7 +474,7 @@ class ClearanceStatus extends Model
                 ON cs.clearance_id = c.id
                AND cs.student_id   = st.id
                AND cs.signatory_id = csig.signatory_id
-            WHERE ca.enrollment_committee_id = ? AND c.archived = ?
+            WHERE ca.enrollment_committee_id = ? AND c.archived = ? AND c.started_at IS NOT NULL
               AND (
                   sg.scope_type IS NULL 
                   OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
