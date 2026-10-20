@@ -57,9 +57,9 @@ class Enrollment_CommitteeController extends Controller
 
         // Phase 2: a specific clearance is selected
         if ($selectedCid > 0) {
-            $validCids = array_column($allClearances, 'clearance_id');
-            if (!in_array($selectedCid, $validCids)) {
-                $this->setFlash('error', 'You are not assigned to that clearance.');
+            $validCids = array_map('intval', array_column($allClearances, 'clearance_id'));
+            if (!in_array($selectedCid, $validCids, true)) {
+                $this->setFlash('error', 'This clearance has not been started yet or you are not assigned to it.');
                 $this->redirect('enrollment-committee/clearances');
                 return;
             }

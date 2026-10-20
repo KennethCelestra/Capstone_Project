@@ -49,10 +49,10 @@ class SignatoryController extends Controller
 
         // Phase 2: a specific clearance is selected
         if ($selectedCid > 0) {
-            // Verify this signatory is actually assigned to this clearance
-            $validCids = array_column($clearanceSummaries, 'clearance_id');
-            if (!in_array($selectedCid, $validCids)) {
-                $this->setFlash('error', 'You are not assigned to that clearance.');
+            // Verify this signatory is actually assigned to this clearance and it has started
+            $validCids = array_map('intval', array_column($clearanceSummaries, 'clearance_id'));
+            if (!in_array($selectedCid, $validCids, true)) {
+                $this->setFlash('error', 'This clearance has not been started yet or you are not assigned to it.');
                 $this->redirect('signatory/clearances');
                 return;
             }
@@ -129,6 +129,12 @@ class SignatoryController extends Controller
         $note        = trim($this->getPost('flag_note', ''));
         $signatoryId = (int)  $_SESSION['user_id'];
 
+        if (!$clearanceId || !$this->isClearanceAccessible($clearanceId, $signatoryId)) {
+            $this->setFlash('error', 'This clearance has not been started yet or you are not assigned to it.');
+            $this->redirect('signatory/clearances');
+            return;
+        }
+
         if ($clearanceId && $studentId && $note !== '') {
             $this->statusModel->flagStudent($clearanceId, $studentId, $signatoryId, $note);
             
@@ -173,6 +179,12 @@ class SignatoryController extends Controller
         $note        = trim($this->getPost('flag_note', ''));
         $signatoryId = (int) $_SESSION['user_id'];
         $studentIds  = $this->getPost('student_ids', []);
+
+        if (!$clearanceId || !$this->isClearanceAccessible($clearanceId, $signatoryId)) {
+            $this->setFlash('error', 'This clearance has not been started yet or you are not assigned to it.');
+            $this->redirect('signatory/clearances');
+            return;
+        }
 
         if (!is_array($studentIds)) {
             $studentIds = [];
@@ -236,6 +248,12 @@ class SignatoryController extends Controller
         $studentId   = (int) $this->getPost('student_id');
         $signatoryId = (int) $_SESSION['user_id'];
 
+        if (!$clearanceId || !$this->isClearanceAccessible($clearanceId, $signatoryId)) {
+            $this->setFlash('error', 'This clearance has not been started yet or you are not assigned to it.');
+            $this->redirect('signatory/clearances');
+            return;
+        }
+
         if ($clearanceId && $studentId) {
             $this->statusModel->clearStudent($clearanceId, $studentId, $signatoryId);
 
@@ -270,6 +288,12 @@ class SignatoryController extends Controller
         if (!$this->validateCsrfToken()) { $this->redirect('signatory/clearances'); return; }
         $clearanceId = (int) $this->getPost('clearance_id');
         $signatoryId = (int) $_SESSION['user_id'];
+
+        if (!$clearanceId || !$this->isClearanceAccessible($clearanceId, $signatoryId)) {
+            $this->setFlash('error', 'This clearance has not been started yet or you are not assigned to it.');
+            $this->redirect('signatory/clearances');
+            return;
+        }
 
         if ($clearanceId) {
             $clearedIds = $this->statusModel->clearAllPending($clearanceId, $signatoryId);
@@ -318,8 +342,8 @@ class SignatoryController extends Controller
         $signatoryId = (int) $_SESSION['user_id'];
         $clearanceId = (int) $this->getPost('clearance_id', 0);
 
-        if (!$clearanceId) {
-            $this->setFlash('error', 'Invalid clearance.');
+        if (!$clearanceId || !$this->isClearanceAccessible($clearanceId, $signatoryId)) {
+            $this->setFlash('error', 'This clearance has not been started yet or you are not assigned to it.');
             $this->redirect('signatory/clearances');
             return;
         }
@@ -441,6 +465,11 @@ class SignatoryController extends Controller
         $officeName      = $signatoryRecord ? $signatoryRecord['office'] : 'Office';
 
         $clearanceId = (int) $this->getPost('clearance_id', 0);
+        if (!$clearanceId || !$this->isClearanceAccessible($clearanceId, $signatoryId)) {
+            $this->setFlash('error', 'This clearance has not been started yet or you are not assigned to it.');
+            $this->redirect('signatory/clearances');
+            return;
+        }
         $flagged     = $this->statusModel->getFlaggedStudentsForConfirmation($signatoryId, $clearanceId);
         $sent = 0;
 
@@ -499,5 +528,15 @@ class SignatoryController extends Controller
             }
             return true;
         }));
+    }
+
+    /**
+     * Check if a clearance is started and assigned to this signatory.
+     */
+    private function isClearanceAccessible(int $clearanceId, int $signatoryId): bool
+    {
+        $clearanceSummaries = $this->statusModel->getClearancesForSignatory($signatoryId);
+        $validCids = array_map('intval', array_column($clearanceSummaries, 'clearance_id'));
+        return in_array($clearanceId, $validCids, true);
     }
 }
