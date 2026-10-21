@@ -75,7 +75,7 @@
                             </td>
                             <td class="text-end">
                                 <a href="<?= BASE_URL ?>enrollment-committee/clearances?cid=<?= $c['clearance_id'] ?>" class="btn btn-primary btn-sm">
-                                    <i class="bi bi-eye"></i> View
+                                    View
                                 </a>
                             </td>
                         </tr>
@@ -219,11 +219,11 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
                             <td class="text-end">
                                 <button type="button" class="btn btn-outline-secondary btn-sm"
                                         onclick="openStudentLogs(<?= (int)$selectedCid ?>, <?= (int)$s['id'] ?>, <?= htmlspecialchars(json_encode($s['last_name'] . ', ' . $s['first_name']), ENT_QUOTES) ?>)">
-                                    <i class="bi bi-clock-history"></i> Logs
+                                    Logs
                                 </button>
                                 <button type="button" class="btn btn-outline-primary btn-sm"
                                         onclick="toggleDetail('<?= $rowId ?>')">
-                                    <i class="bi bi-eye"></i> View
+                                    View
                                 </button>
                             </td>
                         </tr>
@@ -279,10 +279,10 @@ function toggleDetail(rowId) {
     const btn = row.previousElementSibling?.querySelector('button[onclick*="toggleDetail"]');
     if (row.style.display === 'none') {
         row.style.display = '';
-        if (btn) btn.innerHTML = '<i class="bi bi-eye-slash"></i> Hide';
+        if (btn) btn.textContent = 'Hide';
     } else {
         row.style.display = 'none';
-        if (btn) btn.innerHTML = '<i class="bi bi-eye"></i> View';
+        if (btn) btn.textContent = 'View';
     }
 }
 </script>
