@@ -133,7 +133,7 @@ $totalPending = $totalStudents - $totalFlagged - $totalCleared;
                             </td>
                             <td class="text-end">
                                 <a href="<?= BASE_URL ?>enrollment-committee/clearances?cid=<?= $c['clearance_id'] ?>" class="btn btn-primary btn-sm">
-                                    <i class="bi bi-eye"></i> View
+                                    View
                                 </a>
                             </td>
                         </tr>

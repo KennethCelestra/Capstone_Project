@@ -257,12 +257,9 @@ $isStarted = !empty($clearance['started_at']);
             <p style="margin-bottom:0.75rem;">
                 Are you sure you want to start this clearance?
             </p>
-            <div style="background: rgba(220, 53, 69, 0.08); border-left: 4px solid #dc3545; padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 1rem; color: #b02a37; font-size: 0.9rem;">
+            <div style="background: rgba(220, 53, 69, 0.08); border-left: 4px solid #dc3545; padding: 0.75rem 1rem; border-radius: 4px; margin: 0; color: #b02a37; font-size: 0.9rem;">
                 <strong>Warning:</strong> Once this clearance is started, you can no longer edit it. You will not be able to add or delete students, signatories, or enrollment committee members.
             </div>
-            <p class="text-muted" style="font-size:.85rem;margin:0;">
-                Notification emails will be sent to <strong><?= count($students) ?> enrolled student(s)</strong> and the clearance will become visible to assigned signatories and enrollment committee members.
-            </p>
         </div>
         <form action="<?= BASE_URL ?>admin/clearances/start" method="POST">
             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
