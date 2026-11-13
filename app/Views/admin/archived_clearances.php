@@ -21,7 +21,7 @@
                     <tr style="background: var(--surface2);">
                         <th>Clearance Name</th>
                         <th class="text-center">Type</th>
-                        <th class="text-center">School Year</th>
+                        <th class="text-center">Academic Year</th>
                         <th class="text-center">Signatories</th>
                         <th class="text-center">Enrollment Committee</th>
                         <th class="text-center">Students</th>
@@ -44,7 +44,7 @@
                                     <span class="badge badge-info" style="font-size:.7rem; padding: 3px 6px;">Semestral</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="text-center" data-label="School Year" style="white-space:nowrap;"><?= htmlspecialchars($c['school_year']) ?></td>
+                            <td class="text-center" data-label="Academic Year" style="white-space:nowrap;"><?= htmlspecialchars($c['school_year']) ?></td>
                             <td class="text-center" data-label="Signatories"><span class="badge badge-info"><?= $c['signatory_count'] ?></span></td>
                             <td class="text-center" data-label="Enrollment Committee"><span class="badge badge-info"><?= $c['enrollment_committee_count'] ?></span></td>
                             <td class="text-center" data-label="Students"><span class="badge badge-info"><?= $c['student_count'] ?></span></td>
@@ -74,3 +74,4 @@
         </div>
     </div>
 <?php endif; ?>
+

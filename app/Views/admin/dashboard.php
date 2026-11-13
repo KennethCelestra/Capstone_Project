@@ -60,7 +60,7 @@
                 <thead>
                     <tr style="background: var(--surface2);">
                         <th>Clearance Name</th>
-                        <th>School Year</th>
+                        <th>Academic Year</th>
                         <th class="text-center">Students</th>
                         <th style="width: 30%;">Progress</th>
                         <th class="text-end" style="white-space: nowrap;"></th>
@@ -79,7 +79,7 @@
                         ?>
                         <tr class="border-bottom" style="transition: background .15s;" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
                             <td data-label="Clearance Name"><strong><?= htmlspecialchars($c['clearance_name']) ?></strong></td>
-                            <td class="text-muted" data-label="School Year"><?= htmlspecialchars($c['school_year']) ?></td>
+                            <td class="text-muted" data-label="Academic Year"><?= htmlspecialchars($c['school_year']) ?></td>
                             <td class="text-center fw-bold" data-label="Students"><?= $cTotal ?></td>
                             <td data-label="Progress">
                                 <div class="progress-bar-stacked mb-2" style="height: 6px; border-radius: 4px; overflow: hidden; display: flex; background: var(--surface2);">
@@ -113,3 +113,4 @@
         </div>
     <?php endif; ?>
 </div>
+

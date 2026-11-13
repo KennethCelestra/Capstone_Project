@@ -230,7 +230,7 @@ function renderExitSigSlot(array $sig, bool $isCentered = false): string {
             white-space: nowrap;
         }
 
-        /* ── Semester / School Year Line ── */
+        /* -- Semester / Academic Year Line -- */
         .sem-line {
             text-align: center;
             font-size: 9.5pt;
@@ -554,7 +554,7 @@ function renderExitSigSlot(array $sig, bool $isCentered = false): string {
                     <span class="underline-box" style="min-width: 220px;"><?= $studentFullName ?></span>
                     is cleared from any financial and property accountability as of
                     <span class="underline-box" style="min-width: 70px;"><?= htmlspecialchars($semester) ?></span>
-                    Semester/Summer, School Year
+                    Semester/Summer, Academic Year
                     <span class="underline-box" style="min-width: 90px;"><?= $schoolYear ?></span>.
                 </p>
             </div>
@@ -615,3 +615,4 @@ window.addEventListener('resize', autoFitSheet);
 
 </body>
 </html>
+

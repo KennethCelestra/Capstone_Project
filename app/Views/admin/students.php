@@ -22,7 +22,7 @@ $droppedCount   = count(array_filter($students, fn($s) => $s['status'] === 'drop
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
         <button class="btn btn-secondary"
                 onclick="document.getElementById('promoteModal').style.display='flex'">
-            New School Year
+            New Academic Year
         </button>
         <button class="btn btn-secondary"
                 onclick="document.getElementById('uploadCSVModal').style.display='flex'">
@@ -208,7 +208,7 @@ sort($yearList);
         </div>
         <div style="padding:1.25rem 1.5rem;">
             <div class="info-box" style="background:rgba(var(--warning-rgb,255,193,7),.12);border-color:#f59e0b;margin-bottom:1rem;">
-                <strong>⚠ This action is irreversible.</strong> Run this only once at the end of each school year.
+                <strong>⚠ This action is irreversible.</strong> Run this only once at the end of each academic year.
             </div>
             <p>The following will happen to <strong>all active students</strong>:</p>
             <ul style="margin:.75rem 0 .75rem 1.25rem;line-height:2;">
@@ -445,3 +445,4 @@ function clearStudentFilters() {
     applyStudentFilters();
 }
 </script>
+

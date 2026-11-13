@@ -85,7 +85,7 @@ foreach ($clearances as $c) {
                 <thead>
                     <tr style="background: var(--surface2);">
                         <th>Clearance Name</th>
-                        <th>School Year</th>
+                        <th>Academic Year</th>
                         <th class="text-center">Students</th>
                         <th style="width: 30%;">Progress</th>
                         <th class="text-end"></th>

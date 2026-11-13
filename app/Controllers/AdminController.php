@@ -480,7 +480,7 @@ class AdminController extends Controller
             'type'        => $this->getPost('type', 'regular') === 'exit' ? 'exit' : 'regular',
         ];
         if (empty($data['name']) || empty($data['school_year'])) {
-            $this->setFlash('error', 'Clearance name and school year are required.');
+            $this->setFlash('error', 'Clearance name and academic year are required.');
             $this->redirect('admin/clearances');
             return;
         }
@@ -513,7 +513,7 @@ class AdminController extends Controller
             'type'        => $this->getPost('type', 'regular') === 'exit' ? 'exit' : 'regular',
         ];
         if (empty($data['name']) || empty($data['school_year'])) {
-            $this->setFlash('error', 'Clearance name and school year are required.');
+            $this->setFlash('error', 'Clearance name and academic year are required.');
             $this->redirect("admin/clearances/detail?id={$id}");
             return;
         }
@@ -849,3 +849,4 @@ class AdminController extends Controller
         return $clearance && !empty($clearance['started_at']);
     }
 }
+

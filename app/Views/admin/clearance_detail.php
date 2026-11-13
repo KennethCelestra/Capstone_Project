@@ -18,7 +18,11 @@ $isStarted = !empty($clearance['started_at']);
         </p>
     </div>
     <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
-        <?php if (empty($clearance['started_at'])): ?>
+        <?php if (!empty($clearance['started_at'])): ?>
+            <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.55; cursor: not-allowed;" title="Clearance has already started and cannot be edited">
+                <i class="bi bi-lock-fill"></i> Edit Info
+            </button>
+        <?php else: ?>
             <button class="btn btn-secondary btn-sm"
                     onclick="openEditClearanceDetail(<?= $cid ?>, '<?= htmlspecialchars(addslashes($clearance['name'])) ?>', '<?= htmlspecialchars(addslashes($clearance['description'])) ?>', '<?= htmlspecialchars($clearance['school_year']) ?>')">
                 Edit Info
@@ -37,7 +41,14 @@ $isStarted = !empty($clearance['started_at']);
     </div>
 </div>
 
-
+<?php if ($isStarted): ?>
+    <div style="background: rgba(13, 110, 253, 0.08); border: 1px solid rgba(13, 110, 253, 0.25); color: var(--primary); padding: 0.85rem 1.15rem; border-radius: 8px; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.65rem; font-size: 0.9rem;">
+        <i class="bi bi-lock-fill" style="font-size: 1.15rem;"></i>
+        <div>
+            <strong>Clearance is Started &amp; Active.</strong> Signatories, enrollment committee members, and enrolled students are locked and cannot be added or deleted.
+        </div>
+    </div>
+<?php endif; ?>
 
 <!-- ===== TABS ===== -->
 <div class="tabs">
@@ -95,6 +106,8 @@ $isStarted = !empty($clearance['started_at']);
                                              <input type="hidden" name="tab"          value="tab-sig">
                                              <button type="submit" class="btn btn-danger btn-sm">Remove</button>
                                         </form>
+                                    <?php else: ?>
+                                        <span class="badge badge-secondary" style="font-size:0.75rem; opacity: 0.8;"><i class="bi bi-lock-fill"></i> Locked</span>
                                     <?php endif; ?>
                                 </div>
                             </td>
@@ -140,6 +153,8 @@ $isStarted = !empty($clearance['started_at']);
                                              <input type="hidden" name="tab"          value="tab-adv">
                                              <button type="submit" class="btn btn-danger btn-sm">Remove</button>
                                         </form>
+                                    <?php else: ?>
+                                        <span class="badge badge-secondary" style="font-size:0.75rem; opacity: 0.8;"><i class="bi bi-lock-fill"></i> Locked</span>
                                     <?php endif; ?>
                                 </div>
                             </td>
@@ -248,18 +263,14 @@ $isStarted = !empty($clearance['started_at']);
 <!-- ====== Start Clearance Modal ====== -->
 <?php if (empty($clearance['started_at'])): ?>
 <div id="startClearanceModal" class="modal" style="display:none;">
-    <div class="modal-box" style="max-width:460px;">
+    <div class="modal-box" style="max-width:440px;">
         <div class="modal-header">
             <h3>Start Clearance</h3>
             <button onclick="document.getElementById('startClearanceModal').style.display='none'" class="close-btn">✕</button>
         </div>
         <div style="padding:1.25rem 1.5rem;">
-            <p style="margin-bottom:0.75rem;">
-                Are you sure you want to start this clearance?
-            </p>
-            <div style="background: rgba(220, 53, 69, 0.08); border-left: 4px solid #dc3545; padding: 0.75rem 1rem; border-radius: 4px; margin: 0; color: #b02a37; font-size: 0.9rem;">
-                <strong>Warning:</strong> Once this clearance is started, you can no longer edit it. You will not be able to add or delete students, signatories, or enrollment committee members.
-            </div>
+            <p>This will email <strong><?= count($students) ?> enrolled student(s)</strong> that signing has started, with a link to their clearance form where they can follow their progress.</p>
+            <p class="text-muted" style="font-size:.85rem;margin-top:.75rem;">This can only be done once per clearance.</p>
         </div>
         <form action="<?= BASE_URL ?>admin/clearances/start" method="POST">
             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
@@ -267,7 +278,7 @@ $isStarted = !empty($clearance['started_at']);
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
                         onclick="document.getElementById('startClearanceModal').style.display='none'">Cancel</button>
-                <button type="submit" class="btn btn-primary">Start Clearance</button>
+                <button type="submit" class="btn btn-primary">Start &amp; Send Emails</button>
             </div>
         </form>
     </div>
@@ -290,7 +301,7 @@ $isStarted = !empty($clearance['started_at']);
                 <input type="text" name="name" id="editDetailName" required>
             </div>
             <div class="form-group">
-                <label>School Year <span class="required">*</span></label>
+                <label>Academic Year <span class="required">*</span></label>
                 <input type="text" name="school_year" id="editDetailYear" required>
             </div>
             <div class="form-group">
@@ -469,3 +480,4 @@ function openEditClearanceDetail(id, name, desc, year) {
 
 
 </script>
+

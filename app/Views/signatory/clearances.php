@@ -30,7 +30,7 @@
                 <thead>
                     <tr style="background: var(--surface2);">
                         <th>Clearance Name</th>
-                        <th>School Year</th>
+                        <th>Academic Year</th>
                         <th class="text-center">Students</th>
                         <th class="text-center">Pending</th>
                         <th class="text-center">Flagged</th>

@@ -92,7 +92,7 @@ $totalPending = $totalStudents - $totalFlagged - $totalCleared;
                 <thead>
                     <tr style="background: var(--surface2);">
                         <th>Clearance Name</th>
-                        <th>School Year</th>
+                        <th>Academic Year</th>
                         <th class="text-center">Students</th>
                         <th style="width: 30%;">Progress</th>
                         <th class="text-end"></th>
@@ -133,7 +133,7 @@ $totalPending = $totalStudents - $totalFlagged - $totalCleared;
                             </td>
                             <td class="text-end">
                                 <a href="<?= BASE_URL ?>enrollment-committee/clearances?cid=<?= $c['clearance_id'] ?>" class="btn btn-primary btn-sm">
-                                    View
+                                    <i class="bi bi-eye"></i> View
                                 </a>
                             </td>
                         </tr>
@@ -143,3 +143,4 @@ $totalPending = $totalStudents - $totalFlagged - $totalCleared;
         </div>
     <?php endif; ?>
 </div>
+
