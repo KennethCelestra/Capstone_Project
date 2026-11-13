@@ -32,7 +32,7 @@
                 <thead>
                     <tr style="background: var(--surface2);">
                         <th>Clearance Name</th>
-                        <th>School Year</th>
+                        <th>Academic Year</th>
                         <th class="text-center">Students</th>
                         <th class="text-center">Pending</th>
                         <th class="text-center">Flagged</th>
@@ -77,7 +77,7 @@
                             </td>
                             <td class="text-end">
                                 <a href="<?= BASE_URL ?>enrollment-committee/archived-clearances?cid=<?= $c['clearance_id'] ?>" class="btn btn-secondary btn-sm">
-                                    View
+                                    <i class="bi bi-eye"></i> View
                                 </a>
                             </td>
                         </tr>
@@ -223,11 +223,11 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
                             <td class="text-end">
                                 <button type="button" class="btn btn-outline-secondary btn-sm"
                                         onclick="openStudentLogs(<?= (int)$selectedCid ?>, <?= (int)$s['id'] ?>, <?= htmlspecialchars(json_encode($s['last_name'] . ', ' . $s['first_name']), ENT_QUOTES) ?>)">
-                                    Logs
+                                    <i class="bi bi-clock-history"></i> Logs
                                 </button>
                                 <button type="button" class="btn btn-outline-primary btn-sm"
                                         onclick="toggleDetail('<?= $rowId ?>')">
-                                    View
+                                    <i class="bi bi-eye"></i> View
                                 </button>
                             </td>
                         </tr>
@@ -283,10 +283,11 @@ function toggleDetail(rowId) {
     const btn = row.previousElementSibling?.querySelector('button[onclick*="toggleDetail"]');
     if (row.style.display === 'none') {
         row.style.display = '';
-        if (btn) btn.textContent = 'Hide';
+        if (btn) btn.innerHTML = '<i class="bi bi-eye-slash"></i> Hide';
     } else {
         row.style.display = 'none';
-        if (btn) btn.textContent = 'View';
+        if (btn) btn.innerHTML = '<i class="bi bi-eye"></i> View';
     }
 }
 </script>
+

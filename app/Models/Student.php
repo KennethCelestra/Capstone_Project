@@ -177,7 +177,7 @@ class Student extends Model
     }
 
     /**
-     * Promote all active students at the end of a school year:
+     * Promote all active students at the end of an academic year:
      *  1. Mark 4th-year actives as 'graduated'
      *  2. Increment year_level for remaining actives (1→2, 2→3, 3→4)
      * Returns ['promoted' => int, 'graduated' => int].
@@ -236,3 +236,4 @@ class Student extends Model
         return $stmt->fetchAll(\PDO::FETCH_COLUMN);
     }
 }
+

@@ -28,7 +28,7 @@
                     <tr style="background: var(--surface2);">
                         <th>Clearance Name</th>
                         <th class="text-center">Type</th>
-                        <th class="text-center">School Year</th>
+                        <th class="text-center">Academic Year</th>
                         <th class="text-center">Signatories</th>
                         <th class="text-center">Enrollment Committee</th>
                         <th class="text-center">Students</th>
@@ -53,7 +53,7 @@
                                     <span class="badge badge-info" style="font-size:.7rem; padding: 3px 6px;">Semestral</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="text-center" data-label="School Year" style="white-space:nowrap;">
+                            <td class="text-center" data-label="Academic Year" style="white-space:nowrap;">
                                 <?= htmlspecialchars($c['school_year']) ?></td>
                             <td class="text-center" data-label="Signatories"><span
                                     class="badge badge-info"><?= $c['signatory_count'] ?></span></td>
@@ -65,7 +65,11 @@
                                 <div class="action-cell">
                                     <a href="<?= BASE_URL ?>admin/clearances/detail?id=<?= $c['id'] ?>"
                                         class="btn btn-primary btn-sm">Manage</a>
-                                    <?php if (empty($c['started_at'])): ?>
+                                    <?php if (!empty($c['started_at'])): ?>
+                                        <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.55; cursor: not-allowed;" title="Clearance has already started and cannot be edited">
+                                            <i class="bi bi-lock-fill"></i> Edit
+                                        </button>
+                                    <?php else: ?>
                                         <button class="btn btn-secondary btn-sm"
                                             onclick="openEditClearance(<?= $c['id'] ?>, '<?= htmlspecialchars(addslashes($c['name'])) ?>', '<?= htmlspecialchars(addslashes($c['description'])) ?>', '<?= htmlspecialchars($c['school_year']) ?>', '<?= $c['type'] ?? 'regular' ?>')">
                                             Edit
@@ -104,7 +108,7 @@
                 <input type="text" name="name" required placeholder="e.g. 1st Semester Clearance">
             </div>
             <div class="form-group">
-                <label>School Year <span class="required">*</span></label>
+                <label>Academic Year <span class="required">*</span></label>
                 <input type="text" name="school_year" required placeholder="e.g. 2024-2025">
             </div>
             <div class="form-group">
@@ -153,7 +157,7 @@
                 <input type="text" name="name" id="editClearanceName" required>
             </div>
             <div class="form-group">
-                <label>School Year <span class="required">*</span></label>
+                <label>Academic Year <span class="required">*</span></label>
                 <input type="text" name="school_year" id="editClearanceYear" required>
             </div>
             <div class="form-group">

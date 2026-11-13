@@ -218,7 +218,7 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
             white-space: nowrap;
         }
 
-        /* ── Semester / School Year Line ── */
+        /* -- Semester / Academic Year Line -- */
         .sem-line {
             text-align: center;
             font-size: 9.5pt;
@@ -538,7 +538,7 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
                     is cleared from any financial
                     and property accountability as of
                     <span class="underline-box" style="min-width: 60px; text-align:center;"><?= htmlspecialchars($semester) ?></span>
-                    Semester/Summer, School Year
+                    Semester/Summer, Academic Year
                     <span class="underline-box" style="min-width: 90px; text-align:center;"><?= $schoolYear ?></span>.
                 </p>
             </div>
@@ -599,3 +599,4 @@ window.addEventListener('resize', autoFitSheet);
 
 </body>
 </html>
+
