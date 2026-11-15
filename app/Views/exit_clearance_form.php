@@ -57,15 +57,19 @@ function renderExitSignatories(array $signatories): string {
  * Render a single Exit Clearance signatory slot (signature line + date line)
  */
 function renderExitSigSlot(array $sig, bool $isCentered = false): string {
-    $label    = htmlspecialchars($sig['office'] ?? 'Signatory');
-    $signed   = (!empty($sig) && ($sig['status'] ?? '') === 'cleared');
-    $signedAt = ($signed && !empty($sig['signed_at'])) ? date('M j, Y', strtotime($sig['signed_at'])) : '';
+    $label         = htmlspecialchars($sig['office'] ?? 'Signatory');
+    $signatoryName = htmlspecialchars($sig['signatory_name'] ?? $sig['full_name'] ?? '');
+    $signed        = (!empty($sig) && ($sig['status'] ?? '') === 'cleared');
+    $signedAt      = ($signed && !empty($sig['signed_at'])) ? date('M j, Y', strtotime($sig['signed_at'])) : '';
 
     $html = '<div class="exit-sig-pair ' . ($isCentered ? 'exit-sig-centered' : '') . '">';
     // Signature block
     $html .= '<div class="exit-sig-item">';
     $html .= '  <div class="exit-sig-status">' . ($signed ? '<span class="signed-badge">SIGNED</span>' : '&nbsp;') . '</div>';
     $html .= '  <div class="exit-sig-line"></div>';
+    if ($signatoryName !== '') {
+        $html .= '  <div class="exit-sig-name" style="font-weight: 700; font-size: 8.5pt; text-align: center; margin-bottom: 2px;">' . $signatoryName . '</div>';
+    }
     $html .= '  <div class="exit-sig-label">' . $label . '</div>';
     $html .= '</div>';
     // Date block

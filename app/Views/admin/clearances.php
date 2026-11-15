@@ -65,16 +65,10 @@
                                 <div class="action-cell">
                                     <a href="<?= BASE_URL ?>admin/clearances/detail?id=<?= $c['id'] ?>"
                                         class="btn btn-primary btn-sm">Manage</a>
-                                    <?php if (!empty($c['started_at'])): ?>
-                                        <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.55; cursor: not-allowed;" title="Clearance has already started and cannot be edited">
-                                            <i class="bi bi-lock-fill"></i> Edit
-                                        </button>
-                                    <?php else: ?>
-                                        <button class="btn btn-secondary btn-sm"
-                                            onclick="openEditClearance(<?= $c['id'] ?>, '<?= htmlspecialchars(addslashes($c['name'])) ?>', '<?= htmlspecialchars(addslashes($c['description'])) ?>', '<?= htmlspecialchars($c['school_year']) ?>', '<?= $c['type'] ?? 'regular' ?>')">
-                                            Edit
-                                        </button>
-                                    <?php endif; ?>
+                                    <button class="btn btn-secondary btn-sm"
+                                        onclick="openEditClearance(<?= $c['id'] ?>, '<?= htmlspecialchars(addslashes($c['name'])) ?>', '<?= htmlspecialchars(addslashes($c['description'])) ?>', '<?= htmlspecialchars($c['school_year']) ?>', '<?= $c['type'] ?? 'regular' ?>')">
+                                        Edit
+                                    </button>
                                     <form action="<?= BASE_URL ?>admin/clearances/archive" method="POST"
                                         style="margin:0; display:inline;"
                                         onsubmit="return confirmAction(this, 'Archive this clearance? It will be hidden from active list but all data is preserved.', 'Archive', 'btn-warning')">

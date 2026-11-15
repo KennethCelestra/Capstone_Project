@@ -202,3 +202,45 @@ ON DUPLICATE KEY UPDATE `id` = `id`;
 -- Default credentials: admin@school.edu / admin123
 -- To manage admins via CLI, run: C:\xampp2\php\php.exe cli.php admin:list
 
+-- ------------------------------------------------
+-- Table: colleges
+-- ------------------------------------------------
+CREATE TABLE IF NOT EXISTS `colleges` (
+    `id`         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `name`       VARCHAR(50)  NOT NULL UNIQUE,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `colleges` (`name`) VALUES
+('CAS'), ('CCI'), ('CEA'), ('COE'), ('CIT'), ('CGBE')
+ON DUPLICATE KEY UPDATE `id` = `id`;
+
+-- ------------------------------------------------
+-- Table: programs (linked to colleges)
+-- ------------------------------------------------
+CREATE TABLE IF NOT EXISTS `programs` (
+    `id`         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `college_id` INT UNSIGNED NOT NULL,
+    `name`       VARCHAR(150) NOT NULL,
+    `code`       VARCHAR(30)  NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY `uq_prog_code_college` (`code`, `college_id`),
+    CONSTRAINT `fk_prog_college` FOREIGN KEY (`college_id`) REFERENCES `colleges`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------
+-- Table: offices
+-- ------------------------------------------------
+CREATE TABLE IF NOT EXISTS `offices` (
+    `id`         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `name`       VARCHAR(150) NOT NULL UNIQUE,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `offices` (`name`) VALUES
+('Library'), ('Cashier'), ('Guidance Office'),
+('Department Head'), ('Dean'), ('Director of Student Affairs'),
+('Registrar'), ('Department Office'), ('Dean Office')
+ON DUPLICATE KEY UPDATE `id` = `id`;
+
+

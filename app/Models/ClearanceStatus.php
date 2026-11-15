@@ -588,4 +588,35 @@ class ClearanceStatus extends Model
 
         return $clearedIds;
     }
+
+    /**
+     * Get summary progress of all signatories assigned to a clearance.
+     */
+    public function getAllSignatoryProgressForClearance(int $clearanceId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT sg.office, sg.full_name,
+                   COUNT(DISTINCT cst.student_id)                                   AS total,
+                   COALESCE(SUM(cs.status IN ('signed','cleared')), 0)              AS signed_count,
+                   COALESCE(SUM(cs.status = 'pending' OR cs.status IS NULL), 0)     AS pending_count,
+                   COALESCE(SUM(cs.status = 'flagged'), 0)                          AS flagged_count
+            FROM clearance_signatories csig
+            JOIN signatories sg ON sg.id = csig.signatory_id
+            JOIN clearance_students cst ON cst.clearance_id = csig.clearance_id
+            JOIN students st ON st.id = cst.student_id
+            LEFT JOIN clearance_status cs ON cs.clearance_id = csig.clearance_id 
+                                         AND cs.signatory_id = sg.id 
+                                         AND cs.student_id = st.id
+            WHERE csig.clearance_id = ?
+              AND (
+                  sg.scope_type IS NULL 
+                  OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
+                  OR (sg.scope_type = 'course'  AND sg.scope_value = st.course)
+              )
+            GROUP BY sg.id, sg.office, sg.full_name
+            ORDER BY sg.office ASC, sg.full_name ASC
+        ");
+        $stmt->execute([$clearanceId]);
+        return $stmt->fetchAll();
+    }
 }

@@ -101,6 +101,7 @@ class SignatoryController extends Controller
                 'colleges'          => $colleges,
                 'courses'           => $courses,
                 'yearLevels'        => $yearLevels,
+                'otherSignatoryProgress' => $this->statusModel->getAllSignatoryProgressForClearance($selectedCid),
             ];
             $this->view('layouts/main', array_merge($data, ['content' => 'signatory/clearances']));
             return;

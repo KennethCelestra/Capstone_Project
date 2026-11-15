@@ -97,4 +97,20 @@ $routes = [
     // ---- Public: Printable Clearance Form (token-secured, no login required) ----
     'GET /clearance/form'                         => ['ClearanceFormController', 'show'],
     'GET /clearance/logs'                         => ['ClearanceFormController', 'logs'],
+
+    // ---- API: Cascading Dropdowns ----
+    'GET /api/programs'                           => ['ApiController', 'programs'],
+    'GET /api/offices'                            => ['ApiController', 'offices'],
+    'GET /api/colleges'                           => ['ApiController', 'colleges'],
+
+    // ---- Admin: Departments, Programs & Offices ----
+    'GET /admin/departments'                      => ['AdminController', 'departments'],
+    'POST /admin/departments/colleges/add'        => ['AdminController', 'addCollege'],
+    'POST /admin/departments/colleges/delete'     => ['AdminController', 'deleteCollege'],
+    'POST /admin/departments/programs/add'        => ['AdminController', 'addProgram'],
+    'POST /admin/departments/programs/edit'       => ['AdminController', 'editProgram'],
+    'POST /admin/departments/programs/delete'     => ['AdminController', 'deleteProgram'],
+    'POST /admin/offices/add'                     => ['AdminController', 'addOffice'],
+    'POST /admin/offices/edit'                    => ['AdminController', 'editOffice'],
+    'POST /admin/offices/delete'                  => ['AdminController', 'deleteOffice'],
 ];

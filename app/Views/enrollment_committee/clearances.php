@@ -148,7 +148,7 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
         <?php endif; ?>
         <?php if (!empty($courses)): ?>
         <div class="filter-group">
-            <input type="text" list="course-list" name="course" class="form-control" placeholder="All Courses" value="<?= htmlspecialchars($filterCourse) ?>" onchange="this.form.submit()" style="max-width: 140px;">
+            <input type="text" list="course-list" name="course" class="form-control" placeholder="All Programs" value="<?= htmlspecialchars($filterCourse) ?>" onchange="this.form.submit()" style="max-width: 140px;">
             <datalist id="course-list">
                 <?php foreach ($courses as $course): ?>
                     <option value="<?= htmlspecialchars($course) ?>">
@@ -184,7 +184,7 @@ $cPending  = $totalHere - $cFlagged - $cCleared;
                         <th>Student ID</th>
                         <th>Name</th>
                         <th>College</th>
-                        <th>Course</th>
+                        <th>Program</th>
                         <th>Year/Sec</th>
                         <th>Status</th>
                         <th class="text-end"></th>

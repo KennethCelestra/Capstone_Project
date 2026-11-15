@@ -85,7 +85,24 @@
             </div>
             <div class="form-group">
                 <label>Office / Department *</label>
-                <input type="text" name="office" required>
+                <select name="office" required class="form-control" style="width:100%;">
+                    <option value="">-- Select Office --</option>
+                    <?php if (!empty($offices)): ?>
+                        <?php foreach ($offices as $o): 
+                            $oName = is_array($o) ? $o['name'] : $o;
+                        ?>
+                            <option value="<?= htmlspecialchars($oName) ?>"><?= htmlspecialchars($oName) ?></option>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <option value="Library">Library</option>
+                        <option value="Cashier">Cashier</option>
+                        <option value="Guidance Office">Guidance Office</option>
+                        <option value="Department Head">Department Head</option>
+                        <option value="Dean">Dean</option>
+                        <option value="Director of Student Affairs">Director of Student Affairs</option>
+                        <option value="Registrar">Registrar</option>
+                    <?php endif; ?>
+                </select>
             </div>
             <div class="form-group">
                 <label>Password *</label>
@@ -106,14 +123,14 @@
                     </label>
                     <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;">
                         <input type="radio" name="scope_type" value="course" onchange="toggleAddScopeInputs(this.value)" style="margin:0; accent-color:#22c55e;">
-                        <span style="font-weight:600; font-size:0.85rem;">By Course</span>
+                        <span style="font-weight:600; font-size:0.85rem;">By Program</span>
                     </label>
                 </div>
                 <div id="add_scope_college_container" style="display:none; margin-top:10px;">
-                    <input type="text" name="scope_college" id="add_scope_college_input" list="college_list" style="width:100%;">
+                    <input type="text" name="scope_college" id="add_scope_college_input" list="college_list" placeholder="Select or type College" style="width:100%;">
                 </div>
                 <div id="add_scope_course_container" style="display:none; margin-top:10px;">
-                    <input type="text" name="scope_course" id="add_scope_course_input" list="course_list" style="width:100%;">
+                    <input type="text" name="scope_course" id="add_scope_course_input" list="course_list" placeholder="Select or type Program code" style="width:100%;">
                 </div>
             </div>
 
@@ -146,7 +163,24 @@
             </div>
             <div class="form-group">
                 <label>Office / Department *</label>
-                <input type="text" name="office" id="editSigOffice" required>
+                <select name="office" id="editSigOffice" required class="form-control" style="width:100%;">
+                    <option value="">-- Select Office --</option>
+                    <?php if (!empty($offices)): ?>
+                        <?php foreach ($offices as $o): 
+                            $oName = is_array($o) ? $o['name'] : $o;
+                        ?>
+                            <option value="<?= htmlspecialchars($oName) ?>"><?= htmlspecialchars($oName) ?></option>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <option value="Library">Library</option>
+                        <option value="Cashier">Cashier</option>
+                        <option value="Guidance Office">Guidance Office</option>
+                        <option value="Department Head">Department Head</option>
+                        <option value="Dean">Dean</option>
+                        <option value="Director of Student Affairs">Director of Student Affairs</option>
+                        <option value="Registrar">Registrar</option>
+                    <?php endif; ?>
+                </select>
             </div>
             
             <!-- Edit Scope Selection -->
@@ -163,14 +197,14 @@
                     </label>
                     <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;">
                         <input type="radio" name="scope_type" id="editSigScopeCourse" value="course" onchange="toggleEditScopeInputs(this.value)" style="margin:0; accent-color:#22c55e;">
-                        <span style="font-weight:600; font-size:0.85rem;">By Course</span>
+                        <span style="font-weight:600; font-size:0.85rem;">By Program</span>
                     </label>
                 </div>
                 <div id="edit_scope_college_container" style="display:none; margin-top:10px;">
                     <input type="text" name="scope_college" id="edit_scope_college_input" list="college_list" placeholder="College" style="width:100%;">
                 </div>
                 <div id="edit_scope_course_container" style="display:none; margin-top:10px;">
-                    <input type="text" name="scope_course" id="edit_scope_course_input" list="course_list" placeholder="Course" style="width:100%;">
+                    <input type="text" name="scope_course" id="edit_scope_course_input" list="course_list" placeholder="Program" style="width:100%;">
                 </div>
             </div>
 
@@ -184,14 +218,25 @@
 </div>
 
 <datalist id="college_list">
-    <?php foreach ($colleges as $col): ?>
-        <option value="<?= htmlspecialchars($col) ?>"></option>
+    <?php foreach ($colleges as $col): 
+        $colName = is_array($col) ? $col['name'] : $col;
+    ?>
+        <option value="<?= htmlspecialchars($colName) ?>"></option>
     <?php endforeach; ?>
 </datalist>
 <datalist id="course_list">
-    <?php foreach ($courses as $cur): ?>
-        <option value="<?= htmlspecialchars($cur) ?>"></option>
-    <?php endforeach; ?>
+    <?php if (!empty($programs)): ?>
+        <?php foreach ($programs as $prog): ?>
+            <option value="<?= htmlspecialchars($prog['code']) ?>"><?= htmlspecialchars($prog['name']) ?></option>
+        <?php endforeach; ?>
+    <?php endif; ?>
+    <?php if (!empty($courses)): ?>
+        <?php foreach ($courses as $cur): 
+            $curName = is_array($cur) ? ($cur['code'] ?? $cur['name']) : $cur;
+        ?>
+            <option value="<?= htmlspecialchars($curName) ?>"></option>
+        <?php endforeach; ?>
+    <?php endif; ?>
 </datalist>
 
 <script>
