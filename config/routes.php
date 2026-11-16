@@ -40,12 +40,14 @@ $routes = [
     'POST /admin/enrollment-committees/add'                    => ['AdminController', 'addEnrollmentCommittee'],
     'POST /admin/enrollment-committees/edit'                   => ['AdminController', 'editEnrollmentCommittee'],
     'POST /admin/enrollment-committees/delete'                 => ['AdminController', 'deleteEnrollmentCommittee'],
+    'POST /admin/enrollment-committees/status'                 => ['AdminController', 'updateEnrollmentCommitteeStatus'],
 
     // ---- Admin: Signatories ----
     'GET /admin/signatories'                      => ['AdminController', 'signatories'],
     'POST /admin/signatories/add'                 => ['AdminController', 'addSignatory'],
     'POST /admin/signatories/edit'                => ['AdminController', 'editSignatory'],
     'POST /admin/signatories/delete'              => ['AdminController', 'deleteSignatory'],
+    'POST /admin/signatories/status'              => ['AdminController', 'updateSignatoryStatus'],
 
     // ---- Admin: Clearances ----
     'GET /admin/clearances'                       => ['AdminController', 'clearances'],
@@ -55,6 +57,10 @@ $routes = [
     'POST /admin/clearances/archive'              => ['AdminController', 'archiveClearance'],
     'POST /admin/clearances/unarchive'            => ['AdminController', 'unarchiveClearance'],
     'POST /admin/clearances/start'                => ['AdminController', 'startClearance'],
+    'POST /admin/clearances/submit-for-approval'  => ['AdminController', 'submitForApproval'],
+    'GET /admin/clearances/download-form'         => ['AdminController', 'downloadClearanceForm'],
+    'GET /admin/clearance-template'               => ['AdminController', 'clearanceTemplate'],
+    'POST /admin/clearance-template/update'       => ['AdminController', 'updateClearanceTemplate'],
     'GET /admin/archived-clearances'              => ['AdminController', 'archivedClearances'],
 
     // ---- Admin: Clearance Detail (dynamic ID via GET param) ----
@@ -92,6 +98,12 @@ $routes = [
     'POST /signatory/students/clear-all'          => ['SignatoryController', 'clearAll'],
     'POST /signatory/confirm/submit'              => ['SignatoryController', 'submitConfirm'],
     'POST /signatory/confirm-all'                 => ['SignatoryController', 'confirmAll'],
+    'POST /signatory/approvals/approve'           => ['SignatoryController', 'approveClearance'],
+    'POST /signatory/approvals/reject'            => ['SignatoryController', 'rejectClearance'],
+    'POST /signatory/students/upload-requirement' => ['SignatoryController', 'uploadRequirement'],
+    'POST /signatory/students/delete-requirement' => ['SignatoryController', 'deleteRequirement'],
+    'GET /signatory/students/requirements'        => ['SignatoryController', 'getRequirementsJson'],
+    'GET /signatory/requirements/download'        => ['SignatoryController', 'downloadRequirement'],
     'POST /api/process-bg-emails'                 => ['SignatoryController', 'processBgEmails'],
 
     // ---- Public: Printable Clearance Form (token-secured, no login required) ----

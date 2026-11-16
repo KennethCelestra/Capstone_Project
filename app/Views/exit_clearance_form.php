@@ -22,6 +22,11 @@ if (empty($currYearSection)) {
     $currYearSection = $yearLabel . ($section ? ' — ' . $section : '');
 }
 
+require_once ROOT_PATH . '/app/Models/ClearanceTemplate.php';
+$formTpl = (new ClearanceTemplate())->getByType('exit');
+$headerTitleText = !empty($formTpl['header_title']) ? htmlspecialchars($formTpl['header_title']) : 'EXIT CLEARANCE';
+$footerDistText  = !empty($formTpl['footer_text']) ? htmlspecialchars($formTpl['footer_text']) : '1 – Student | 2 – Registrar';
+
 /**
  * Render Exit Clearance signatory slots dynamically based on assigned signatories.
  * Styled with Signature Line + Date Line side-by-side in rows of 2 (last slot centered if odd).
@@ -458,11 +463,13 @@ function renderExitSigSlot(array $sig, bool $isCentered = false): string {
 <div class="page-wrapper">
 
     <!-- Print Button (Hidden on Print) -->
+    <?php if (empty($isPdfExport)): ?>
     <div class="print-bar">
         <button onclick="window.print()">Download Clearance</button>
         <button onclick="openStLogs()" style="margin-left:8px;">View Logs</button>
     </div>
     <?php include ROOT_PATH . '/app/Views/student_form_tools.php'; ?>
+    <?php endif; ?>
 
     <div class="sheet">
 
@@ -484,7 +491,7 @@ function renderExitSigSlot(array $sig, bool $isCentered = false): string {
                         <div class="univ-location">La Paz, Iloilo City</div>
                     </div>
                     <div class="header-title-bar">
-                        <h1>EXIT CLEARANCE</h1>
+                        <h1><?= $headerTitleText ?></h1>
                     </div>
                 </div>
 
@@ -569,8 +576,7 @@ function renderExitSigSlot(array $sig, bool $isCentered = false): string {
             <!-- ══ DISTRIBUTIONS ══ -->
             <div class="dist-block">
                 <em>Distributions:</em>
-                <p>1 – Student</p>
-                <p>2 – Registrar</p>
+                <p><?= $footerDistText ?></p>
             </div>
 
         </div><!-- /.form-copy -->

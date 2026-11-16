@@ -13,22 +13,33 @@
         <table class="data-table" style="width: 100%;">
             <thead>
                 <tr style="background: var(--surface2);">
-                    <th style="width: 28%;">Full Name</th>
-                    <th style="width: 28%;">Email</th>
-                    <th style="width: 16%;">College</th>
-                    <th style="width: 16%;">Password</th>
-                    <th class="text-end" style="width: 12%; white-space: nowrap;"></th>
+                    <th style="width: 25%;">Full Name</th>
+                    <th style="width: 25%;">Email</th>
+                    <th style="width: 15%;">College</th>
+                    <th style="width: 12%;">Status</th>
+                    <th style="width: 13%;">Password</th>
+                    <th class="text-end" style="width: 10%; white-space: nowrap;"></th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($enrollment_committees)): ?>
-                    <tr><td colspan="5" class="text-center py-4 text-muted">No enrollment committee members found.</td></tr>
+                    <tr><td colspan="6" class="text-center py-4 text-muted">No enrollment committee members found.</td></tr>
                 <?php else: ?>
                     <?php foreach ($enrollment_committees as $a): ?>
                         <tr class="border-bottom" style="transition: background .15s;" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
                             <td data-label="Full Name"><strong><?= htmlspecialchars($a['full_name']) ?></strong></td>
                             <td data-label="Email"><?= htmlspecialchars($a['email']) ?></td>
                             <td data-label="College"><span class="badge badge-info"><?= htmlspecialchars($a['department']) ?></span></td>
+                            <td data-label="Status">
+                                <form action="<?= BASE_URL ?>admin/enrollment-committees/status" method="POST" style="margin:0; display:inline-block;">
+                                    <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                                    <input type="hidden" name="id" value="<?= $a['id'] ?>">
+                                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" style="font-size:0.8rem; padding:2px 8px; border-radius:4px; font-weight:600; <?= ($a['account_status'] ?? 'active') === 'active' ? 'color:#15803d; border-color:#86efac;' : 'color:#b91c1c; border-color:#fca5a5;' ?>">
+                                        <option value="active" <?= ($a['account_status'] ?? 'active') === 'active' ? 'selected' : '' ?>>Active</option>
+                                        <option value="inactive" <?= ($a['account_status'] ?? 'active') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+                                    </select>
+                                </form>
+                            </td>
                             <td data-label="Password">
                                 <?php if (!empty($a['temp_password'])): ?>
                                     <span class="badge bg-warning text-dark" style="font-family: monospace;" title="Temporary Password"><?= htmlspecialchars($a['temp_password']) ?></span>

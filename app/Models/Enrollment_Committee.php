@@ -64,6 +64,14 @@ class Enrollment_Committee extends Model
     /**
      * Get all enrollment committee members NOT yet assigned to the given clearance.
      */
+    public function updateAccountStatus(int $id, string $status): bool
+    {
+        $allowed = ['active', 'inactive'];
+        if (!in_array($status, $allowed, true)) return false;
+        $stmt = $this->db->prepare("UPDATE {$this->table} SET account_status = ? WHERE id = ?");
+        return $stmt->execute([$status, $id]);
+    }
+
     public function findUnassigned(int $clearanceId): array
     {
         $stmt = $this->db->prepare("

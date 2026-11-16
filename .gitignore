@@ -34,3 +34,6 @@ Thumbs.db
 # CSV files
 *.csv
 database/*.csv
+
+# Composer phar
+composer.phar

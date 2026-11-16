@@ -29,7 +29,7 @@ class Clearance extends Model
      */
     public function markStarted(int $id): bool
     {
-        $stmt = $this->db->prepare("UPDATE clearances SET started_at = NOW() WHERE id = ? AND started_at IS NULL");
+        $stmt = $this->db->prepare("UPDATE clearances SET started_at = NOW(), status = 'active' WHERE id = ? AND started_at IS NULL");
         $stmt->execute([$id]);
         return $stmt->rowCount() > 0;
     }
@@ -131,18 +131,20 @@ class Clearance extends Model
 
     public function assignSignatory(int $clearanceId, int $signatoryId): void
     {
-        $stmt = $this->db->prepare("
-            INSERT IGNORE INTO clearance_signatories (clearance_id, signatory_id) 
-            VALUES (?, ?)
-        ");
-        $stmt->execute([$clearanceId, $signatoryId]);
-
-        $sigStmt = $this->db->prepare("SELECT scope_type, scope_value FROM signatories WHERE id = ?");
+        $sigStmt = $this->db->prepare("SELECT office, scope_type, scope_value FROM signatories WHERE id = ?");
         $sigStmt->execute([$signatoryId]);
         $sig = $sigStmt->fetch();
 
+        $isFinal = ($sig && stripos($sig['office'] ?? '', 'dean') !== false) ? 1 : 0;
+        $stmt = $this->db->prepare("
+            INSERT INTO clearance_signatories (clearance_id, signatory_id, is_final) 
+            VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE is_final = VALUES(is_final)
+        ");
+        $stmt->execute([$clearanceId, $signatoryId, $isFinal]);
+
         // Initialize status rows ONLY for students that match this scope
-        $students = $this->getStudentIds($clearanceId, $sig['scope_type'], $sig['scope_value']);
+        $students = $this->getStudentIds($clearanceId, $sig['scope_type'] ?? null, $sig['scope_value'] ?? null);
         if (!empty($students)) {
             $statusStmt = $this->db->prepare("
                 INSERT IGNORE INTO clearance_status (clearance_id, student_id, signatory_id)

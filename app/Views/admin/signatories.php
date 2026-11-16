@@ -17,13 +17,14 @@
                     <th style="min-width: 180px;">Email</th>
                     <th>Office</th>
                     <th>Scope</th>
+                    <th>Status</th>
                     <th>Password</th>
                     <th class="text-end" style="white-space: nowrap;"></th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($signatories)): ?>
-                    <tr><td colspan="6" class="text-center py-4 text-muted">No signatories found.</td></tr>
+                    <tr><td colspan="7" class="text-center py-4 text-muted">No signatories found.</td></tr>
                 <?php else: ?>
                     <?php foreach ($signatories as $s): ?>
                         <tr class="border-bottom" style="transition: background .15s;" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
@@ -36,6 +37,17 @@
                                 <?php else: ?>
                                     <?= ucfirst(htmlspecialchars($s['scope_type'])) ?>: <?= htmlspecialchars($s['scope_value']) ?>
                                 <?php endif; ?>
+                            </td>
+                            <td data-label="Status">
+                                <form action="<?= BASE_URL ?>admin/signatories/status" method="POST" style="margin:0; display:inline-block;">
+                                    <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                                    <input type="hidden" name="id" value="<?= $s['id'] ?>">
+                                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" style="font-size:0.8rem; padding:2px 8px; border-radius:4px; font-weight:600; <?= ($s['account_status'] ?? 'active') === 'active' ? 'color:#15803d; border-color:#86efac;' : (($s['account_status'] ?? 'active') === 'absentee' ? 'color:#b45309; border-color:#fde68a;' : 'color:#b91c1c; border-color:#fca5a5;') ?>">
+                                        <option value="active" <?= ($s['account_status'] ?? 'active') === 'active' ? 'selected' : '' ?>>Active</option>
+                                        <option value="absentee" <?= ($s['account_status'] ?? 'active') === 'absentee' ? 'selected' : '' ?>>On Leave</option>
+                                        <option value="inactive" <?= ($s['account_status'] ?? 'active') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+                                    </select>
+                                </form>
                             </td>
                             <td data-label="Password">
                                 <?php if (!empty($s['temp_password'])): ?>

@@ -18,7 +18,25 @@ class ClearanceStatus extends Model
             SELECT st.id, st.student_id AS student_number, CONCAT(st.first_name, ' ', st.last_name) AS full_name,
                    st.last_name, st.first_name, st.college, st.email, st.course, st.year_level, st.section,
                    COALESCE(cs.status, 'pending') AS status,
-                   cs.flag_note, cs.signed_at, cs.updated_at
+                   cs.flag_note, cs.signed_at, cs.updated_at,
+                   csig.is_final,
+                   (
+                       SELECT COUNT(*) 
+                       FROM clearance_signatories csig2
+                       JOIN signatories sg2 ON sg2.id = csig2.signatory_id
+                       LEFT JOIN clearance_status cs2 
+                           ON cs2.clearance_id = cst.clearance_id 
+                          AND cs2.student_id = st.id 
+                          AND cs2.signatory_id = sg2.id
+                       WHERE csig2.clearance_id = cst.clearance_id
+                         AND csig2.signatory_id != ?
+                         AND (
+                             sg2.scope_type IS NULL
+                             OR (sg2.scope_type = 'college' AND sg2.scope_value = st.college)
+                             OR (sg2.scope_type = 'course'  AND sg2.scope_value = st.course)
+                         )
+                         AND (cs2.status IS NULL OR cs2.status != 'cleared')
+                   ) AS other_unapproved_count
             FROM clearance_students cst
             JOIN clearances c ON c.id = cst.clearance_id
             JOIN students st ON st.id = cst.student_id
@@ -38,7 +56,7 @@ class ClearanceStatus extends Model
               )
             ORDER BY FIELD(COALESCE(cs.status, 'pending'), 'flagged', 'pending', 'cleared'), st.last_name ASC, st.first_name ASC
         ");
-        $stmt->execute([$signatoryId, $signatoryId, $clearanceId]);
+        $stmt->execute([$signatoryId, $signatoryId, $signatoryId, $clearanceId]);
         return $stmt->fetchAll();
     }
 
@@ -526,6 +544,41 @@ class ClearanceStatus extends Model
     }
 
 
+    public function isFinalSignatory(int $clearanceId, int $signatoryId): bool
+    {
+        $stmt = $this->db->prepare("SELECT is_final FROM clearance_signatories WHERE clearance_id = ? AND signatory_id = ?");
+        $stmt->execute([$clearanceId, $signatoryId]);
+        return (bool)$stmt->fetchColumn();
+    }
+
+    public function canSignatorySignStudent(int $clearanceId, int $studentId, int $signatoryId): bool
+    {
+        if (!$this->isFinalSignatory($clearanceId, $signatoryId)) {
+            return true;
+        }
+
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) 
+            FROM clearance_signatories csig
+            JOIN signatories sg ON sg.id = csig.signatory_id
+            JOIN students st ON st.id = ?
+            LEFT JOIN clearance_status cs 
+                ON cs.clearance_id = csig.clearance_id 
+               AND cs.student_id = st.id 
+               AND cs.signatory_id = sg.id
+            WHERE csig.clearance_id = ?
+              AND csig.signatory_id != ?
+              AND (
+                  sg.scope_type IS NULL
+                  OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
+                  OR (sg.scope_type = 'course'  AND sg.scope_value = st.course)
+              )
+              AND (cs.status IS NULL OR cs.status != 'cleared')
+        ");
+        $stmt->execute([$studentId, $clearanceId, $signatoryId]);
+        return (int)$stmt->fetchColumn() === 0;
+    }
+
     // ----------------------------------------------------------------
     // SIGNATORY: Bulk clear all pending (non-flagged) students
     // ----------------------------------------------------------------
@@ -556,8 +609,28 @@ class ClearanceStatus extends Model
                   OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
                   OR (sg.scope_type = 'course' AND sg.scope_value = st.course)
               )
+              AND (
+                  csig.is_final = 0
+                  OR (
+                      SELECT COUNT(*)
+                      FROM clearance_signatories csig2
+                      JOIN signatories sg2 ON sg2.id = csig2.signatory_id
+                      LEFT JOIN clearance_status cs2 
+                          ON cs2.clearance_id = cst.clearance_id 
+                         AND cs2.student_id = st.id 
+                         AND cs2.signatory_id = sg2.id
+                      WHERE csig2.clearance_id = cst.clearance_id
+                        AND csig2.signatory_id != ?
+                        AND (
+                            sg2.scope_type IS NULL
+                            OR (sg2.scope_type = 'college' AND sg2.scope_value = st.college)
+                            OR (sg2.scope_type = 'course'  AND sg2.scope_value = st.course)
+                        )
+                        AND (cs2.status IS NULL OR cs2.status != 'cleared')
+                  ) = 0
+              )
         ");
-        $stmt->execute([$signatoryId, $clearanceId, $signatoryId, $clearanceId]);
+        $stmt->execute([$signatoryId, $clearanceId, $signatoryId, $clearanceId, $signatoryId]);
         $studentIds = $stmt->fetchAll(\PDO::FETCH_COLUMN);
 
         if (empty($studentIds)) {

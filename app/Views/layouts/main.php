@@ -58,6 +58,10 @@
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/departments') !== false ? 'selected' : '' ?>">
                         <i class="bi bi-building me-2"></i> <span>Departments & Programs</span>
                     </a>
+                    <a href="<?= BASE_URL ?>admin/clearance-template"
+                       class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/clearance-template') !== false ? 'selected' : '' ?>">
+                        <i class="bi bi-file-earmark-ruled me-2"></i> <span>Form Template</span>
+                    </a>
                 <?php elseif ($_SESSION['user_role'] === 'enrollment_committee'): ?>
                     <a href="<?= BASE_URL ?>enrollment-committee/dashboard"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/dashboard') !== false ? 'selected' : '' ?>">

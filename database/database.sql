@@ -243,4 +243,63 @@ INSERT INTO `offices` (`name`) VALUES
 ('Registrar'), ('Department Office'), ('Dean Office')
 ON DUPLICATE KEY UPDATE `id` = `id`;
 
+-- ------------------------------------------------
+-- Phase B Updates
+-- ------------------------------------------------
+ALTER TABLE clearances
+    ADD COLUMN IF NOT EXISTS `status` ENUM('draft','pending_approval','active','archived') NOT NULL DEFAULT 'draft' AFTER `started_at`;
+
+CREATE TABLE IF NOT EXISTS `clearance_approvals` (
+    `id`            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `clearance_id`  INT UNSIGNED NOT NULL,
+    `approver_id`   INT UNSIGNED NOT NULL,
+    `approver_name` VARCHAR(150) NOT NULL,
+    `status`        ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+    `note`          TEXT NULL,
+    `decided_at`    DATETIME NULL,
+    `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT `fk_capp_clearance` FOREIGN KEY (`clearance_id`) REFERENCES `clearances`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE clearance_signatories
+    ADD COLUMN IF NOT EXISTS `is_final` TINYINT(1) NOT NULL DEFAULT 0;
+
+ALTER TABLE signatories
+    ADD COLUMN IF NOT EXISTS `account_status` ENUM('active','inactive','absentee') NOT NULL DEFAULT 'active';
+
+ALTER TABLE enrollment_committees
+    ADD COLUMN IF NOT EXISTS `account_status` ENUM('active','inactive') NOT NULL DEFAULT 'active';
+
+CREATE TABLE IF NOT EXISTS `clearance_templates` (
+    `id`           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `type`         ENUM('regular','exit') NOT NULL UNIQUE,
+    `header_title` VARCHAR(200) DEFAULT 'CLEARANCE FORM',
+    `body_text`    TEXT,
+    `footer_text`  TEXT,
+    `updated_at`   TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    `created_at`   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `clearance_templates` (type, header_title, body_text, footer_text) VALUES
+('regular','CLEARANCE FORM','This is to certify that Mr./Ms. {student_name} is cleared from any financial and property accountability as of {semester} Semester/Summer, Academic Year {academic_year}.','Distributions: 1 – Student | 2 – Registrar'),
+('exit','EXIT CLEARANCE FORM','This is to certify that Mr./Ms. {student_name} is cleared from any financial and property accountability as of {semester} Semester/Summer, Academic Year {academic_year}.','Distributions: 1 – Student | 2 – Registrar')
+ON DUPLICATE KEY UPDATE `id` = `id`;
+
+CREATE TABLE IF NOT EXISTS `clearance_requirements` (
+    `id`               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `clearance_id`     INT UNSIGNED NOT NULL,
+    `student_id`       INT UNSIGNED NOT NULL,
+    `signatory_id`     INT UNSIGNED NOT NULL,
+    `file_name`        VARCHAR(255) NOT NULL,
+    `file_path`        VARCHAR(500) NOT NULL,
+    `mime_type`        VARCHAR(100) DEFAULT NULL,
+    `uploaded_by_role` ENUM('signatory','admin') NOT NULL DEFAULT 'signatory',
+    `uploaded_by_id`   INT UNSIGNED NOT NULL,
+    `initials`         VARCHAR(20)  DEFAULT NULL,
+    `status`           ENUM('pending','accepted','rejected') NOT NULL DEFAULT 'pending',
+    `uploaded_at`      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT `fk_creq_clearance` FOREIGN KEY (`clearance_id`) REFERENCES `clearances`(`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_creq_student`   FOREIGN KEY (`student_id`)   REFERENCES `students`(`id`)   ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
