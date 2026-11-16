@@ -106,8 +106,8 @@ class SignatoryController extends Controller
                 'courses'           => $courses,
                 'yearLevels'        => $yearLevels,
                 'isDean'                  => $isDean,
-                'otherSignatoryProgress'  => $isDean ? $this->statusModel->getAllSignatoryProgressForClearance($selectedCid) : [],
-                'flaggedBySignatory'      => $isDean ? $this->statusModel->getFlaggedStudentsPerSignatory($selectedCid) : [],
+                'otherSignatoryProgress'  => $isDean ? $this->statusModel->getAllSignatoryProgressForClearance($selectedCid, $signatoryId) : [],
+                'flaggedBySignatory'      => $isDean ? $this->statusModel->getFlaggedStudentsPerSignatory($selectedCid, $signatoryId) : [],
             ];
             $this->view('layouts/main', array_merge($data, ['content' => 'signatory/clearances']));
             return;

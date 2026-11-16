@@ -122,12 +122,12 @@ $cPending = count($students) - $cFlagged - $cCleared;
     <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> <?= $cPending ?> pending</span>
 </div>
 
-<!-- All Offices Clearance Progress — Dean only (A11) -->
+<!-- Other Offices Clearance Progress — Dean only (A11) -->
 <?php if (!empty($isDean) && !empty($otherSignatoryProgress)): ?>
 <div class="card mb-4" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow:hidden;">
     <div style="padding:0.75rem 1.25rem; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-        <h5 style="margin:0; font-weight:700; font-size:1rem;"><i class="bi bi-bar-chart-line me-2"></i>All Offices Progress</h5>
-        <span class="text-muted" style="font-size:0.82rem;">Visible to Dean only &mdash; expand a row to see flagged students</span>
+        <h5 style="margin:0; font-weight:700; font-size:1rem;"><i class="bi bi-bar-chart-line me-2"></i>Other Offices Progress</h5>
+        <span class="text-muted" style="font-size:0.82rem;">Visible to Dean only &mdash; monitor other signatories before final signing</span>
     </div>
     <div class="table-responsive">
         <table class="data-table mb-0" style="width:100%; font-size:0.88rem;">
@@ -144,15 +144,16 @@ $cPending = count($students) - $cFlagged - $cCleared;
             <tbody>
             <?php foreach ($otherSignatoryProgress as $p): ?>
                 <?php
-                $sigId   = null;
-                // Find the signatory_id key whose first row matches this office+full_name
-                foreach ($flaggedBySignatory as $sid => $rows) {
-                    if ($rows[0]['office'] === $p['office'] && $rows[0]['signatory_name'] === $p['full_name']) {
-                        $sigId = $sid;
-                        break;
+                $sigId = (int)($p['signatory_id'] ?? 0);
+                if (!$sigId) {
+                    foreach ($flaggedBySignatory as $sid => $rows) {
+                        if ($rows[0]['office'] === $p['office'] && $rows[0]['signatory_name'] === $p['full_name']) {
+                            $sigId = $sid;
+                            break;
+                        }
                     }
                 }
-                $hasFlagged  = $sigId !== null && !empty($flaggedBySignatory[$sigId]);
+                $hasFlagged  = $sigId > 0 && !empty($flaggedBySignatory[$sigId]);
                 $expandRowId = 'dean-sig-expand-' . md5($p['office'] . $p['full_name']);
                 ?>
                 <tr class="border-bottom" style="cursor:<?= $hasFlagged ? 'pointer' : 'default' ?>;"

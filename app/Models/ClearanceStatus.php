@@ -591,11 +591,12 @@ class ClearanceStatus extends Model
 
     /**
      * Get flagged students grouped by signatory for the Dean's overview panel.
+     * Optionally excludes a specific signatory (e.g. the Dean themselves).
      * Returns [ signatory_id => [ ['student_number', 'full_name', 'flag_note', 'office'], ... ], ... ]
      */
-    public function getFlaggedStudentsPerSignatory(int $clearanceId): array
+    public function getFlaggedStudentsPerSignatory(int $clearanceId, ?int $excludeSignatoryId = null): array
     {
-        $stmt = $this->db->prepare("
+        $sql = "
             SELECT sg.id AS signatory_id, sg.office, sg.full_name AS signatory_name,
                    st.student_id AS student_number,
                    CONCAT(st.last_name, ', ', st.first_name) AS full_name,
@@ -604,9 +605,18 @@ class ClearanceStatus extends Model
             JOIN signatories sg ON sg.id = cs.signatory_id
             JOIN students st    ON st.id = cs.student_id
             WHERE cs.clearance_id = ? AND cs.status = 'flagged'
-            ORDER BY sg.office ASC, st.last_name ASC, st.first_name ASC
-        ");
-        $stmt->execute([$clearanceId]);
+        ";
+        $params = [$clearanceId];
+
+        if ($excludeSignatoryId !== null) {
+            $sql .= " AND sg.id != ?";
+            $params[] = $excludeSignatoryId;
+        }
+
+        $sql .= " ORDER BY sg.office ASC, st.last_name ASC, st.first_name ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         $rows = $stmt->fetchAll();
 
         // Group by signatory_id
@@ -619,11 +629,12 @@ class ClearanceStatus extends Model
 
     /**
      * Get summary progress of all signatories assigned to a clearance.
+     * Optionally excludes a specific signatory (e.g. the Dean themselves).
      */
-    public function getAllSignatoryProgressForClearance(int $clearanceId): array
+    public function getAllSignatoryProgressForClearance(int $clearanceId, ?int $excludeSignatoryId = null): array
     {
-        $stmt = $this->db->prepare("
-            SELECT sg.office, sg.full_name,
+        $sql = "
+            SELECT sg.id AS signatory_id, sg.office, sg.full_name,
                    COUNT(DISTINCT cst.student_id)                                   AS total,
                    COALESCE(SUM(cs.status IN ('signed','cleared')), 0)              AS signed_count,
                    COALESCE(SUM(cs.status = 'pending' OR cs.status IS NULL), 0)     AS pending_count,
@@ -636,6 +647,15 @@ class ClearanceStatus extends Model
                                          AND cs.signatory_id = sg.id 
                                          AND cs.student_id = st.id
             WHERE csig.clearance_id = ?
+        ";
+        $params = [$clearanceId];
+
+        if ($excludeSignatoryId !== null) {
+            $sql .= " AND sg.id != ?";
+            $params[] = $excludeSignatoryId;
+        }
+
+        $sql .= "
               AND (
                   sg.scope_type IS NULL 
                   OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
@@ -643,8 +663,10 @@ class ClearanceStatus extends Model
               )
             GROUP BY sg.id, sg.office, sg.full_name
             ORDER BY sg.office ASC, sg.full_name ASC
-        ");
-        $stmt->execute([$clearanceId]);
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 }
