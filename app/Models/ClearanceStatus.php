@@ -590,6 +590,34 @@ class ClearanceStatus extends Model
     }
 
     /**
+     * Get flagged students grouped by signatory for the Dean's overview panel.
+     * Returns [ signatory_id => [ ['student_number', 'full_name', 'flag_note', 'office'], ... ], ... ]
+     */
+    public function getFlaggedStudentsPerSignatory(int $clearanceId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT sg.id AS signatory_id, sg.office, sg.full_name AS signatory_name,
+                   st.student_id AS student_number,
+                   CONCAT(st.last_name, ', ', st.first_name) AS full_name,
+                   cs.flag_note
+            FROM clearance_status cs
+            JOIN signatories sg ON sg.id = cs.signatory_id
+            JOIN students st    ON st.id = cs.student_id
+            WHERE cs.clearance_id = ? AND cs.status = 'flagged'
+            ORDER BY sg.office ASC, st.last_name ASC, st.first_name ASC
+        ");
+        $stmt->execute([$clearanceId]);
+        $rows = $stmt->fetchAll();
+
+        // Group by signatory_id
+        $grouped = [];
+        foreach ($rows as $row) {
+            $grouped[$row['signatory_id']][] = $row;
+        }
+        return $grouped;
+    }
+
+    /**
      * Get summary progress of all signatories assigned to a clearance.
      */
     public function getAllSignatoryProgressForClearance(int $clearanceId): array

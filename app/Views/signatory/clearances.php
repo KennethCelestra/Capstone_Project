@@ -122,17 +122,18 @@ $cPending = count($students) - $cFlagged - $cCleared;
     <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> <?= $cPending ?> pending</span>
 </div>
 
-<!-- All Offices Clearance Progress (A11) -->
-<?php if (!empty($otherSignatoryProgress)): ?>
+<!-- All Offices Clearance Progress — Dean only (A11) -->
+<?php if (!empty($isDean) && !empty($otherSignatoryProgress)): ?>
 <div class="card mb-4" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow:hidden;">
     <div style="padding:0.75rem 1.25rem; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
         <h5 style="margin:0; font-weight:700; font-size:1rem;"><i class="bi bi-bar-chart-line me-2"></i>All Offices Progress</h5>
-        <span class="text-muted" style="font-size:0.82rem;">Overview of all signatories for this clearance</span>
+        <span class="text-muted" style="font-size:0.82rem;">Visible to Dean only &mdash; expand a row to see flagged students</span>
     </div>
     <div class="table-responsive">
         <table class="data-table mb-0" style="width:100%; font-size:0.88rem;">
             <thead>
                 <tr style="background:var(--surface2);">
+                    <th style="padding:0.6rem 1rem; width:28px;"></th>
                     <th style="padding:0.6rem 1rem;">Office</th>
                     <th style="padding:0.6rem 1rem;">Signatory</th>
                     <th class="text-center" style="padding:0.6rem 1rem; width:12%;">Signed</th>
@@ -142,13 +143,65 @@ $cPending = count($students) - $cFlagged - $cCleared;
             </thead>
             <tbody>
             <?php foreach ($otherSignatoryProgress as $p): ?>
-                <tr class="border-bottom">
+                <?php
+                $sigId   = null;
+                // Find the signatory_id key whose first row matches this office+full_name
+                foreach ($flaggedBySignatory as $sid => $rows) {
+                    if ($rows[0]['office'] === $p['office'] && $rows[0]['signatory_name'] === $p['full_name']) {
+                        $sigId = $sid;
+                        break;
+                    }
+                }
+                $hasFlagged  = $sigId !== null && !empty($flaggedBySignatory[$sigId]);
+                $expandRowId = 'dean-sig-expand-' . md5($p['office'] . $p['full_name']);
+                ?>
+                <tr class="border-bottom" style="cursor:<?= $hasFlagged ? 'pointer' : 'default' ?>;"
+                    <?php if ($hasFlagged): ?>onclick="toggleDeanRow('<?= $expandRowId ?>', this)"<?php endif; ?>>
+                    <td style="padding:0.5rem 0.75rem; text-align:center; color:var(--text-muted);">
+                        <?php if ($hasFlagged): ?>
+                            <i class="bi bi-chevron-right" id="icon-<?= $expandRowId ?>" style="transition:transform .2s;"></i>
+                        <?php endif; ?>
+                    </td>
                     <td style="padding:0.5rem 1rem;"><strong><?= htmlspecialchars($p['office']) ?></strong></td>
                     <td style="padding:0.5rem 1rem;" class="text-muted"><?= htmlspecialchars($p['full_name']) ?></td>
                     <td class="text-center" style="padding:0.5rem 1rem;"><span class="badge bg-success"><?= (int)$p['signed_count'] ?></span></td>
                     <td class="text-center" style="padding:0.5rem 1rem;"><span class="badge bg-warning text-dark"><?= (int)$p['pending_count'] ?></span></td>
-                    <td class="text-center" style="padding:0.5rem 1rem;"><span class="badge bg-danger"><?= (int)$p['flagged_count'] ?></span></td>
+                    <td class="text-center" style="padding:0.5rem 1rem;">
+                        <?php if ((int)$p['flagged_count'] > 0): ?>
+                            <span class="badge bg-danger"><?= (int)$p['flagged_count'] ?></span>
+                        <?php else: ?>
+                            <span class="badge bg-secondary">0</span>
+                        <?php endif; ?>
+                    </td>
                 </tr>
+                <?php if ($hasFlagged): ?>
+                <tr id="<?= $expandRowId ?>" style="display:none; background:var(--surface2);">
+                    <td></td>
+                    <td colspan="5" style="padding:0.6rem 1.25rem 0.9rem;">
+                        <div style="font-size:0.82rem; font-weight:600; color:var(--text-muted); margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.04em;">
+                            <i class="bi bi-flag-fill text-danger me-1"></i> Flagged students by <?= htmlspecialchars($p['office']) ?>
+                        </div>
+                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                            <thead>
+                                <tr style="color:var(--text-muted);">
+                                    <th style="padding:0.3rem 0.5rem; font-weight:600;">Student ID</th>
+                                    <th style="padding:0.3rem 0.5rem; font-weight:600;">Name</th>
+                                    <th style="padding:0.3rem 0.5rem; font-weight:600;">Flag Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($flaggedBySignatory[$sigId] as $fs): ?>
+                                <tr style="border-top:1px solid var(--border);">
+                                    <td style="padding:0.35rem 0.5rem; font-family:monospace;"><?= htmlspecialchars($fs['student_number']) ?></td>
+                                    <td style="padding:0.35rem 0.5rem;"><?= htmlspecialchars($fs['full_name']) ?></td>
+                                    <td style="padding:0.35rem 0.5rem; color:var(--danger, #dc3545); font-style:italic;"><?= htmlspecialchars($fs['flag_note']) ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <?php endif; ?>
             <?php endforeach; ?>
             </tbody>
         </table>
@@ -603,6 +656,16 @@ function clearFilters() {
     const status = document.getElementById('sig-status-filter');
     if (status) status.value = 'all';
     applyFilters();
+}
+
+// ---- Dean: expand/collapse flagged-student sub-rows ----
+function toggleDeanRow(rowId, triggerTr) {
+    const row  = document.getElementById(rowId);
+    const icon = document.getElementById('icon-' + rowId);
+    if (!row) return;
+    const isOpen = row.style.display !== 'none';
+    row.style.display = isOpen ? 'none' : '';
+    if (icon) icon.style.transform = isOpen ? '' : 'rotate(90deg)';
 }
 
 // ---- Escape closes all modals ----

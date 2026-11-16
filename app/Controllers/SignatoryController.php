@@ -86,6 +86,10 @@ class SignatoryController extends Controller
                 }
             }
 
+            // Determine if this signatory is the Dean (for the other-offices progress panel)
+            $signatoryRecord = $this->signatoryModel->findById($signatoryId);
+            $isDean = $signatoryRecord && stripos($signatoryRecord['office'], 'dean') !== false;
+
             $data = [
                 'phase'             => 'detail',
                 'selectedCid'       => $selectedCid,
@@ -101,7 +105,9 @@ class SignatoryController extends Controller
                 'colleges'          => $colleges,
                 'courses'           => $courses,
                 'yearLevels'        => $yearLevels,
-                'otherSignatoryProgress' => $this->statusModel->getAllSignatoryProgressForClearance($selectedCid),
+                'isDean'                  => $isDean,
+                'otherSignatoryProgress'  => $isDean ? $this->statusModel->getAllSignatoryProgressForClearance($selectedCid) : [],
+                'flaggedBySignatory'      => $isDean ? $this->statusModel->getFlaggedStudentsPerSignatory($selectedCid) : [],
             ];
             $this->view('layouts/main', array_merge($data, ['content' => 'signatory/clearances']));
             return;
