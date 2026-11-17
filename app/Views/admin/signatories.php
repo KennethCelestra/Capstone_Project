@@ -8,18 +8,56 @@
     </button>
 </div>
 
+<style>
+.signatories-table {
+    width: 100%;
+    table-layout: fixed;
+}
+.signatories-table th,
+.signatories-table td {
+    padding: 0.75rem 0.65rem !important;
+    vertical-align: middle;
+}
+.signatories-table td[data-label="Full Name"] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.signatories-table td[data-label="Email"] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.signatories-table td[data-label="Scope"] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.signatories-table .action-cell {
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+}
+@media (max-width: 991px) {
+    .signatories-table {
+        table-layout: auto;
+    }
+}
+</style>
+
 <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden;">
-    <div class="table-responsive">
-        <table class="data-table" style="width: 100%;">
+    <div class="table-responsive" style="overflow-x: auto;">
+        <table class="data-table signatories-table">
             <thead>
                 <tr style="background: var(--surface2);">
-                    <th style="min-width: 180px;">Full Name</th>
-                    <th style="min-width: 180px;">Email</th>
-                    <th>Office</th>
-                    <th>Scope</th>
-                    <th>Status</th>
-                    <th>Password</th>
-                    <th class="text-end" style="white-space: nowrap;"></th>
+                    <th style="width: 19%;">Full Name</th>
+                    <th style="width: 21%;">Email</th>
+                    <th style="width: 14%;">Office</th>
+                    <th style="width: 13%;">Scope</th>
+                    <th style="width: 12%;">Status</th>
+                    <th style="width: 9%;">Password</th>
+                    <th style="width: 12%;" class="text-end"></th>
                 </tr>
             </thead>
             <tbody>
@@ -28,10 +66,10 @@
                 <?php else: ?>
                     <?php foreach ($signatories as $s): ?>
                         <tr class="border-bottom" style="transition: background .15s;" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
-                            <td data-label="Full Name"><strong><?= htmlspecialchars($s['full_name']) ?></strong></td>
-                            <td data-label="Email"><?= htmlspecialchars($s['email']) ?></td>
+                            <td data-label="Full Name" title="<?= htmlspecialchars($s['full_name']) ?>"><strong><?= htmlspecialchars($s['full_name']) ?></strong></td>
+                            <td data-label="Email" title="<?= htmlspecialchars($s['email']) ?>"><?= htmlspecialchars($s['email']) ?></td>
                             <td data-label="Office"><span class="badge badge-info"><?= htmlspecialchars($s['office']) ?></span></td>
-                            <td data-label="Scope">
+                            <td data-label="Scope" title="<?= empty($s['scope_type']) ? 'All Students' : ucfirst(htmlspecialchars($s['scope_type'])) . ': ' . htmlspecialchars($s['scope_value']) ?>">
                                 <?php if (empty($s['scope_type'])): ?>
                                     <span class="text-muted" style="font-size:0.85rem;">All Students</span>
                                 <?php else: ?>
@@ -39,19 +77,29 @@
                                 <?php endif; ?>
                             </td>
                             <td data-label="Status">
-                                <form action="<?= BASE_URL ?>admin/signatories/status" method="POST" style="margin:0; display:inline-block;">
+                                <?php
+                                $curStatus = $s['account_status'] ?? 'active';
+                                $statusBg = '#dcfce7'; $statusColor = '#15803d'; $statusBorder = '#86efac';
+                                if ($curStatus === 'inactive') {
+                                    $statusBg = '#fee2e2'; $statusColor = '#b91c1c'; $statusBorder = '#fca5a5';
+                                } elseif ($curStatus === 'absentee') {
+                                    $statusBg = '#fef3c7'; $statusColor = '#b45309'; $statusBorder = '#fde68a';
+                                }
+                                ?>
+                                <form action="<?= BASE_URL ?>admin/signatories/status" method="POST" style="margin:0; width: 100%;">
                                     <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                                     <input type="hidden" name="id" value="<?= $s['id'] ?>">
-                                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" style="font-size:0.8rem; padding:2px 8px; border-radius:4px; font-weight:600; <?= ($s['account_status'] ?? 'active') === 'active' ? 'color:#15803d; border-color:#86efac;' : (($s['account_status'] ?? 'active') === 'absentee' ? 'color:#b45309; border-color:#fde68a;' : 'color:#b91c1c; border-color:#fca5a5;') ?>">
-                                        <option value="active" <?= ($s['account_status'] ?? 'active') === 'active' ? 'selected' : '' ?>>Active</option>
-                                        <option value="absentee" <?= ($s['account_status'] ?? 'active') === 'absentee' ? 'selected' : '' ?>>On Leave</option>
-                                        <option value="inactive" <?= ($s['account_status'] ?? 'active') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+                                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" 
+                                            style="width: 100%; font-size: 0.8rem; font-weight: 600; padding: 4px 22px 4px 8px; border-radius: 6px; background-color: <?= $statusBg ?>; color: <?= $statusColor ?>; border: 1px solid <?= $statusBorder ?>; cursor: pointer;">
+                                        <option value="active" <?= $curStatus === 'active' ? 'selected' : '' ?>>Active</option>
+                                        <option value="inactive" <?= $curStatus === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+                                        <option value="absentee" <?= $curStatus === 'absentee' ? 'selected' : '' ?>>Absentee</option>
                                     </select>
                                 </form>
                             </td>
                             <td data-label="Password">
                                 <?php if (!empty($s['temp_password'])): ?>
-                                    <span class="badge bg-warning text-dark" style="font-family: monospace;" title="Temporary Password"><?= htmlspecialchars($s['temp_password']) ?></span>
+                                    <span class="badge bg-warning text-dark" style="font-family: monospace; font-size:0.75rem;" title="Temporary Password"><?= htmlspecialchars($s['temp_password']) ?></span>
                                 <?php else: ?>
                                     <span class="password-pill">********</span>
                                 <?php endif; ?>

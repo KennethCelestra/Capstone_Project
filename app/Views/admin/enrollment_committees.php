@@ -14,9 +14,9 @@
             <thead>
                 <tr style="background: var(--surface2);">
                     <th style="width: 25%;">Full Name</th>
-                    <th style="width: 25%;">Email</th>
-                    <th style="width: 15%;">College</th>
-                    <th style="width: 12%;">Status</th>
+                    <th style="width: 23%;">Email</th>
+                    <th style="width: 14%;">College</th>
+                    <th style="width: 15%; min-width: 145px;">Status</th>
                     <th style="width: 13%;">Password</th>
                     <th class="text-end" style="width: 10%; white-space: nowrap;"></th>
                 </tr>
@@ -30,13 +30,20 @@
                             <td data-label="Full Name"><strong><?= htmlspecialchars($a['full_name']) ?></strong></td>
                             <td data-label="Email"><?= htmlspecialchars($a['email']) ?></td>
                             <td data-label="College"><span class="badge badge-info"><?= htmlspecialchars($a['department']) ?></span></td>
-                            <td data-label="Status">
-                                <form action="<?= BASE_URL ?>admin/enrollment-committees/status" method="POST" style="margin:0; display:inline-block;">
+                            <td data-label="Status" style="white-space: nowrap; min-width: 145px;">
+                                <?php
+                                $curStatus = $a['account_status'] ?? 'active';
+                                $statusBg = $curStatus === 'active' ? '#dcfce7' : '#fee2e2';
+                                $statusColor = $curStatus === 'active' ? '#15803d' : '#b91c1c';
+                                $statusBorder = $curStatus === 'active' ? '#86efac' : '#fca5a5';
+                                ?>
+                                <form action="<?= BASE_URL ?>admin/enrollment-committees/status" method="POST" style="margin:0; display:inline-block; width: 100%;">
                                     <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
                                     <input type="hidden" name="id" value="<?= $a['id'] ?>">
-                                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" style="font-size:0.8rem; padding:2px 8px; border-radius:4px; font-weight:600; <?= ($a['account_status'] ?? 'active') === 'active' ? 'color:#15803d; border-color:#86efac;' : 'color:#b91c1c; border-color:#fca5a5;' ?>">
-                                        <option value="active" <?= ($a['account_status'] ?? 'active') === 'active' ? 'selected' : '' ?>>Active</option>
-                                        <option value="inactive" <?= ($a['account_status'] ?? 'active') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+                                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" 
+                                            style="min-width: 135px; width: 100%; font-size: 0.85rem; font-weight: 600; padding: 5px 28px 5px 10px; border-radius: 6px; background-color: <?= $statusBg ?>; color: <?= $statusColor ?>; border: 1px solid <?= $statusBorder ?>; cursor: pointer;">
+                                        <option value="active" <?= $curStatus === 'active' ? 'selected' : '' ?>>Active</option>
+                                        <option value="inactive" <?= $curStatus === 'inactive' ? 'selected' : '' ?>>Inactive</option>
                                     </select>
                                 </form>
                             </td>

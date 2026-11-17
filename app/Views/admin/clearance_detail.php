@@ -79,7 +79,7 @@ $isStarted = !empty($clearance['started_at']);
     <?php else: ?>
         <div class="table-container">
             <table class="data-table">
-                <thead><tr><th>Name</th><th>Office</th><th>Email</th><th>Scope</th><th class="text-end" style="white-space: nowrap;"></th></tr></thead>
+                <thead><tr><th>Name</th><th>Office</th><th>Email</th><th>Scope</th><th style="min-width: 100px;">Status</th><th class="text-end" style="white-space: nowrap;"></th></tr></thead>
                 <tbody>
                     <?php foreach ($assignedSignatories as $s): ?>
                         <tr>
@@ -93,6 +93,17 @@ $isStarted = !empty($clearance['started_at']);
                                     Program: <?= htmlspecialchars($s['scope_value']) ?>
                                 <?php else: ?>
                                     <span class="text-muted" style="font-size:0.8rem;">All Students</span>
+                                <?php endif; ?>
+                            </td>
+                            <td data-label="Status">
+                                <?php
+                                $sigStatus = $s['account_status'] ?? 'active';
+                                if ($sigStatus === 'active'): ?>
+                                    <span class="badge bg-success" style="font-size:0.8rem; padding:4px 8px;">Active</span>
+                                <?php elseif ($sigStatus === 'absentee'): ?>
+                                    <span class="badge bg-warning text-dark" style="font-size:0.8rem; padding:4px 8px;">Absentee</span>
+                                <?php else: ?>
+                                    <span class="badge bg-danger" style="font-size:0.8rem; padding:4px 8px;">Inactive</span>
                                 <?php endif; ?>
                             </td>
                             <td class="text-end" data-label="Action">
@@ -129,13 +140,22 @@ $isStarted = !empty($clearance['started_at']);
     <?php else: ?>
         <div class="table-container">
             <table class="data-table">
-                <thead><tr><th>Name</th><th>College</th><th>Email</th><th class="text-end" style="white-space: nowrap;"></th></tr></thead>
+                <thead><tr><th>Name</th><th>College</th><th>Email</th><th style="min-width: 100px;">Status</th><th class="text-end" style="white-space: nowrap;"></th></tr></thead>
                 <tbody>
                     <?php foreach ($assignedEnrollmentCommittees as $a): ?>
                         <tr>
                             <td data-label="Name"><?= htmlspecialchars($a['full_name']) ?></td>
                             <td data-label="College"><?= htmlspecialchars($a['department']) ?></td>
                             <td data-label="Email"><?= htmlspecialchars($a['email']) ?></td>
+                            <td data-label="Status">
+                                <?php
+                                $advStatus = $a['account_status'] ?? 'active';
+                                if ($advStatus === 'active'): ?>
+                                    <span class="badge bg-success" style="font-size:0.8rem; padding:4px 8px;">Active</span>
+                                <?php else: ?>
+                                    <span class="badge bg-danger" style="font-size:0.8rem; padding:4px 8px;">Inactive</span>
+                                <?php endif; ?>
+                            </td>
                             <td class="text-end" data-label="Action">
                                 <div class="action-cell">
                                     <form action="<?= BASE_URL ?>admin/clearances/enrollment-committees/remove"
@@ -358,7 +378,7 @@ $isStarted = !empty($clearance['started_at']);
                         <option value="all" style="font-weight: bold; color: var(--primary);">-- Assign All Signatories --</option>
                         <?php foreach ($unassignedSignatories as $us): ?>
                             <option value="<?= $us['id'] ?>">
-                                <?= htmlspecialchars($us['full_name']) ?> — <?= htmlspecialchars($us['office']) ?>
+                                <?= htmlspecialchars($us['full_name']) ?> — <?= htmlspecialchars($us['office']) ?> (<?= ucfirst($us['account_status'] ?? 'active') ?>)
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -398,7 +418,7 @@ $isStarted = !empty($clearance['started_at']);
                         <option value="all" style="font-weight: bold; color: var(--primary);">-- Assign All Enrollment Committees --</option>
                         <?php foreach ($unassignedEnrollmentCommittees as $ua): ?>
                             <option value="<?= $ua['id'] ?>">
-                                <?= htmlspecialchars($ua['full_name']) ?> — <?= htmlspecialchars($ua['department']) ?>
+                                <?= htmlspecialchars($ua['full_name']) ?> — <?= htmlspecialchars($ua['department']) ?> (<?= ucfirst($ua['account_status'] ?? 'active') ?>)
                             </option>
                         <?php endforeach; ?>
                     </select>

@@ -228,6 +228,64 @@ CREATE TABLE IF NOT EXISTS `programs` (
     CONSTRAINT `fk_prog_college` FOREIGN KEY (`college_id`) REFERENCES `colleges`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+INSERT INTO `programs` (`college_id`, `code`, `name`) VALUES
+-- CAS (id: 1)
+(1, 'BAEL', 'Bachelor of Arts in English Language'),
+(1, 'BS Bio', 'Bachelor of Science in Biology (with concentration in Biotechnology)'),
+(1, 'BSCD', 'Bachelor of Science in Community Development'),
+(1, 'BHS', 'Bachelor of Human Services'),
+(1, 'BS Math', 'Bachelor of Science in Mathematics'),
+(1, 'BS Met', 'Bachelor of Science in Meteorology'),
+-- CCI (id: 2)
+(2, 'BSCS', 'Bachelor of Science in Computer Science'),
+(2, 'BSIS', 'Bachelor of Science in Information Systems'),
+(2, 'BSIT', 'Bachelor of Science in Information Technology'),
+-- COE (id: 4)
+(4, 'BEEd', 'Bachelor of Elementary Education'),
+(4, 'BSEd English', 'Bachelor of Secondary Education Major in English'),
+(4, 'BSEd Filipino', 'Bachelor of Secondary Education Major in Filipino'),
+(4, 'BSEd Math', 'Bachelor of Secondary Education Major in Mathematics'),
+(4, 'BSEd Science', 'Bachelor of Secondary Education Major in Science'),
+(4, 'BSEd SocStud', 'Bachelor of Secondary Education Major in Social Studies'),
+(4, 'BTLEd HE', 'Bachelor of Technology and Livelihood Education Major in Home Economics'),
+(4, 'BTLEd IA', 'Bachelor of Technology and Livelihood Education Major in Industrial Arts'),
+(4, 'BTLEd ICT', 'Bachelor of Technology and Livelihood Education Major in Information and Communication Technology'),
+(4, 'BTVTEd Automotive', 'Bachelor of Technical-Vocational Teacher Education Major in Automotive Technology'),
+(4, 'BTVTEd Drafting', 'Bachelor of Technical-Vocational Teacher Education Major in Drafting Technology'),
+(4, 'BTVTEd Electrical', 'Bachelor of Technical-Vocational Teacher Education Major in Electrical Technology'),
+(4, 'BTVTEd Electronics', 'Bachelor of Technical-Vocational Teacher Education Major in Electronics Technology'),
+(4, 'BTVTEd FSM', 'Bachelor of Technical-Vocational Teacher Education Major in Food and Service Management'),
+(4, 'BTVTEd GFD', 'Bachelor of Technical-Vocational Teacher Education Major in Garments, Fashion, and Design'),
+-- CEA (id: 3)
+(3, 'BS Arch', 'Bachelor of Science in Architecture'),
+(3, 'BSEE', 'Bachelor of Science in Electrical Engineering'),
+(3, 'BSECE', 'Bachelor of Science in Electronics Engineering'),
+(3, 'BSMarE', 'Bachelor of Science in Marine Engineering'),
+(3, 'BSME', 'Bachelor of Science in Mechanical Engineering'),
+(3, 'BSME-AE', 'Bachelor of Science in Mechanical Engineering Major in Automotive Engineering'),
+-- CIT (id: 5)
+(5, 'BIT ADT', 'Bachelor of Industrial Technology Major in Architectural Drafting Technology'),
+(5, 'BIT AT', 'Bachelor of Industrial Technology Major in Automotive Technology'),
+(5, 'BIT CT', 'Bachelor of Industrial Technology Major in Civil / Construction Technology'),
+(5, 'BIT Cosmetology', 'Bachelor of Industrial Technology Major in Cosmetology'),
+(5, 'BIT ELT', 'Bachelor of Industrial Technology Major in Electrical Technology'),
+(5, 'BIT ELX', 'Bachelor of Industrial Technology Major in Electronics Technology'),
+(5, 'BIT FAT', 'Bachelor of Industrial Technology Major in Fashion and Apparel Technology'),
+(5, 'BIT FT', 'Bachelor of Industrial Technology Major in Food Technology'),
+(5, 'BIT FCT', 'Bachelor of Industrial Technology Major in Furniture and Cabinet Making Technology'),
+(5, 'BIT HVAC-RT', 'Bachelor of Industrial Technology Major in Heating, Ventilating, Air-Conditioning and Refrigeration Technology'),
+(5, 'BIT MT', 'Bachelor of Industrial Technology Major in Mechanical Technology'),
+(5, 'BIT WFT', 'Bachelor of Industrial Technology Major in Welding and Fabrication Technology'),
+(5, 'BSAT', 'Bachelor of Science in Automotive Technology'),
+(5, 'BSELT', 'Bachelor of Science in Electrical Technology'),
+(5, 'BSELX', 'Bachelor of Science in Electronics Technology'),
+-- CGBE (id: 6)
+(6, 'BSEntrep', 'Bachelor of Science in Entrepreneurship'),
+(6, 'BSFDM', 'Bachelor of Science in Fashion Design and Merchandising'),
+(6, 'BSHM', 'Bachelor of Science in Hospitality Management'),
+(6, 'BSTM', 'Bachelor of Science in Tourism Management')
+ON DUPLICATE KEY UPDATE `name` = VALUES(`name`);
+
 -- ------------------------------------------------
 -- Table: offices
 -- ------------------------------------------------
