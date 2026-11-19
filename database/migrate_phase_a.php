@@ -41,13 +41,13 @@ try {
         $colMap[$r['name']] = $r['id'];
     }
 
-    // Official programs based on colleges
+    // Official programs based on official ISAT U flyer
     $defaultPrograms = [
         // CAS
         ['CAS', 'Bachelor of Arts in English Language', 'BAEL'],
-        ['CAS', 'Bachelor of Science in Biology (with concentration in Biotechnology)', 'BS Bio'],
+        ['CAS', 'Bachelor in Human Services', 'BHS'],
+        ['CAS', 'Bachelor of Science in Biology (Biotechnology)', 'BS Bio'],
         ['CAS', 'Bachelor of Science in Community Development', 'BSCD'],
-        ['CAS', 'Bachelor of Human Services', 'BHS'],
         ['CAS', 'Bachelor of Science in Mathematics', 'BS Math'],
         ['CAS', 'Bachelor of Science in Meteorology', 'BS Met'],
         // CCI
@@ -56,43 +56,34 @@ try {
         ['CCI', 'Bachelor of Science in Information Technology', 'BSIT'],
         // COE
         ['COE', 'Bachelor of Elementary Education', 'BEEd'],
-        ['COE', 'Bachelor of Secondary Education Major in English', 'BSEd English'],
         ['COE', 'Bachelor of Secondary Education Major in Filipino', 'BSEd Filipino'],
         ['COE', 'Bachelor of Secondary Education Major in Mathematics', 'BSEd Math'],
         ['COE', 'Bachelor of Secondary Education Major in Science', 'BSEd Science'],
-        ['COE', 'Bachelor of Secondary Education Major in Social Studies', 'BSEd SocStud'],
         ['COE', 'Bachelor of Technology and Livelihood Education Major in Home Economics', 'BTLEd HE'],
         ['COE', 'Bachelor of Technology and Livelihood Education Major in Industrial Arts', 'BTLEd IA'],
         ['COE', 'Bachelor of Technology and Livelihood Education Major in Information and Communication Technology', 'BTLEd ICT'],
-        ['COE', 'Bachelor of Technical-Vocational Teacher Education Major in Automotive Technology', 'BTVTEd Automotive'],
-        ['COE', 'Bachelor of Technical-Vocational Teacher Education Major in Drafting Technology', 'BTVTEd Drafting'],
-        ['COE', 'Bachelor of Technical-Vocational Teacher Education Major in Electrical Technology', 'BTVTEd Electrical'],
-        ['COE', 'Bachelor of Technical-Vocational Teacher Education Major in Electronics Technology', 'BTVTEd Electronics'],
+        ['COE', 'Bachelor of Technical-Vocational Teacher Education Major in Beauty Care and Wellness', 'BTVTEd BCW'],
+        ['COE', 'Bachelor of Technical-Vocational Teacher Education Major in Computer Programming', 'BTVTEd CP'],
         ['COE', 'Bachelor of Technical-Vocational Teacher Education Major in Food and Service Management', 'BTVTEd FSM'],
-        ['COE', 'Bachelor of Technical-Vocational Teacher Education Major in Garments, Fashion, and Design', 'BTVTEd GFD'],
         // CEA
         ['CEA', 'Bachelor of Science in Architecture', 'BS Arch'],
+        ['CEA', 'Bachelor of Science in Civil Engineering', 'BSCE'],
         ['CEA', 'Bachelor of Science in Electrical Engineering', 'BSEE'],
         ['CEA', 'Bachelor of Science in Electronics Engineering', 'BSECE'],
-        ['CEA', 'Bachelor of Science in Marine Engineering', 'BSMarE'],
         ['CEA', 'Bachelor of Science in Mechanical Engineering', 'BSME'],
-        ['CEA', 'Bachelor of Science in Mechanical Engineering Major in Automotive Engineering', 'BSME-AE'],
+        ['CEA', 'Bachelor of Science in Agricultural and Biosystems Engineering', 'BSABE'],
         // CIT
+        ['CIT', 'Bachelor of Industrial Technology Major in Apparel and Fashion Technology', 'BIT AFT'],
         ['CIT', 'Bachelor of Industrial Technology Major in Architectural Drafting Technology', 'BIT ADT'],
         ['CIT', 'Bachelor of Industrial Technology Major in Automotive Technology', 'BIT AT'],
-        ['CIT', 'Bachelor of Industrial Technology Major in Civil / Construction Technology', 'BIT CT'],
-        ['CIT', 'Bachelor of Industrial Technology Major in Cosmetology', 'BIT Cosmetology'],
+        ['CIT', 'Bachelor of Industrial Technology Major in Beauty Care and Wellness Technology', 'BIT BCWT'],
+        ['CIT', 'Bachelor of Industrial Technology Major in Construction Technology', 'BIT CT'],
+        ['CIT', 'Bachelor of Industrial Technology Major in Culinary Technology', 'BIT Culinary'],
         ['CIT', 'Bachelor of Industrial Technology Major in Electrical Technology', 'BIT ELT'],
         ['CIT', 'Bachelor of Industrial Technology Major in Electronics Technology', 'BIT ELX'],
-        ['CIT', 'Bachelor of Industrial Technology Major in Fashion and Apparel Technology', 'BIT FAT'],
-        ['CIT', 'Bachelor of Industrial Technology Major in Food Technology', 'BIT FT'],
-        ['CIT', 'Bachelor of Industrial Technology Major in Furniture and Cabinet Making Technology', 'BIT FCT'],
         ['CIT', 'Bachelor of Industrial Technology Major in Heating, Ventilating, Air-Conditioning and Refrigeration Technology', 'BIT HVAC-RT'],
         ['CIT', 'Bachelor of Industrial Technology Major in Mechanical Technology', 'BIT MT'],
         ['CIT', 'Bachelor of Industrial Technology Major in Welding and Fabrication Technology', 'BIT WFT'],
-        ['CIT', 'Bachelor of Science in Automotive Technology', 'BSAT'],
-        ['CIT', 'Bachelor of Science in Electrical Technology', 'BSELT'],
-        ['CIT', 'Bachelor of Science in Electronics Technology', 'BSELX'],
         // CGBE
         ['CGBE', 'Bachelor of Science in Entrepreneurship', 'BSEntrep'],
         ['CGBE', 'Bachelor of Science in Fashion Design and Merchandising', 'BSFDM'],

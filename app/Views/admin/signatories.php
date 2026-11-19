@@ -51,18 +51,17 @@
         <table class="data-table signatories-table">
             <thead>
                 <tr style="background: var(--surface2);">
-                    <th style="width: 19%;">Full Name</th>
-                    <th style="width: 21%;">Email</th>
-                    <th style="width: 14%;">Office</th>
-                    <th style="width: 13%;">Scope</th>
-                    <th style="width: 12%;">Status</th>
-                    <th style="width: 9%;">Password</th>
+                    <th style="width: 22%;">Full Name</th>
+                    <th style="width: 24%;">Email</th>
+                    <th style="width: 16%;">Office</th>
+                    <th style="width: 16%;">Scope</th>
+                    <th style="width: 10%;">Password</th>
                     <th style="width: 12%;" class="text-end"></th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($signatories)): ?>
-                    <tr><td colspan="7" class="text-center py-4 text-muted">No signatories found.</td></tr>
+                    <tr><td colspan="6" class="text-center py-4 text-muted">No signatories found.</td></tr>
                 <?php else: ?>
                     <?php foreach ($signatories as $s): ?>
                         <tr class="border-bottom" style="transition: background .15s;" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
@@ -76,27 +75,6 @@
                                     <?= ucfirst(htmlspecialchars($s['scope_type'])) ?>: <?= htmlspecialchars($s['scope_value']) ?>
                                 <?php endif; ?>
                             </td>
-                            <td data-label="Status">
-                                <?php
-                                $curStatus = $s['account_status'] ?? 'active';
-                                $statusBg = '#dcfce7'; $statusColor = '#15803d'; $statusBorder = '#86efac';
-                                if ($curStatus === 'inactive') {
-                                    $statusBg = '#fee2e2'; $statusColor = '#b91c1c'; $statusBorder = '#fca5a5';
-                                } elseif ($curStatus === 'absentee') {
-                                    $statusBg = '#fef3c7'; $statusColor = '#b45309'; $statusBorder = '#fde68a';
-                                }
-                                ?>
-                                <form action="<?= BASE_URL ?>admin/signatories/status" method="POST" style="margin:0; width: 100%;">
-                                    <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
-                                    <input type="hidden" name="id" value="<?= $s['id'] ?>">
-                                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" 
-                                            style="width: 100%; font-size: 0.8rem; font-weight: 600; padding: 4px 22px 4px 8px; border-radius: 6px; background-color: <?= $statusBg ?>; color: <?= $statusColor ?>; border: 1px solid <?= $statusBorder ?>; cursor: pointer;">
-                                        <option value="active" <?= $curStatus === 'active' ? 'selected' : '' ?>>Active</option>
-                                        <option value="inactive" <?= $curStatus === 'inactive' ? 'selected' : '' ?>>Inactive</option>
-                                        <option value="absentee" <?= $curStatus === 'absentee' ? 'selected' : '' ?>>Absentee</option>
-                                    </select>
-                                </form>
-                            </td>
                             <td data-label="Password">
                                 <?php if (!empty($s['temp_password'])): ?>
                                     <span class="badge bg-warning text-dark" style="font-family: monospace; font-size:0.75rem;" title="Temporary Password"><?= htmlspecialchars($s['temp_password']) ?></span>
@@ -107,7 +85,7 @@
                             <td class="text-end" data-label="Actions">
                                 <div class="action-cell">
                                     <button class="btn btn-secondary btn-sm"
-                                            onclick="openEditSignatory(<?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['full_name'])) ?>', '<?= htmlspecialchars(addslashes($s['email'])) ?>', '<?= htmlspecialchars(addslashes($s['office'])) ?>', '<?= htmlspecialchars(addslashes($s['scope_type'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($s['scope_value'] ?? '')) ?>')">
+                                            onclick="openEditSignatory(<?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['full_name'])) ?>', '<?= htmlspecialchars(addslashes($s['email'])) ?>', '<?= htmlspecialchars(addslashes($s['office'])) ?>', '<?= htmlspecialchars(addslashes($s['scope_type'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($s['scope_value'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($s['account_status'] ?? 'active')) ?>')">
                                         Edit
                                     </button>
                                     <form action="<?= BASE_URL ?>admin/signatories/delete" method="POST" style="margin:0;"
@@ -268,6 +246,15 @@
                 </div>
             </div>
 
+            <div class="form-group" style="margin-top: 1rem;">
+                <label>Account Status</label>
+                <select name="status" id="editSigStatus" class="form-control" style="width:100%;">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="absentee">Absentee</option>
+                </select>
+            </div>
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
                         onclick="document.getElementById('editSignatoryModal').style.display='none'">Cancel</button>
@@ -330,11 +317,12 @@ function toggleEditScopeInputs(val) {
     }
 }
 
-function openEditSignatory(id, name, email, office, scopeType, scopeValue) {
+function openEditSignatory(id, name, email, office, scopeType, scopeValue, status = 'active') {
     document.getElementById('editSigId').value     = id;
     document.getElementById('editSigName').value   = name;
     document.getElementById('editSigEmail').value  = email;
     document.getElementById('editSigOffice').value = office;
+    document.getElementById('editSigStatus').value = status || 'active';
     
     document.getElementById('editSigScopeGlobal').checked = true;
     document.getElementById('edit_scope_college_input').value = '';

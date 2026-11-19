@@ -411,6 +411,12 @@ class AdminController extends Controller
         ];
         
         $this->enrollmentCommitteeModel->update($id, $data);
+
+        $status = $this->getPost('status', '');
+        if (in_array($status, ['active', 'inactive'], true)) {
+            $this->enrollmentCommitteeModel->updateAccountStatus($id, $status);
+        }
+
         $this->setFlash('success', 'Enrollment Committee member updated successfully.');
         $this->redirect('admin/enrollment-committees');
     }
@@ -574,6 +580,12 @@ class AdminController extends Controller
         ];
         
         $this->signatoryModel->update($id, $data);
+
+        $status = $this->getPost('status', '');
+        if (in_array($status, ['active', 'inactive', 'absentee'], true)) {
+            $this->signatoryModel->updateAccountStatus($id, $status);
+        }
+
         $this->setFlash('success', 'Signatory updated successfully.');
         $this->redirect('admin/signatories');
     }

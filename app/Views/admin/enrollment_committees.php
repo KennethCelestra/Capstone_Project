@@ -13,40 +13,22 @@
         <table class="data-table" style="width: 100%;">
             <thead>
                 <tr style="background: var(--surface2);">
-                    <th style="width: 25%;">Full Name</th>
-                    <th style="width: 23%;">Email</th>
-                    <th style="width: 14%;">College</th>
-                    <th style="width: 15%; min-width: 145px;">Status</th>
-                    <th style="width: 13%;">Password</th>
-                    <th class="text-end" style="width: 10%; white-space: nowrap;"></th>
+                    <th style="width: 28%;">Full Name</th>
+                    <th style="width: 27%;">Email</th>
+                    <th style="width: 18%;">College</th>
+                    <th style="width: 14%;">Password</th>
+                    <th class="text-end" style="width: 13%; white-space: nowrap;"></th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($enrollment_committees)): ?>
-                    <tr><td colspan="6" class="text-center py-4 text-muted">No enrollment committee members found.</td></tr>
+                    <tr><td colspan="5" class="text-center py-4 text-muted">No enrollment committee members found.</td></tr>
                 <?php else: ?>
                     <?php foreach ($enrollment_committees as $a): ?>
                         <tr class="border-bottom" style="transition: background .15s;" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
                             <td data-label="Full Name"><strong><?= htmlspecialchars($a['full_name']) ?></strong></td>
                             <td data-label="Email"><?= htmlspecialchars($a['email']) ?></td>
                             <td data-label="College"><span class="badge badge-info"><?= htmlspecialchars($a['department']) ?></span></td>
-                            <td data-label="Status" style="white-space: nowrap; min-width: 145px;">
-                                <?php
-                                $curStatus = $a['account_status'] ?? 'active';
-                                $statusBg = $curStatus === 'active' ? '#dcfce7' : '#fee2e2';
-                                $statusColor = $curStatus === 'active' ? '#15803d' : '#b91c1c';
-                                $statusBorder = $curStatus === 'active' ? '#86efac' : '#fca5a5';
-                                ?>
-                                <form action="<?= BASE_URL ?>admin/enrollment-committees/status" method="POST" style="margin:0; display:inline-block; width: 100%;">
-                                    <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
-                                    <input type="hidden" name="id" value="<?= $a['id'] ?>">
-                                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" 
-                                            style="min-width: 135px; width: 100%; font-size: 0.85rem; font-weight: 600; padding: 5px 28px 5px 10px; border-radius: 6px; background-color: <?= $statusBg ?>; color: <?= $statusColor ?>; border: 1px solid <?= $statusBorder ?>; cursor: pointer;">
-                                        <option value="active" <?= $curStatus === 'active' ? 'selected' : '' ?>>Active</option>
-                                        <option value="inactive" <?= $curStatus === 'inactive' ? 'selected' : '' ?>>Inactive</option>
-                                    </select>
-                                </form>
-                            </td>
                             <td data-label="Password">
                                 <?php if (!empty($a['temp_password'])): ?>
                                     <span class="badge bg-warning text-dark" style="font-family: monospace;" title="Temporary Password"><?= htmlspecialchars($a['temp_password']) ?></span>
@@ -57,7 +39,7 @@
                             <td class="text-end" data-label="Actions">
                                 <div class="action-cell">
                                     <button class="btn btn-secondary btn-sm"
-                                            onclick="openEditEnrollmentCommittee(<?= $a['id'] ?>, '<?= htmlspecialchars(addslashes($a['full_name'])) ?>', '<?= htmlspecialchars(addslashes($a['email'])) ?>', '<?= htmlspecialchars(addslashes($a['department'])) ?>')">
+                                            onclick="openEditEnrollmentCommittee(<?= $a['id'] ?>, '<?= htmlspecialchars(addslashes($a['full_name'])) ?>', '<?= htmlspecialchars(addslashes($a['email'])) ?>', '<?= htmlspecialchars(addslashes($a['department'])) ?>', '<?= htmlspecialchars(addslashes($a['account_status'] ?? 'active')) ?>')">
                                         Edit
                                     </button>
                                     <form action="<?= BASE_URL ?>admin/enrollment-committees/delete" method="POST" style="margin:0;"
@@ -132,6 +114,13 @@
                 <label>College *</label>
                 <input type="text" name="department" id="editAdvDept" required>
             </div>
+            <div class="form-group">
+                <label>Account Status</label>
+                <select name="status" id="editAdvStatus" class="form-control" style="width:100%;">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
                         onclick="document.getElementById('editEnrollmentCommitteeModal').style.display='none'">Cancel</button>
@@ -142,11 +131,12 @@
 </div>
 
 <script>
-function openEditEnrollmentCommittee(id, name, email, dept) {
+function openEditEnrollmentCommittee(id, name, email, dept, status = 'active') {
     document.getElementById('editAdvId').value     = id;
     document.getElementById('editAdvName').value   = name;
     document.getElementById('editAdvEmail').value  = email;
     document.getElementById('editAdvDept').value   = dept;
+    document.getElementById('editAdvStatus').value = status || 'active';
     document.getElementById('editEnrollmentCommitteeModal').style.display = 'flex';
 }
 </script>
