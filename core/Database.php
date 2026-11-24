@@ -14,6 +14,7 @@ class Database
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                     PDO::ATTR_EMULATE_PREPARES => false,
+                    PDO::ATTR_TIMEOUT => 10,
                 ];
 
                 // Auto-enable SSL/TLS if CA certificates exist (required by TiDB Cloud & Aiven)
@@ -25,7 +26,9 @@ class Database
 
                 self::$instance = new PDO($dsn, DB_USER, DB_PASS, $options);
             } catch (PDOException $e) {
-                error_log('Database connection failed: ' . $e->getMessage());
+                $msg = 'Database connection failed: ' . $e->getMessage() . ' (host=' . DB_HOST . ', port=' . (defined('DB_PORT') ? DB_PORT : '3306') . ', db=' . DB_NAME . ')';
+                error_log($msg);
+                @file_put_contents('php://stderr', '[' . date('c') . '] ' . $msg . PHP_EOL);
                 if (defined('APP_ENV') && APP_ENV === 'development') {
                     die('Database connection failed: ' . $e->getMessage());
                 } else {
