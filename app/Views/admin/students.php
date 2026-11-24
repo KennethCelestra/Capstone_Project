@@ -57,35 +57,32 @@ sort($yearList);
         </div>
         <?php if (!empty($colleges)): ?>
         <div class="filter-group">
-            <input type="text" list="stu-college-list" id="stu-college" class="form-control"
-                   placeholder="All Colleges" style="max-width: 140px;" oninput="applyStudentFilters()">
-            <datalist id="stu-college-list">
-                <?php foreach ($colleges as $col): ?>
-                    <option value="<?= htmlspecialchars($col) ?>">
+            <select id="stu-college" class="form-select" style="max-width: 140px;" onchange="loadFilterPrograms(this.value); applyStudentFilters();">
+                <option value="">All Colleges</option>
+                <?php foreach ($colleges as $col): 
+                    $colName = is_array($col) ? $col['name'] : $col;
+                ?>
+                    <option value="<?= htmlspecialchars($colName) ?>"><?= htmlspecialchars($colName) ?></option>
                 <?php endforeach; ?>
-            </datalist>
+            </select>
         </div>
         <?php endif; ?>
-        <?php if (!empty($courseList)): ?>
         <div class="filter-group">
-            <input type="text" list="stu-course-list" id="stu-course" class="form-control"
-                   placeholder="All Courses" style="max-width: 140px;" oninput="applyStudentFilters()">
-            <datalist id="stu-course-list">
+            <select id="stu-course" class="form-select" style="max-width: 150px;" onchange="applyStudentFilters()">
+                <option value="">All Programs</option>
                 <?php foreach ($courseList as $course): ?>
-                    <option value="<?= htmlspecialchars($course) ?>">
+                    <option value="<?= htmlspecialchars($course) ?>"><?= htmlspecialchars($course) ?></option>
                 <?php endforeach; ?>
-            </datalist>
+            </select>
         </div>
-        <?php endif; ?>
         <?php if (!empty($yearList)): ?>
         <div class="filter-group">
-            <input type="text" list="stu-year-list" id="stu-year" class="form-control"
-                   placeholder="All Years" style="max-width: 110px;" oninput="applyStudentFilters()">
-            <datalist id="stu-year-list">
+            <select id="stu-year" class="form-select" style="max-width: 110px;" onchange="applyStudentFilters()">
+                <option value="">All Years</option>
                 <?php foreach ($yearList as $yr): ?>
-                    <option value="<?= $yr ?>">
+                    <option value="<?= $yr ?>"><?= $yr ?><?= $yr == 1 ? 'st' : ($yr == 2 ? 'nd' : ($yr == 3 ? 'rd' : 'th')) ?> Yr</option>
                 <?php endforeach; ?>
-            </datalist>
+            </select>
         </div>
         <?php endif; ?>
         <button type="button" class="btn btn-secondary btn-sm" onclick="clearStudentFilters()"
@@ -104,7 +101,7 @@ sort($yearList);
                     <th style="width: 15%;">Last Name</th>
                     <th style="width: 18%;">First Name</th>
                     <th class="text-center" style="width: 9%;">College</th>
-                    <th class="text-center" style="width: 10%;">Course</th>
+                    <th class="text-center" style="width: 10%;">Program</th>
                     <th class="text-center" style="width: 12%; white-space: nowrap;">Year / Section</th>
                     <th class="text-center" style="width: 10%;">Status</th>
                     <th class="text-end" style="width: 12%; white-space: nowrap;"></th>
@@ -134,7 +131,7 @@ sort($yearList);
                         <td data-label="Last Name"><?= htmlspecialchars($s['last_name']) ?></td>
                         <td data-label="First Name"><?= htmlspecialchars($s['first_name']) ?></td>
                         <td data-label="College"><?= htmlspecialchars($s['college']) ?></td>
-                        <td data-label="Course"><?= htmlspecialchars($s['course']) ?></td>
+                        <td data-label="Program"><?= htmlspecialchars($s['course']) ?></td>
                         <td data-label="Year / Section"><?= htmlspecialchars($s['year_level']) ?> – <?= htmlspecialchars($s['section']) ?></td>
                         <td data-label="Status"><?= $statusBadge ?></td>
                         <td class="text-end" data-label="Action">
@@ -262,22 +259,20 @@ sort($yearList);
             <div class="form-row">
                 <div class="form-group">
                     <label>College *</label>
-                    <select name="college" required>
-                        <?php foreach ($colleges as $col): ?>
-                            <option value="<?= htmlspecialchars($col) ?>"><?= htmlspecialchars($col) ?></option>
+                    <select name="college" id="addStudentCollege" required onchange="loadPrograms(this.value, 'addStudentCourse')">
+                        <option value="">-- Select College --</option>
+                        <?php foreach ($colleges as $col): 
+                            $cName = is_array($col) ? $col['name'] : $col;
+                        ?>
+                            <option value="<?= htmlspecialchars($cName) ?>"><?= htmlspecialchars($cName) ?></option>
                         <?php endforeach; ?>
-                        <?php if (empty($colleges)): ?>
-                            <option value="CAS">CAS</option>
-                            <option value="CEA">CEA</option>
-                            <option value="COE">COE</option>
-                            <option value="CCI">CCI</option>
-                            <option value="CIT">CIT</option>
-                        <?php endif; ?>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Course *</label>
-                    <input type="text" name="course" required placeholder="BSIT">
+                    <label>Program *</label>
+                    <select name="course" id="addStudentCourse" required class="form-control">
+                        <option value="">-- Select College First --</option>
+                    </select>
                 </div>
             </div>
             <div class="form-row">
@@ -337,22 +332,20 @@ sort($yearList);
             <div class="form-row">
                 <div class="form-group">
                     <label>College *</label>
-                    <select name="college" id="editStudentCollege" required>
-                        <?php foreach ($colleges as $col): ?>
-                            <option value="<?= htmlspecialchars($col) ?>"><?= htmlspecialchars($col) ?></option>
+                    <select name="college" id="editStudentCollege" required onchange="loadPrograms(this.value, 'editStudentCourse')">
+                        <option value="">-- Select College --</option>
+                        <?php foreach ($colleges as $col): 
+                            $cName = is_array($col) ? $col['name'] : $col;
+                        ?>
+                            <option value="<?= htmlspecialchars($cName) ?>"><?= htmlspecialchars($cName) ?></option>
                         <?php endforeach; ?>
-                        <?php if (empty($colleges)): ?>
-                            <option value="CAS">CAS</option>
-                            <option value="CEA">CEA</option>
-                            <option value="COE">COE</option>
-                            <option value="CCI">CCI</option>
-                            <option value="CIT">CIT</option>
-                        <?php endif; ?>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Course *</label>
-                    <input type="text" name="course" id="editStudentCourse" required>
+                    <label>Program *</label>
+                    <select name="course" id="editStudentCourse" required class="form-control">
+                        <option value="">-- Select College First --</option>
+                    </select>
                 </div>
             </div>
             <div class="form-row">
@@ -388,13 +381,67 @@ sort($yearList);
 </div>
 
 <script>
+function loadPrograms(collegeName, targetId, selectedValue = '') {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    target.innerHTML = '<option value="">Loading...</option>';
+    if (!collegeName) {
+        target.innerHTML = '<option value="">-- Select College First --</option>';
+        return;
+    }
+    fetch('<?= BASE_URL ?>api/programs?college=' + encodeURIComponent(collegeName))
+        .then(r => r.json())
+        .then(data => {
+            target.innerHTML = '<option value="">-- Select Program --</option>';
+            data.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.code;
+                opt.textContent = p.code + ' - ' + p.name;
+                if (selectedValue && (selectedValue === p.code || selectedValue === p.name)) {
+                    opt.selected = true;
+                }
+                target.appendChild(opt);
+            });
+            if (selectedValue && !target.value) {
+                const fallbackOpt = document.createElement('option');
+                fallbackOpt.value = selectedValue;
+                fallbackOpt.textContent = selectedValue;
+                fallbackOpt.selected = true;
+                target.appendChild(fallbackOpt);
+            }
+        })
+        .catch(err => {
+            target.innerHTML = '<option value="">-- Error Loading Programs --</option>';
+        });
+}
+
+function loadFilterPrograms(college) {
+    const sel = document.getElementById('stu-course');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">All Programs</option>';
+    if (!college) {
+        applyStudentFilters();
+        return;
+    }
+    fetch('<?= BASE_URL ?>api/programs?college=' + encodeURIComponent(college))
+        .then(r => r.json())
+        .then(data => {
+            data.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.code;
+                opt.textContent = p.code;
+                sel.appendChild(opt);
+            });
+            applyStudentFilters();
+        });
+}
+
 function openEditStudentModal(id, studentId, lastName, firstName, email, college, course, yearLevel, section, status) {
     document.getElementById('editStudentId').value         = id;
     document.getElementById('editStudentStudentId').value  = studentId;
     document.getElementById('editStudentLastName').value   = lastName;
     document.getElementById('editStudentFirstName').value  = firstName;
     document.getElementById('editStudentEmail').value      = email;
-    document.getElementById('editStudentCourse').value     = course;
     document.getElementById('editStudentSection').value    = section;
     document.getElementById('editStudentStatus').value     = status;
 
@@ -402,6 +449,8 @@ function openEditStudentModal(id, studentId, lastName, firstName, email, college
     const yearLevelSelect  = document.getElementById('editStudentYearLevel');
     collegeSelect.value   = college;
     yearLevelSelect.value = yearLevel;
+
+    loadPrograms(college, 'editStudentCourse', course);
 
     document.getElementById('editStudentModal').style.display = 'flex';
 }

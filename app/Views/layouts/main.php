@@ -13,12 +13,12 @@
 
 <body>
     <!-- Top Navbar -->
-    <nav class="top-navbar">
-        <div class="top-navbar-brand">
+    <nav class="top-navbar" style="display:flex; justify-content:space-between; align-items:center; padding: 0.6rem 1.25rem;">
+        <div class="top-navbar-brand" style="display:flex; align-items:center; gap:0.5rem;">
             <button type="button" class="sidebar-toggle-btn" id="sidebar-toggle" aria-label="Toggle menu">
                 <i class="bi bi-list"></i>
             </button>
-            <h5 class="nav-title"><?= APP_NAME ?></h5>
+            <h5 class="nav-title" style="margin:0; font-weight:700;"><?= APP_NAME ?></h5>
         </div>
     </nav>
 
@@ -53,6 +53,10 @@
                     <a href="<?= BASE_URL ?>admin/enrollment-committees"
                        class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/enrollment-committees') !== false ? 'selected' : '' ?>">
                         <i class="bi bi-people me-2"></i> <span>Enrollment Committee</span>
+                    </a>
+                    <a href="<?= BASE_URL ?>admin/departments"
+                       class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/departments') !== false ? 'selected' : '' ?>">
+                        <i class="bi bi-building me-2"></i> <span>Departments & Programs</span>
                     </a>
                 <?php elseif ($_SESSION['user_role'] === 'enrollment_committee'): ?>
                     <a href="<?= BASE_URL ?>enrollment-committee/dashboard"

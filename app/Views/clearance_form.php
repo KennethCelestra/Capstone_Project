@@ -22,6 +22,11 @@ if (empty($currYearSection)) {
     $currYearSection = $yearLabel . ($section ? ' — ' . $section : '');
 }
 
+require_once ROOT_PATH . '/app/Models/ClearanceTemplate.php';
+$formTpl = (new ClearanceTemplate())->getByType('regular');
+$headerTitleText = !empty($formTpl['header_title']) ? htmlspecialchars($formTpl['header_title']) : 'CLEARANCE FORM';
+$footerDistText  = !empty($formTpl['footer_text']) ? htmlspecialchars($formTpl['footer_text']) : '1 – Student | 2 – Registrar';
+
 /**
  * Regular semestral signatories grid (QF-VPAA-08 style: 2-column rows of single signature slots, last slot centered if odd)
  */
@@ -53,14 +58,18 @@ function renderRegularSignatories(array $signatories): string {
 }
 
 function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
-    $office   = htmlspecialchars($sig['office'] ?? 'Signatory');
-    $signed   = (!empty($sig) && ($sig['status'] ?? '') === 'cleared');
-    $signedAt = ($signed && !empty($sig['signed_at'])) ? date('M j, Y', strtotime($sig['signed_at'])) : '';
+    $office        = htmlspecialchars($sig['office'] ?? 'Signatory');
+    $signatoryName = htmlspecialchars($sig['signatory_name'] ?? $sig['full_name'] ?? '');
+    $signed        = (!empty($sig) && ($sig['status'] ?? '') === 'cleared');
+    $signedAt      = ($signed && !empty($sig['signed_at'])) ? date('M j, Y', strtotime($sig['signed_at'])) : '';
 
     $html = '<div class="reg-sig-item ' . ($isCentered ? 'reg-sig-centered' : '') . '">';
     $html .= '  <div class="reg-sig-status">' . ($signed ? '<span class="signed-badge">SIGNED</span>' : '&nbsp;') . '</div>';
     $html .= '  <div class="reg-sig-date-text">' . ($signedAt ? '<span class="date-badge">' . htmlspecialchars($signedAt) . '</span>' : '&nbsp;') . '</div>';
     $html .= '  <div class="reg-sig-line"></div>';
+    if ($signatoryName !== '') {
+        $html .= '  <div class="reg-sig-name" style="font-weight: 700; font-size: 8.5pt; text-align: center; margin-bottom: 2px;">' . $signatoryName . '</div>';
+    }
     $html .= '  <div class="reg-sig-label">' . $office . '</div>';
     $html .= '</div>';
 
@@ -435,12 +444,14 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
 
 <div class="page-wrapper">
 
+    <?php if (empty($isPdfExport)): ?>
     <!-- Print Button (Hidden on Print) -->
     <div class="print-bar">
         <button onclick="window.print()">Download Clearance</button>
         <button onclick="openStLogs()" style="margin-left:8px;">View Logs</button>
     </div>
     <?php include ROOT_PATH . '/app/Views/student_form_tools.php'; ?>
+    <?php endif; ?>
 
     <div class="sheet">
 
@@ -462,7 +473,7 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
                         <div class="univ-location">La Paz, Iloilo City</div>
                     </div>
                     <div class="header-title-bar">
-                        <h1>SEMESTRAL CLEARANCE</h1>
+                        <h1><?= $headerTitleText ?></h1>
                     </div>
                 </div>
 
@@ -549,8 +560,7 @@ function renderRegularSigSlot(array $sig, bool $isCentered = false): string {
             <!-- ══ DISTRIBUTIONS (QF-VPAA-08) ══ -->
             <div class="dist-block">
                 <em>Distributions:</em>
-                <p>1 – Student</p>
-                <p>2 – Registrar</p>
+                <p><?= $footerDistText ?></p>
             </div>
 
         </div><!-- /.form-copy -->

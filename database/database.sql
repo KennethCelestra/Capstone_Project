@@ -203,3 +203,153 @@ ON DUPLICATE KEY UPDATE `id` = `id`;
 -- Default credentials: admin@school.edu / admin123
 -- To manage admins via CLI, run: C:\xampp2\php\php.exe cli.php admin:list
 
+-- ------------------------------------------------
+-- Table: colleges
+-- ------------------------------------------------
+CREATE TABLE IF NOT EXISTS `colleges` (
+    `id`         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `name`       VARCHAR(50)  NOT NULL UNIQUE,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `colleges` (`name`) VALUES
+('CAS'), ('CCI'), ('CEA'), ('COE'), ('CIT'), ('CGBE')
+ON DUPLICATE KEY UPDATE `id` = `id`;
+
+-- ------------------------------------------------
+-- Table: programs (linked to colleges)
+-- ------------------------------------------------
+CREATE TABLE IF NOT EXISTS `programs` (
+    `id`         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `college_id` INT UNSIGNED NOT NULL,
+    `name`       VARCHAR(150) NOT NULL,
+    `code`       VARCHAR(30)  NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY `uq_prog_code_college` (`code`, `college_id`),
+    CONSTRAINT `fk_prog_college` FOREIGN KEY (`college_id`) REFERENCES `colleges`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `programs` (`college_id`, `code`, `name`) VALUES
+-- CAS (id: 1)
+(1, 'BAEL', 'Bachelor of Arts in English Language'),
+(1, 'BHS', 'Bachelor in Human Services'),
+(1, 'BS Bio', 'Bachelor of Science in Biology (Biotechnology)'),
+(1, 'BSCD', 'Bachelor of Science in Community Development'),
+(1, 'BS Math', 'Bachelor of Science in Mathematics'),
+(1, 'BS Met', 'Bachelor of Science in Meteorology'),
+-- CCI (id: 2)
+(2, 'BSCS', 'Bachelor of Science in Computer Science'),
+(2, 'BSIS', 'Bachelor of Science in Information Systems'),
+(2, 'BSIT', 'Bachelor of Science in Information Technology'),
+-- COE (id: 4)
+(4, 'BEEd', 'Bachelor of Elementary Education'),
+(4, 'BSEd Filipino', 'Bachelor of Secondary Education Major in Filipino'),
+(4, 'BSEd Math', 'Bachelor of Secondary Education Major in Mathematics'),
+(4, 'BSEd Science', 'Bachelor of Secondary Education Major in Science'),
+(4, 'BTLEd HE', 'Bachelor of Technology and Livelihood Education Major in Home Economics'),
+(4, 'BTLEd IA', 'Bachelor of Technology and Livelihood Education Major in Industrial Arts'),
+(4, 'BTLEd ICT', 'Bachelor of Technology and Livelihood Education Major in Information and Communication Technology'),
+(4, 'BTVTEd BCW', 'Bachelor of Technical-Vocational Teacher Education Major in Beauty Care and Wellness'),
+(4, 'BTVTEd CP', 'Bachelor of Technical-Vocational Teacher Education Major in Computer Programming'),
+(4, 'BTVTEd FSM', 'Bachelor of Technical-Vocational Teacher Education Major in Food and Service Management'),
+-- CEA (id: 3)
+(3, 'BS Arch', 'Bachelor of Science in Architecture'),
+(3, 'BSCE', 'Bachelor of Science in Civil Engineering'),
+(3, 'BSEE', 'Bachelor of Science in Electrical Engineering'),
+(3, 'BSECE', 'Bachelor of Science in Electronics Engineering'),
+(3, 'BSME', 'Bachelor of Science in Mechanical Engineering'),
+(3, 'BSABE', 'Bachelor of Science in Agricultural and Biosystems Engineering'),
+-- CIT (id: 5)
+(5, 'BIT AFT', 'Bachelor of Industrial Technology Major in Apparel and Fashion Technology'),
+(5, 'BIT ADT', 'Bachelor of Industrial Technology Major in Architectural Drafting Technology'),
+(5, 'BIT AT', 'Bachelor of Industrial Technology Major in Automotive Technology'),
+(5, 'BIT BCWT', 'Bachelor of Industrial Technology Major in Beauty Care and Wellness Technology'),
+(5, 'BIT CT', 'Bachelor of Industrial Technology Major in Construction Technology'),
+(5, 'BIT Culinary', 'Bachelor of Industrial Technology Major in Culinary Technology'),
+(5, 'BIT ELT', 'Bachelor of Industrial Technology Major in Electrical Technology'),
+(5, 'BIT ELX', 'Bachelor of Industrial Technology Major in Electronics Technology'),
+(5, 'BIT HVAC-RT', 'Bachelor of Industrial Technology Major in Heating, Ventilating, Air-Conditioning and Refrigeration Technology'),
+(5, 'BIT MT', 'Bachelor of Industrial Technology Major in Mechanical Technology'),
+(5, 'BIT WFT', 'Bachelor of Industrial Technology Major in Welding and Fabrication Technology'),
+-- CGBE (id: 6)
+(6, 'BSEntrep', 'Bachelor of Science in Entrepreneurship'),
+(6, 'BSFDM', 'Bachelor of Science in Fashion Design and Merchandising'),
+(6, 'BSHM', 'Bachelor of Science in Hospitality Management'),
+(6, 'BSTM', 'Bachelor of Science in Tourism Management')
+ON DUPLICATE KEY UPDATE `name` = VALUES(`name`);
+
+-- ------------------------------------------------
+-- Table: offices
+-- ------------------------------------------------
+CREATE TABLE IF NOT EXISTS `offices` (
+    `id`         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `name`       VARCHAR(150) NOT NULL UNIQUE,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `offices` (`name`) VALUES
+('Library'), ('Cashier'), ('Guidance Office'),
+('Department Head'), ('Dean'), ('Director of Student Affairs'),
+('Registrar'), ('Department Office'), ('Dean Office')
+ON DUPLICATE KEY UPDATE `id` = `id`;
+
+-- ------------------------------------------------
+-- Phase B Updates
+-- ------------------------------------------------
+ALTER TABLE clearances
+    ADD COLUMN IF NOT EXISTS `status` ENUM('draft','pending_approval','active','archived') NOT NULL DEFAULT 'draft' AFTER `started_at`;
+
+CREATE TABLE IF NOT EXISTS `clearance_approvals` (
+    `id`            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `clearance_id`  INT UNSIGNED NOT NULL,
+    `approver_id`   INT UNSIGNED NOT NULL,
+    `approver_name` VARCHAR(150) NOT NULL,
+    `status`        ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+    `note`          TEXT NULL,
+    `decided_at`    DATETIME NULL,
+    `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT `fk_capp_clearance` FOREIGN KEY (`clearance_id`) REFERENCES `clearances`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE clearance_signatories
+    ADD COLUMN IF NOT EXISTS `is_final` TINYINT(1) NOT NULL DEFAULT 0;
+
+ALTER TABLE signatories
+    ADD COLUMN IF NOT EXISTS `account_status` ENUM('active','inactive','absentee') NOT NULL DEFAULT 'active';
+
+ALTER TABLE enrollment_committees
+    ADD COLUMN IF NOT EXISTS `account_status` ENUM('active','inactive') NOT NULL DEFAULT 'active';
+
+CREATE TABLE IF NOT EXISTS `clearance_templates` (
+    `id`           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `type`         ENUM('regular','exit') NOT NULL UNIQUE,
+    `header_title` VARCHAR(200) DEFAULT 'CLEARANCE FORM',
+    `body_text`    TEXT,
+    `footer_text`  TEXT,
+    `updated_at`   TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    `created_at`   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `clearance_templates` (type, header_title, body_text, footer_text) VALUES
+('regular','CLEARANCE FORM','This is to certify that Mr./Ms. {student_name} is cleared from any financial and property accountability as of {semester} Semester/Summer, Academic Year {academic_year}.','Distributions: 1 – Student | 2 – Registrar'),
+('exit','EXIT CLEARANCE FORM','This is to certify that Mr./Ms. {student_name} is cleared from any financial and property accountability as of {semester} Semester/Summer, Academic Year {academic_year}.','Distributions: 1 – Student | 2 – Registrar')
+ON DUPLICATE KEY UPDATE `id` = `id`;
+
+CREATE TABLE IF NOT EXISTS `clearance_requirements` (
+    `id`               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `clearance_id`     INT UNSIGNED NOT NULL,
+    `student_id`       INT UNSIGNED NOT NULL,
+    `signatory_id`     INT UNSIGNED NOT NULL,
+    `file_name`        VARCHAR(255) NOT NULL,
+    `file_path`        VARCHAR(500) NOT NULL,
+    `mime_type`        VARCHAR(100) DEFAULT NULL,
+    `uploaded_by_role` ENUM('signatory','admin') NOT NULL DEFAULT 'signatory',
+    `uploaded_by_id`   INT UNSIGNED NOT NULL,
+    `initials`         VARCHAR(20)  DEFAULT NULL,
+    `status`           ENUM('pending','accepted','rejected') NOT NULL DEFAULT 'pending',
+    `uploaded_at`      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT `fk_creq_clearance` FOREIGN KEY (`clearance_id`) REFERENCES `clearances`(`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_creq_student`   FOREIGN KEY (`student_id`)   REFERENCES `students`(`id`)   ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+

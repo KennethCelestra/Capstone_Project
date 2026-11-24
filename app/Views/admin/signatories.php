@@ -8,17 +8,55 @@
     </button>
 </div>
 
+<style>
+.signatories-table {
+    width: 100%;
+    table-layout: fixed;
+}
+.signatories-table th,
+.signatories-table td {
+    padding: 0.75rem 0.65rem !important;
+    vertical-align: middle;
+}
+.signatories-table td[data-label="Full Name"] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.signatories-table td[data-label="Email"] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.signatories-table td[data-label="Scope"] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.signatories-table .action-cell {
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+}
+@media (max-width: 991px) {
+    .signatories-table {
+        table-layout: auto;
+    }
+}
+</style>
+
 <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden;">
-    <div class="table-responsive">
-        <table class="data-table" style="width: 100%;">
+    <div class="table-responsive" style="overflow-x: auto;">
+        <table class="data-table signatories-table">
             <thead>
                 <tr style="background: var(--surface2);">
-                    <th style="min-width: 180px;">Full Name</th>
-                    <th style="min-width: 180px;">Email</th>
-                    <th>Office</th>
-                    <th>Scope</th>
-                    <th>Password</th>
-                    <th class="text-end" style="white-space: nowrap;"></th>
+                    <th style="width: 22%;">Full Name</th>
+                    <th style="width: 24%;">Email</th>
+                    <th style="width: 16%;">Office</th>
+                    <th style="width: 16%;">Scope</th>
+                    <th style="width: 10%;">Password</th>
+                    <th style="width: 12%;" class="text-end"></th>
                 </tr>
             </thead>
             <tbody>
@@ -27,10 +65,10 @@
                 <?php else: ?>
                     <?php foreach ($signatories as $s): ?>
                         <tr class="border-bottom" style="transition: background .15s;" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
-                            <td data-label="Full Name"><strong><?= htmlspecialchars($s['full_name']) ?></strong></td>
-                            <td data-label="Email"><?= htmlspecialchars($s['email']) ?></td>
+                            <td data-label="Full Name" title="<?= htmlspecialchars($s['full_name']) ?>"><strong><?= htmlspecialchars($s['full_name']) ?></strong></td>
+                            <td data-label="Email" title="<?= htmlspecialchars($s['email']) ?>"><?= htmlspecialchars($s['email']) ?></td>
                             <td data-label="Office"><span class="badge badge-info"><?= htmlspecialchars($s['office']) ?></span></td>
-                            <td data-label="Scope">
+                            <td data-label="Scope" title="<?= empty($s['scope_type']) ? 'All Students' : ucfirst(htmlspecialchars($s['scope_type'])) . ': ' . htmlspecialchars($s['scope_value']) ?>">
                                 <?php if (empty($s['scope_type'])): ?>
                                     <span class="text-muted" style="font-size:0.85rem;">All Students</span>
                                 <?php else: ?>
@@ -39,7 +77,7 @@
                             </td>
                             <td data-label="Password">
                                 <?php if (!empty($s['temp_password'])): ?>
-                                    <span class="badge bg-warning text-dark" style="font-family: monospace;" title="Temporary Password"><?= htmlspecialchars($s['temp_password']) ?></span>
+                                    <span class="badge bg-warning text-dark" style="font-family: monospace; font-size:0.75rem;" title="Temporary Password"><?= htmlspecialchars($s['temp_password']) ?></span>
                                 <?php else: ?>
                                     <span class="password-pill">********</span>
                                 <?php endif; ?>
@@ -47,7 +85,7 @@
                             <td class="text-end" data-label="Actions">
                                 <div class="action-cell">
                                     <button class="btn btn-secondary btn-sm"
-                                            onclick="openEditSignatory(<?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['full_name'])) ?>', '<?= htmlspecialchars(addslashes($s['email'])) ?>', '<?= htmlspecialchars(addslashes($s['office'])) ?>', '<?= htmlspecialchars(addslashes($s['scope_type'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($s['scope_value'] ?? '')) ?>')">
+                                            onclick="openEditSignatory(<?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['full_name'])) ?>', '<?= htmlspecialchars(addslashes($s['email'])) ?>', '<?= htmlspecialchars(addslashes($s['office'])) ?>', '<?= htmlspecialchars(addslashes($s['scope_type'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($s['scope_value'] ?? '')) ?>', '<?= htmlspecialchars(addslashes($s['account_status'] ?? 'active')) ?>')">
                                         Edit
                                     </button>
                                     <form action="<?= BASE_URL ?>admin/signatories/delete" method="POST" style="margin:0;"
@@ -85,7 +123,24 @@
             </div>
             <div class="form-group">
                 <label>Office / Department *</label>
-                <input type="text" name="office" required>
+                <select name="office" required class="form-control" style="width:100%;">
+                    <option value="">-- Select Office --</option>
+                    <?php if (!empty($offices)): ?>
+                        <?php foreach ($offices as $o): 
+                            $oName = is_array($o) ? $o['name'] : $o;
+                        ?>
+                            <option value="<?= htmlspecialchars($oName) ?>"><?= htmlspecialchars($oName) ?></option>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <option value="Library">Library</option>
+                        <option value="Cashier">Cashier</option>
+                        <option value="Guidance Office">Guidance Office</option>
+                        <option value="Department Head">Department Head</option>
+                        <option value="Dean">Dean</option>
+                        <option value="Director of Student Affairs">Director of Student Affairs</option>
+                        <option value="Registrar">Registrar</option>
+                    <?php endif; ?>
+                </select>
             </div>
             <div class="form-group">
                 <label>Password *</label>
@@ -106,14 +161,14 @@
                     </label>
                     <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;">
                         <input type="radio" name="scope_type" value="course" onchange="toggleAddScopeInputs(this.value)" style="margin:0; accent-color:#22c55e;">
-                        <span style="font-weight:600; font-size:0.85rem;">By Course</span>
+                        <span style="font-weight:600; font-size:0.85rem;">By Program</span>
                     </label>
                 </div>
                 <div id="add_scope_college_container" style="display:none; margin-top:10px;">
-                    <input type="text" name="scope_college" id="add_scope_college_input" list="college_list" style="width:100%;">
+                    <input type="text" name="scope_college" id="add_scope_college_input" list="college_list" placeholder="Select or type College" style="width:100%;">
                 </div>
                 <div id="add_scope_course_container" style="display:none; margin-top:10px;">
-                    <input type="text" name="scope_course" id="add_scope_course_input" list="course_list" style="width:100%;">
+                    <input type="text" name="scope_course" id="add_scope_course_input" list="course_list" placeholder="Select or type Program code" style="width:100%;">
                 </div>
             </div>
 
@@ -146,7 +201,24 @@
             </div>
             <div class="form-group">
                 <label>Office / Department *</label>
-                <input type="text" name="office" id="editSigOffice" required>
+                <select name="office" id="editSigOffice" required class="form-control" style="width:100%;">
+                    <option value="">-- Select Office --</option>
+                    <?php if (!empty($offices)): ?>
+                        <?php foreach ($offices as $o): 
+                            $oName = is_array($o) ? $o['name'] : $o;
+                        ?>
+                            <option value="<?= htmlspecialchars($oName) ?>"><?= htmlspecialchars($oName) ?></option>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <option value="Library">Library</option>
+                        <option value="Cashier">Cashier</option>
+                        <option value="Guidance Office">Guidance Office</option>
+                        <option value="Department Head">Department Head</option>
+                        <option value="Dean">Dean</option>
+                        <option value="Director of Student Affairs">Director of Student Affairs</option>
+                        <option value="Registrar">Registrar</option>
+                    <?php endif; ?>
+                </select>
             </div>
             
             <!-- Edit Scope Selection -->
@@ -163,15 +235,24 @@
                     </label>
                     <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:var(--surface2); border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:border-color .15s;">
                         <input type="radio" name="scope_type" id="editSigScopeCourse" value="course" onchange="toggleEditScopeInputs(this.value)" style="margin:0; accent-color:#22c55e;">
-                        <span style="font-weight:600; font-size:0.85rem;">By Course</span>
+                        <span style="font-weight:600; font-size:0.85rem;">By Program</span>
                     </label>
                 </div>
                 <div id="edit_scope_college_container" style="display:none; margin-top:10px;">
                     <input type="text" name="scope_college" id="edit_scope_college_input" list="college_list" placeholder="College" style="width:100%;">
                 </div>
                 <div id="edit_scope_course_container" style="display:none; margin-top:10px;">
-                    <input type="text" name="scope_course" id="edit_scope_course_input" list="course_list" placeholder="Course" style="width:100%;">
+                    <input type="text" name="scope_course" id="edit_scope_course_input" list="course_list" placeholder="Program" style="width:100%;">
                 </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+                <label>Account Status</label>
+                <select name="status" id="editSigStatus" class="form-control" style="width:100%;">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="absentee">Absentee</option>
+                </select>
             </div>
 
             <div class="modal-footer">
@@ -184,14 +265,25 @@
 </div>
 
 <datalist id="college_list">
-    <?php foreach ($colleges as $col): ?>
-        <option value="<?= htmlspecialchars($col) ?>"></option>
+    <?php foreach ($colleges as $col): 
+        $colName = is_array($col) ? $col['name'] : $col;
+    ?>
+        <option value="<?= htmlspecialchars($colName) ?>"></option>
     <?php endforeach; ?>
 </datalist>
 <datalist id="course_list">
-    <?php foreach ($courses as $cur): ?>
-        <option value="<?= htmlspecialchars($cur) ?>"></option>
-    <?php endforeach; ?>
+    <?php if (!empty($programs)): ?>
+        <?php foreach ($programs as $prog): ?>
+            <option value="<?= htmlspecialchars($prog['code']) ?>"><?= htmlspecialchars($prog['name']) ?></option>
+        <?php endforeach; ?>
+    <?php endif; ?>
+    <?php if (!empty($courses)): ?>
+        <?php foreach ($courses as $cur): 
+            $curName = is_array($cur) ? ($cur['code'] ?? $cur['name']) : $cur;
+        ?>
+            <option value="<?= htmlspecialchars($curName) ?>"></option>
+        <?php endforeach; ?>
+    <?php endif; ?>
 </datalist>
 
 <script>
@@ -225,11 +317,12 @@ function toggleEditScopeInputs(val) {
     }
 }
 
-function openEditSignatory(id, name, email, office, scopeType, scopeValue) {
+function openEditSignatory(id, name, email, office, scopeType, scopeValue, status = 'active') {
     document.getElementById('editSigId').value     = id;
     document.getElementById('editSigName').value   = name;
     document.getElementById('editSigEmail').value  = email;
     document.getElementById('editSigOffice').value = office;
+    document.getElementById('editSigStatus').value = status || 'active';
     
     document.getElementById('editSigScopeGlobal').checked = true;
     document.getElementById('edit_scope_college_input').value = '';

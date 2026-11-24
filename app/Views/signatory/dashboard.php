@@ -13,12 +13,7 @@ foreach ($clearances as $c) {
 }
 ?>
 
-<div class="page-header mb-4" style="padding-bottom: 1.25rem; border-bottom: 1px solid var(--border);">
-    <div>
-        <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: .2rem;">Dashboard</h2>
-        <p class="text-muted" style="margin: 0; font-size: .95rem;">Welcome back, <strong style="color: var(--text);"><?= htmlspecialchars($userName) ?></strong>!</p>
-    </div>
-</div>
+<?php include ROOT_PATH . '/app/Views/components/welcome_banner.php'; ?>
 
 <div class="stats-grid mb-4" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.25rem;">
     <div class="stat-card" style="border-top: 4px solid var(--primary); border-radius: 10px; padding: 1.25rem 1.5rem; background: var(--surface); box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: transform .2s, box-shadow .2s;">

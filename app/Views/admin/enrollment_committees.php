@@ -14,10 +14,10 @@
             <thead>
                 <tr style="background: var(--surface2);">
                     <th style="width: 28%;">Full Name</th>
-                    <th style="width: 28%;">Email</th>
-                    <th style="width: 16%;">College</th>
-                    <th style="width: 16%;">Password</th>
-                    <th class="text-end" style="width: 12%; white-space: nowrap;"></th>
+                    <th style="width: 27%;">Email</th>
+                    <th style="width: 18%;">College</th>
+                    <th style="width: 14%;">Password</th>
+                    <th class="text-end" style="width: 13%; white-space: nowrap;"></th>
                 </tr>
             </thead>
             <tbody>
@@ -39,7 +39,7 @@
                             <td class="text-end" data-label="Actions">
                                 <div class="action-cell">
                                     <button class="btn btn-secondary btn-sm"
-                                            onclick="openEditEnrollmentCommittee(<?= $a['id'] ?>, '<?= htmlspecialchars(addslashes($a['full_name'])) ?>', '<?= htmlspecialchars(addslashes($a['email'])) ?>', '<?= htmlspecialchars(addslashes($a['department'])) ?>')">
+                                            onclick="openEditEnrollmentCommittee(<?= $a['id'] ?>, '<?= htmlspecialchars(addslashes($a['full_name'])) ?>', '<?= htmlspecialchars(addslashes($a['email'])) ?>', '<?= htmlspecialchars(addslashes($a['department'])) ?>', '<?= htmlspecialchars(addslashes($a['account_status'] ?? 'active')) ?>')">
                                         Edit
                                     </button>
                                     <form action="<?= BASE_URL ?>admin/enrollment-committees/delete" method="POST" style="margin:0;"
@@ -114,6 +114,13 @@
                 <label>College *</label>
                 <input type="text" name="department" id="editAdvDept" required>
             </div>
+            <div class="form-group">
+                <label>Account Status</label>
+                <select name="status" id="editAdvStatus" class="form-control" style="width:100%;">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
                         onclick="document.getElementById('editEnrollmentCommitteeModal').style.display='none'">Cancel</button>
@@ -124,11 +131,12 @@
 </div>
 
 <script>
-function openEditEnrollmentCommittee(id, name, email, dept) {
+function openEditEnrollmentCommittee(id, name, email, dept, status = 'active') {
     document.getElementById('editAdvId').value     = id;
     document.getElementById('editAdvName').value   = name;
     document.getElementById('editAdvEmail').value  = email;
     document.getElementById('editAdvDept').value   = dept;
+    document.getElementById('editAdvStatus').value = status || 'active';
     document.getElementById('editEnrollmentCommitteeModal').style.display = 'flex';
 }
 </script>

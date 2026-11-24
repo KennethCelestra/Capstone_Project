@@ -108,7 +108,7 @@ $cPending = count($students) - $cFlagged - $cCleared;
     </div>
     <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
         <button type="button" class="btn btn-primary" onclick="openConfirmAllModal()">
-            Confirm All
+            <i class="bi bi-check2-all me-1"></i> Sign All
         </button>
     </div>
 </div>
@@ -121,6 +121,93 @@ $cPending = count($students) - $cFlagged - $cCleared;
     <span class="badge bg-success"><i class="bi bi-check-circle"></i> <?= $cCleared ?> cleared</span>
     <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> <?= $cPending ?> pending</span>
 </div>
+
+<!-- All Offices Clearance Progress — Dean only (A11) -->
+<?php if (!empty($isDean) && !empty($otherSignatoryProgress)): ?>
+<div class="card mb-4" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow:hidden;">
+    <div style="padding:0.75rem 1.25rem; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+        <h5 style="margin:0; font-weight:700; font-size:1rem;"><i class="bi bi-bar-chart-line me-2"></i>All Offices Progress</h5>
+        <span class="text-muted" style="font-size:0.82rem;">Visible to Dean only &mdash; expand a row to see flagged students</span>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table mb-0" style="width:100%; font-size:0.88rem;">
+            <thead>
+                <tr style="background:var(--surface2);">
+                    <th style="padding:0.6rem 1rem; width:28px;"></th>
+                    <th style="padding:0.6rem 1rem;">Office</th>
+                    <th style="padding:0.6rem 1rem;">Signatory</th>
+                    <th class="text-center" style="padding:0.6rem 1rem; width:12%;">Signed</th>
+                    <th class="text-center" style="padding:0.6rem 1rem; width:12%;">Pending</th>
+                    <th class="text-center" style="padding:0.6rem 1rem; width:12%;">Flagged</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($otherSignatoryProgress as $p): ?>
+                <?php
+                $sigId   = null;
+                // Find the signatory_id key whose first row matches this office+full_name
+                foreach ($flaggedBySignatory as $sid => $rows) {
+                    if ($rows[0]['office'] === $p['office'] && $rows[0]['signatory_name'] === $p['full_name']) {
+                        $sigId = $sid;
+                        break;
+                    }
+                }
+                $hasFlagged  = $sigId !== null && !empty($flaggedBySignatory[$sigId]);
+                $expandRowId = 'dean-sig-expand-' . md5($p['office'] . $p['full_name']);
+                ?>
+                <tr class="border-bottom" style="cursor:<?= $hasFlagged ? 'pointer' : 'default' ?>;"
+                    <?php if ($hasFlagged): ?>onclick="toggleDeanRow('<?= $expandRowId ?>', this)"<?php endif; ?>>
+                    <td style="padding:0.5rem 0.75rem; text-align:center; color:var(--text-muted);">
+                        <?php if ($hasFlagged): ?>
+                            <i class="bi bi-chevron-right" id="icon-<?= $expandRowId ?>" style="transition:transform .2s;"></i>
+                        <?php endif; ?>
+                    </td>
+                    <td style="padding:0.5rem 1rem;"><strong><?= htmlspecialchars($p['office']) ?></strong></td>
+                    <td style="padding:0.5rem 1rem;" class="text-muted"><?= htmlspecialchars($p['full_name']) ?></td>
+                    <td class="text-center" style="padding:0.5rem 1rem;"><span class="badge bg-success"><?= (int)$p['signed_count'] ?></span></td>
+                    <td class="text-center" style="padding:0.5rem 1rem;"><span class="badge bg-warning text-dark"><?= (int)$p['pending_count'] ?></span></td>
+                    <td class="text-center" style="padding:0.5rem 1rem;">
+                        <?php if ((int)$p['flagged_count'] > 0): ?>
+                            <span class="badge bg-danger"><?= (int)$p['flagged_count'] ?></span>
+                        <?php else: ?>
+                            <span class="badge bg-secondary">0</span>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <?php if ($hasFlagged): ?>
+                <tr id="<?= $expandRowId ?>" style="display:none; background:var(--surface2);">
+                    <td></td>
+                    <td colspan="5" style="padding:0.6rem 1.25rem 0.9rem;">
+                        <div style="font-size:0.82rem; font-weight:600; color:var(--text-muted); margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.04em;">
+                            <i class="bi bi-flag-fill text-danger me-1"></i> Flagged students by <?= htmlspecialchars($p['office']) ?>
+                        </div>
+                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                            <thead>
+                                <tr style="color:var(--text-muted);">
+                                    <th style="padding:0.3rem 0.5rem; font-weight:600;">Student ID</th>
+                                    <th style="padding:0.3rem 0.5rem; font-weight:600;">Name</th>
+                                    <th style="padding:0.3rem 0.5rem; font-weight:600;">Flag Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($flaggedBySignatory[$sigId] as $fs): ?>
+                                <tr style="border-top:1px solid var(--border);">
+                                    <td style="padding:0.35rem 0.5rem; font-family:monospace;"><?= htmlspecialchars($fs['student_number']) ?></td>
+                                    <td style="padding:0.35rem 0.5rem;"><?= htmlspecialchars($fs['full_name']) ?></td>
+                                    <td style="padding:0.35rem 0.5rem; color:var(--danger, #dc3545); font-style:italic;"><?= htmlspecialchars($fs['flag_note']) ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <?php endif; ?>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- ===== Filter Bar (client-side, no page reload) ===== -->
 <div>
@@ -138,40 +225,30 @@ $cPending = count($students) - $cFlagged - $cCleared;
                 <option value="pending">Pending</option>
             </select>
         </div>
-        <?php if (!empty($colleges)): ?>
         <div class="filter-group">
-            <input type="text" list="college-list" id="sig-college-filter" class="form-control"
-                   placeholder="All Colleges" style="max-width: 140px;"
-                   oninput="applyFilters()">
-            <datalist id="college-list">
+            <select id="sig-college-filter" class="form-select" style="max-width: 140px;" onchange="loadFilterPrograms(this.value); applyFilters();">
+                <option value="">All Colleges</option>
                 <?php foreach ($colleges as $col): ?>
-                    <option value="<?= htmlspecialchars($col) ?>">
+                    <option value="<?= htmlspecialchars($col) ?>"><?= htmlspecialchars($col) ?></option>
                 <?php endforeach; ?>
-            </datalist>
+            </select>
         </div>
-        <?php endif; ?>
-        <?php if (!empty($courses)): ?>
         <div class="filter-group">
-            <input type="text" list="course-list" id="sig-course-filter" class="form-control"
-                   placeholder="All Courses" style="max-width: 140px;"
-                   oninput="applyFilters()">
-            <datalist id="course-list">
+            <select id="sig-course-filter" class="form-select" style="max-width: 150px;" onchange="applyFilters()">
+                <option value="">All Programs</option>
                 <?php foreach ($courses as $course): ?>
-                    <option value="<?= htmlspecialchars($course) ?>">
+                    <option value="<?= htmlspecialchars($course) ?>"><?= htmlspecialchars($course) ?></option>
                 <?php endforeach; ?>
-            </datalist>
+            </select>
         </div>
-        <?php endif; ?>
         <?php if (!empty($yearLevels)): ?>
         <div class="filter-group">
-            <input type="text" list="year-list" id="sig-year-filter" class="form-control"
-                   placeholder="All Years" style="max-width: 110px;"
-                   oninput="applyFilters()">
-            <datalist id="year-list">
+            <select id="sig-year-filter" class="form-select" style="max-width: 110px;" onchange="applyFilters()">
+                <option value="">All Years</option>
                 <?php foreach ($yearLevels as $yr): ?>
-                    <option value="<?= $yr ?>">
+                    <option value="<?= $yr ?>"><?= $yr ?><?= $yr == 1 ? 'st' : ($yr == 2 ? 'nd' : ($yr == 3 ? 'rd' : 'th')) ?> Yr</option>
                 <?php endforeach; ?>
-            </datalist>
+            </select>
         </div>
         <?php endif; ?>
         <button type="button" class="btn btn-secondary btn-sm" onclick="clearFilters()"
@@ -216,7 +293,7 @@ $cPending = count($students) - $cFlagged - $cCleared;
                         <th>Student ID</th>
                         <th>Name</th>
                         <th>College</th>
-                        <th>Course</th>
+                        <th>Program</th>
                         <th>Year/Sec</th>
                         <th>Standing</th>
                         <th style="width:22%;">Flag Note</th>
@@ -231,7 +308,12 @@ $cPending = count($students) - $cFlagged - $cCleared;
                         </td>
                     </tr>
                     <?php foreach ($students as $s): ?>
-                        <?php $rowClass = $s['status'] === 'flagged' ? 'table-danger' : ($s['status'] === 'cleared' ? 'table-success' : ''); ?>
+                        <?php 
+                        $rowClass = $s['status'] === 'flagged' ? 'table-danger' : ($s['status'] === 'cleared' ? 'table-success' : ''); 
+                        $isFinal = !empty($s['is_final']);
+                        $otherUnapproved = (int)($s['other_unapproved_count'] ?? 0);
+                        $deanBlocked = $isFinal && $otherUnapproved > 0;
+                        ?>
                         <tr class="border-bottom <?= $rowClass ?>" id="row-<?= $s['id'] ?>"
                             data-search="<?= strtolower(htmlspecialchars($s['last_name'] . ' ' . $s['first_name'] . ' ' . $s['student_number'])) ?>"
                             data-status="<?= htmlspecialchars($s['status']) ?>"
@@ -240,10 +322,14 @@ $cPending = count($students) - $cFlagged - $cCleared;
                             data-year="<?= htmlspecialchars($s['year_level']) ?>">
                             <td class="py-3 px-3">
                                 <?php if ($s['status'] === 'pending'): ?>
-                                    <input type="checkbox" name="student_ids[]" value="<?= $s['id'] ?>"
-                                           class="student-chk"
-                                           style="width:16px; height:16px; cursor:pointer; accent-color:var(--primary);"
-                                           onchange="onCheckboxChange()">
+                                    <?php if ($deanBlocked): ?>
+                                        <input type="checkbox" disabled title="Waiting for other offices to clear" style="width:16px; height:16px; opacity:0.35; cursor:not-allowed;">
+                                    <?php else: ?>
+                                        <input type="checkbox" name="student_ids[]" value="<?= $s['id'] ?>"
+                                               class="student-chk"
+                                               style="width:16px; height:16px; cursor:pointer; accent-color:var(--primary);"
+                                               onchange="onCheckboxChange()">
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </td>
                             <td><strong><?= htmlspecialchars($s['student_number']) ?></strong></td>
@@ -256,6 +342,8 @@ $cPending = count($students) - $cFlagged - $cCleared;
                                     <span class="badge bg-danger">Flagged</span>
                                 <?php elseif ($s['status'] === 'cleared'): ?>
                                     <span class="badge bg-success">Cleared</span>
+                                <?php elseif ($deanBlocked): ?>
+                                    <span class="badge bg-secondary" title="Waiting for other offices to sign first"><i class="bi bi-hourglass-split"></i> Awaiting Others</span>
                                 <?php else: ?>
                                     <span class="badge bg-warning text-dark">Pending</span>
                                 <?php endif; ?>
@@ -269,19 +357,44 @@ $cPending = count($students) - $cFlagged - $cCleared;
                                     <span class="text-muted small">—</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="text-end">
-                                <?php if ($s['status'] === 'flagged'): ?>
-                                    <button type="button" class="btn btn-success btn-sm" onclick="openUnflagModal(<?= $selectedCid ?>, <?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['first_name'] . ' ' . $s['last_name'])) ?>')">
-                                        <i class="bi bi-check2-circle"></i> Unflag
+                            <td class="text-end" style="white-space:nowrap;">
+                                <div class="action-cell" style="display:flex; justify-content:flex-end; gap:0.4rem; align-items:center;">
+                                    <?php if ($s['status'] === 'flagged'): ?>
+                                        <button type="button" class="btn btn-success btn-sm" onclick="openUnflagModal(<?= $selectedCid ?>, <?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['first_name'] . ' ' . $s['last_name'])) ?>')" <?= $deanBlocked ? 'disabled title="Cannot sign until other offices clear this student"' : '' ?>>
+                                            <i class="bi bi-check2"></i> Sign
+                                        </button>
+                                    <?php elseif ($s['status'] === 'cleared'): ?>
+                                        <span class="badge bg-success" style="padding:0.4rem 0.6rem;"><i class="bi bi-check2"></i> Signed</span>
+                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                                onclick="openFlagModal(<?= $selectedCid ?>, <?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['first_name'] . ' ' . $s['last_name'])) ?>')" title="Flag this student">
+                                            <i class="bi bi-flag"></i> Flag
+                                        </button>
+                                    <?php else: ?>
+                                        <?php if ($deanBlocked): ?>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" disabled title="Waiting for other offices to clear this student first">
+                                                <i class="bi bi-hourglass-split"></i> Awaiting Others
+                                            </button>
+                                        <?php else: ?>
+                                            <form action="<?= BASE_URL ?>signatory/students/clear" method="POST" style="margin:0; display:inline;">
+                                                <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                                                <input type="hidden" name="clearance_id" value="<?= $selectedCid ?>">
+                                                <input type="hidden" name="student_id" value="<?= $s['id'] ?>">
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="bi bi-check2"></i> Sign
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                                onclick="openFlagModal(<?= $selectedCid ?>, <?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['first_name'] . ' ' . $s['last_name'])) ?>')">
+                                            <i class="bi bi-flag"></i> Flag
+                                        </button>
+                                    <?php endif; ?>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="openRequirementsModal(<?= $selectedCid ?>, <?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['last_name'] . ', ' . $s['first_name'])) ?>')"
+                                            title="Manage Requirements / Uploads">
+                                        <i class="bi bi-paperclip"></i>
                                     </button>
-                                <?php elseif ($s['status'] === 'cleared'): ?>
-                                    <span class="text-success small fw-bold">Cleared</span>
-                                <?php else: ?>
-                                    <button type="button" class="btn btn-danger btn-sm"
-                                            onclick="openFlagModal(<?= $selectedCid ?>, <?= $s['id'] ?>, '<?= htmlspecialchars(addslashes($s['first_name'] . ' ' . $s['last_name'])) ?>')">
-                                        <i class="bi bi-flag"></i> Flag
-                                    </button>
-                                <?php endif; ?>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -361,31 +474,66 @@ $cPending = count($students) - $cFlagged - $cCleared;
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeUnflagModal()">Cancel</button>
-                <button type="submit" class="btn btn-success">Confirm</button>
+                <button type="submit" class="btn btn-success"><i class="bi bi-check2"></i> Sign</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- ===== Confirm All Modal ===== -->
+<!-- ===== Confirm / Sign All Modal ===== -->
 <div id="confirm-all-modal" class="modal" style="display:none;" onclick="closeConfirmAllModalOnOverlay(event)">
     <div class="modal-box" style="max-width: 440px; padding: 1.25rem 1.5rem;">
         <div class="modal-header" style="margin-bottom: 0.75rem;">
-            <h3>Confirm All</h3>
+            <h3>Sign All</h3>
             <button type="button" class="modal-close" onclick="closeConfirmAllModal()">✕</button>
         </div>
         <form action="<?= BASE_URL ?>signatory/confirm-all" method="POST" id="confirm-all-form-modal">
             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
             <input type="hidden" name="clearance_id" value="<?= $selectedCid ?? 0 ?>">
             <div class="modal-body" style="padding: 0; margin-bottom: 1rem;">
-                <p style="margin-bottom: 0.25rem;">This will clear all pending students.</p>
+                <p style="margin-bottom: 0.25rem;">This will sign and clear all pending students.</p>
                 <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Are you sure you want to continue?</p>
             </div>
             <div class="modal-footer" style="padding-top: 0; margin-top: 1rem; border-top: none; display: flex; justify-content: flex-end; gap: 0.5rem;">
                 <button type="button" class="btn btn-secondary" onclick="closeConfirmAllModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary" id="confirm-all-btn-modal" onclick="this.disabled=true; this.innerHTML='<span class=\'spinner-border spinner-border-sm\'></span> Processing...'; this.form.submit();">Confirm All</button>
+                <button type="submit" class="btn btn-primary" id="confirm-all-btn-modal" onclick="this.disabled=true; this.innerHTML='<span class=\'spinner-border spinner-border-sm\'></span> Processing...'; this.form.submit();">Sign All</button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- ===== Requirements Modal ===== -->
+<div id="requirements-modal" class="modal" style="display:none;" onclick="closeRequirementsModalOnOverlay(event)">
+    <div class="modal-box" style="max-width: 580px;">
+        <div class="modal-header">
+            <h3><i class="bi bi-paperclip me-1"></i> Student Requirements</h3>
+            <button type="button" class="modal-close" onclick="closeRequirementsModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p class="mb-3">Student: <strong id="req-modal-student-name"></strong></p>
+
+            <!-- Upload Box -->
+            <form action="<?= BASE_URL ?>signatory/students/upload-requirement" method="POST" enctype="multipart/form-data" class="mb-3" style="background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:0.9rem;">
+                <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                <input type="hidden" name="clearance_id" id="req-upload-clearance-id">
+                <input type="hidden" name="student_id"   id="req-upload-student-id">
+                <label class="form-label" style="font-weight:600; font-size:0.85rem;">Upload Document (PDF, JPG, PNG &mdash; max 5MB)</label>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                    <input type="file" name="requirement" class="form-control form-control-sm" required accept=".pdf,.jpg,.jpeg,.png,.webp" style="flex:1;">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-upload me-1"></i> Upload
+                    </button>
+                </div>
+            </form>
+
+            <h5 style="font-size:0.92rem; font-weight:700; margin-bottom:0.5rem;">Uploaded Files</h5>
+            <div id="req-files-container" style="max-height:220px; overflow-y:auto;">
+                <div class="text-center py-3 text-muted"><span class="spinner-border spinner-border-sm"></span> Loading...</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeRequirementsModal()">Close</button>
+        </div>
     </div>
 </div>
 
@@ -503,6 +651,28 @@ function submitBulkFlag() {
 }
 
 // ---- Client-side filtering ----
+function loadFilterPrograms(college) {
+    const sel = document.getElementById('sig-course-filter');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">All Programs</option>';
+    if (!college) {
+        applyFilters();
+        return;
+    }
+    fetch('<?= BASE_URL ?>api/programs?college=' + encodeURIComponent(college))
+        .then(r => r.json())
+        .then(data => {
+            data.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.code;
+                opt.textContent = p.code;
+                sel.appendChild(opt);
+            });
+            applyFilters();
+        })
+        .catch(() => applyFilters());
+}
+
 function applyFilters() {
     const search  = (document.getElementById('sig-search')?.value  || '').toLowerCase().trim();
     const status  =  document.getElementById('sig-status-filter')?.value || 'all';
@@ -545,6 +715,79 @@ function clearFilters() {
     applyFilters();
 }
 
+// ---- Dean: expand/collapse flagged-student sub-rows ----
+function toggleDeanRow(rowId, triggerTr) {
+    const row  = document.getElementById(rowId);
+    const icon = document.getElementById('icon-' + rowId);
+    if (!row) return;
+    const isOpen = row.style.display !== 'none';
+    row.style.display = isOpen ? 'none' : '';
+    if (icon) icon.style.transform = isOpen ? '' : 'rotate(90deg)';
+}
+
+// ---- Requirements modal ----
+function openRequirementsModal(cid, sid, studentName) {
+    document.getElementById('req-upload-clearance-id').value = cid;
+    document.getElementById('req-upload-student-id').value   = sid;
+    document.getElementById('req-modal-student-name').textContent = studentName;
+    document.getElementById('requirements-modal').style.display = 'flex';
+
+    const container = document.getElementById('req-files-container');
+    container.innerHTML = '<div class="text-center py-3 text-muted"><span class="spinner-border spinner-border-sm"></span> Loading...</div>';
+
+    fetch('<?= BASE_URL ?>signatory/students/requirements?clearance_id=' + cid + '&student_id=' + sid)
+        .then(r => r.json())
+        .then(files => {
+            if (!files || files.length === 0) {
+                container.innerHTML = '<p class="text-muted small mb-0">No requirements uploaded yet for this student.</p>';
+                return;
+            }
+            let html = '<div class="list-group">';
+            files.forEach(f => {
+                const dateStr = new Date(f.uploaded_at).toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
+                html += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center p-2 mb-1" style="background:var(--surface); border:1px solid var(--border); border-radius:6px;">
+                        <div>
+                            <strong style="font-size:0.88rem;">${escapeHtml(f.file_name)}</strong>
+                            <div class="text-muted" style="font-size:0.75rem;">
+                                ${escapeHtml(f.signatory_name)} (${escapeHtml(f.office)}) &bull; Initial: <span class="badge bg-secondary" style="font-size:0.7rem;">${escapeHtml(f.initials || 'SIG')}</span> &bull; ${dateStr}
+                            </div>
+                        </div>
+                        <div class="d-flex gap-1">
+                            <a href="<?= BASE_URL ?>signatory/requirements/download?id=${f.id}" class="btn btn-sm btn-outline-primary" target="_blank" title="Download">
+                                <i class="bi bi-download"></i>
+                            </a>
+                            <form action="<?= BASE_URL ?>signatory/students/delete-requirement" method="POST" style="margin:0;" onsubmit="return confirm('Delete this requirement file?')">
+                                <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                                <input type="hidden" name="clearance_id" value="${cid}">
+                                <input type="hidden" name="id" value="${f.id}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        })
+        .catch(() => {
+            container.innerHTML = '<p class="text-danger small mb-0">Failed to load requirements.</p>';
+        });
+}
+
+function closeRequirementsModal() {
+    document.getElementById('requirements-modal').style.display = 'none';
+}
+function closeRequirementsModalOnOverlay(e) {
+    if (e.target === document.getElementById('requirements-modal')) closeRequirementsModal();
+}
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 // ---- Escape closes all modals ----
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
@@ -552,6 +795,7 @@ document.addEventListener('keydown', function(e) {
         closeUnflagModal();
         closeConfirmAllModal();
         closeBulkFlagModal();
+        closeRequirementsModal();
     }
 });
 </script>

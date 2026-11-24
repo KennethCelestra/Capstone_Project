@@ -18,17 +18,11 @@ $isStarted = !empty($clearance['started_at']);
         </p>
     </div>
     <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
-        <?php if (!empty($clearance['started_at'])): ?>
-            <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.55; cursor: not-allowed;" title="Clearance has already started and cannot be edited">
-                <i class="bi bi-lock-fill"></i> Edit Info
-            </button>
-        <?php else: ?>
-            <button class="btn btn-secondary btn-sm"
-                    onclick="openEditClearanceDetail(<?= $cid ?>, '<?= htmlspecialchars(addslashes($clearance['name'])) ?>', '<?= htmlspecialchars(addslashes($clearance['description'])) ?>', '<?= htmlspecialchars($clearance['school_year']) ?>')">
-                Edit Info
-            </button>
-        <?php endif; ?>
-        <?php if (!empty($clearance['started_at'])): ?>
+        <button class="btn btn-secondary btn-sm"
+                onclick="openEditClearanceDetail(<?= $cid ?>, '<?= htmlspecialchars(addslashes($clearance['name'])) ?>', '<?= htmlspecialchars(addslashes($clearance['description'])) ?>', '<?= htmlspecialchars($clearance['school_year']) ?>')">
+            <i class="bi bi-pencil me-1"></i> Edit Info
+        </button>
+        <?php if ($isStarted): ?>
             <span class="badge badge-success" title="Signing started">
                 Started <?= date('M j, Y g:i A', strtotime($clearance['started_at'])) ?>
             </span>
@@ -40,15 +34,6 @@ $isStarted = !empty($clearance['started_at']);
         <?php endif; ?>
     </div>
 </div>
-
-<?php if ($isStarted): ?>
-    <div style="background: rgba(13, 110, 253, 0.08); border: 1px solid rgba(13, 110, 253, 0.25); color: var(--primary); padding: 0.85rem 1.15rem; border-radius: 8px; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.65rem; font-size: 0.9rem;">
-        <i class="bi bi-lock-fill" style="font-size: 1.15rem;"></i>
-        <div>
-            <strong>Clearance is Started &amp; Active.</strong> Signatories, enrollment committee members, and enrolled students are locked and cannot be added or deleted.
-        </div>
-    </div>
-<?php endif; ?>
 
 <!-- ===== TABS ===== -->
 <div class="tabs">
@@ -67,12 +52,10 @@ $isStarted = !empty($clearance['started_at']);
 <div id="tab-sig" class="tab-content active">
     <div class="section-header">
         <h3>Assigned Signatories</h3>
-        <?php if (!$isStarted): ?>
-            <button class="btn btn-primary btn-sm"
-                    onclick="document.getElementById('assignSigModal').style.display='flex'">
-                + Assign Signatory
-            </button>
-        <?php endif; ?>
+        <button class="btn btn-primary btn-sm"
+                onclick="document.getElementById('assignSigModal').style.display='flex'">
+            + Assign Signatory
+        </button>
     </div>
     <?php if (empty($assignedSignatories)): ?>
         <p class="text-muted">No signatories assigned yet.</p>
@@ -90,25 +73,21 @@ $isStarted = !empty($clearance['started_at']);
                                 <?php if ($s['scope_type'] === 'college'): ?>
                                     College: <?= htmlspecialchars($s['scope_value']) ?>
                                 <?php elseif ($s['scope_type'] === 'course'): ?>
-                                    Course: <?= htmlspecialchars($s['scope_value']) ?>
+                                    Program: <?= htmlspecialchars($s['scope_value']) ?>
                                 <?php else: ?>
                                     <span class="text-muted" style="font-size:0.8rem;">All Students</span>
                                 <?php endif; ?>
                             </td>
                             <td class="text-end" data-label="Action">
                                 <div class="action-cell">
-                                    <?php if (!$isStarted): ?>
-                                        <form action="<?= BASE_URL ?>admin/clearances/signatories/remove"
-                                              method="POST" onsubmit="return confirmAction(this, 'Remove this signatory?', 'Remove', 'btn-danger')">
-                                             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
-                                             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
-                                             <input type="hidden" name="signatory_id" value="<?= $s['id'] ?>">
-                                             <input type="hidden" name="tab"          value="tab-sig">
-                                             <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                                        </form>
-                                    <?php else: ?>
-                                        <span class="badge badge-secondary" style="font-size:0.75rem; opacity: 0.8;"><i class="bi bi-lock-fill"></i> Locked</span>
-                                    <?php endif; ?>
+                                    <form action="<?= BASE_URL ?>admin/clearances/signatories/remove"
+                                          method="POST" onsubmit="return confirmAction(this, 'Remove this signatory?', 'Remove', 'btn-danger')">
+                                         <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                                         <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+                                         <input type="hidden" name="signatory_id" value="<?= $s['id'] ?>">
+                                         <input type="hidden" name="tab"          value="tab-sig">
+                                         <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -123,12 +102,10 @@ $isStarted = !empty($clearance['started_at']);
 <div id="tab-adv" class="tab-content" style="display:none">
     <div class="section-header">
         <h3>Assigned Enrollment Committee</h3>
-        <?php if (!$isStarted): ?>
-            <button class="btn btn-primary btn-sm"
-                    onclick="document.getElementById('assignAdvModal').style.display='flex'">
-                + Assign Member
-            </button>
-        <?php endif; ?>
+        <button class="btn btn-primary btn-sm"
+                onclick="document.getElementById('assignAdvModal').style.display='flex'">
+            + Assign Member
+        </button>
     </div>
     <?php if (empty($assignedEnrollmentCommittees)): ?>
         <p class="text-muted">No enrollment committee members assigned yet (optional).</p>
@@ -144,18 +121,14 @@ $isStarted = !empty($clearance['started_at']);
                             <td data-label="Email"><?= htmlspecialchars($a['email']) ?></td>
                             <td class="text-end" data-label="Action">
                                 <div class="action-cell">
-                                    <?php if (!$isStarted): ?>
-                                        <form action="<?= BASE_URL ?>admin/clearances/enrollment-committees/remove"
-                                              method="POST" onsubmit="return confirmAction(this, 'Remove this member?', 'Remove', 'btn-danger')">
-                                             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
-                                             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
-                                             <input type="hidden" name="enrollment_committee_id"   value="<?= $a['id'] ?>">
-                                             <input type="hidden" name="tab"          value="tab-adv">
-                                             <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                                        </form>
-                                    <?php else: ?>
-                                        <span class="badge badge-secondary" style="font-size:0.75rem; opacity: 0.8;"><i class="bi bi-lock-fill"></i> Locked</span>
-                                    <?php endif; ?>
+                                    <form action="<?= BASE_URL ?>admin/clearances/enrollment-committees/remove"
+                                          method="POST" onsubmit="return confirmAction(this, 'Remove this member?', 'Remove', 'btn-danger')">
+                                         <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                                         <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+                                         <input type="hidden" name="enrollment_committee_id"   value="<?= $a['id'] ?>">
+                                         <input type="hidden" name="tab"          value="tab-adv">
+                                         <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -170,18 +143,16 @@ $isStarted = !empty($clearance['started_at']);
 <div id="tab-stu" class="tab-content" style="display:none">
     <div class="section-header">
         <h3>Enrolled Students</h3>
-        <?php if (!$isStarted): ?>
-            <?php if (($clearance['type'] ?? 'regular') === 'exit'): ?>
-                <button class="btn btn-warning btn-sm"
-                        onclick="document.getElementById('enrollFourthYearModal').style.display='flex'">
-                    Enroll 4th-Year Students
-                </button>
-            <?php else: ?>
-                <button class="btn btn-primary btn-sm"
-                        onclick="document.getElementById('enrollAllModal').style.display='flex'">
-                    Enroll All Active Students
-                </button>
-            <?php endif; ?>
+        <?php if (($clearance['type'] ?? 'regular') === 'exit'): ?>
+            <button class="btn btn-warning btn-sm"
+                    onclick="document.getElementById('enrollFourthYearModal').style.display='flex'">
+                Enroll 4th-Year Students
+            </button>
+        <?php else: ?>
+            <button class="btn btn-primary btn-sm"
+                    onclick="document.getElementById('enrollAllModal').style.display='flex'">
+                Enroll All Active Students
+            </button>
         <?php endif; ?>
     </div>
     <?php if (empty($students)): ?>
@@ -199,6 +170,31 @@ $isStarted = !empty($clearance['started_at']);
             <?php endif; ?>
         </div>
     <?php else: ?>
+        <div class="filter-bar mb-3" style="display:flex; gap:.5rem; flex-wrap:wrap; align-items:center;">
+            <input type="text" id="admin-stu-search" class="form-control" placeholder="Search name / ID…" oninput="applyAdminDetailFilters()" style="max-width:200px;">
+            
+            <select id="admin-stu-college-filter" class="form-control" style="max-width:130px;" onchange="loadAdminDetailPrograms(this.value); applyAdminDetailFilters();">
+                <option value="">All Colleges</option>
+                <option value="CAS">CAS</option>
+                <option value="CCI">CCI</option>
+                <option value="CEA">CEA</option>
+                <option value="COE">COE</option>
+                <option value="CIT">CIT</option>
+                <option value="CGBE">CGBE</option>
+            </select>
+
+            <select id="admin-stu-program-filter" class="form-control" style="max-width:150px;" onchange="applyAdminDetailFilters()">
+                <option value="">All Programs</option>
+            </select>
+
+            <select id="admin-stu-status-filter" class="form-control" style="max-width:130px;" onchange="applyAdminDetailFilters()">
+                <option value="all">All Statuses</option>
+                <option value="pending">In Progress</option>
+                <option value="cleared">Fully Cleared</option>
+                <option value="flagged">Has Issue</option>
+            </select>
+        </div>
+
         <div class="table-container">
             <table class="data-table">
                 <thead>
@@ -207,18 +203,19 @@ $isStarted = !empty($clearance['started_at']);
                         <th>Last Name</th>
                         <th>First Name</th>
                         <th>College</th>
-                        <th>Course</th>
+                        <th>Program</th>
                         <th>Year / Section</th>
                         <th class="text-end" style="white-space: nowrap;"></th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="admin-detail-stu-tbody">
                     <?php foreach ($students as $s):
                         $totalSig = (int) $s['total_signatories'];
                         $cleared  = (int) $s['cleared_count'];
                         $flagged  = (int) $s['flagged_count'];
                         $pending  = (int) $s['pending_count'];
 
+                        $stStatus = $flagged > 0 ? 'flagged' : ($cleared === $totalSig && $totalSig > 0 ? 'cleared' : 'pending');
                         if ($flagged > 0) {
                             $overallBadge = '<span class="badge badge-danger">Has Issue</span>';
                         } elseif ($totalSig > 0 && $cleared === $totalSig) {
@@ -227,29 +224,37 @@ $isStarted = !empty($clearance['started_at']);
                             $overallBadge = '<span class="badge badge-warning">In Progress</span>';
                         }
                     ?>
-                        <tr class="<?= $flagged > 0 ? 'row-flagged' : ($cleared === $totalSig && $totalSig > 0 ? 'row-cleared' : '') ?>">
+                        <tr class="<?= $flagged > 0 ? 'row-flagged' : ($cleared === $totalSig && $totalSig > 0 ? 'row-cleared' : '') ?>"
+                            data-student-id="<?= $s['id'] ?>"
+                            data-name="<?= strtolower(htmlspecialchars($s['last_name'].' '.$s['first_name'])) ?>"
+                            data-sid="<?= strtolower(htmlspecialchars($s['student_number'])) ?>"
+                            data-college="<?= strtolower(htmlspecialchars($s['college'])) ?>"
+                            data-course="<?= strtolower(htmlspecialchars($s['course'])) ?>"
+                            data-status="<?= $stStatus ?>">
                             <td data-label="Student ID"><?= htmlspecialchars($s['student_number']) ?></td>
                             <td data-label="Last Name"><?= htmlspecialchars($s['last_name']) ?></td>
                             <td data-label="First Name"><?= htmlspecialchars($s['first_name']) ?></td>
                             <td data-label="College"><?= htmlspecialchars($s['college']) ?></td>
-                            <td data-label="Course"><?= htmlspecialchars($s['course']) ?></td>
+                            <td data-label="Program"><?= htmlspecialchars($s['course']) ?></td>
                             <td data-label="Year / Section"><?= $s['year_level'] ?> – <?= htmlspecialchars($s['section']) ?></td>
                             <td class="text-end" data-label="Action">
                                 <div class="action-cell">
+                                    <a href="<?= BASE_URL ?>admin/clearances/download-form?cid=<?= (int)$cid ?>&sid=<?= (int)$s['id'] ?>"
+                                       class="btn btn-outline-primary btn-sm" title="Download Clearance Form PDF">
+                                        <i class="bi bi-file-earmark-pdf"></i> PDF
+                                    </a>
                                     <button type="button" class="btn btn-secondary btn-sm"
                                             onclick="openStudentLogs(<?= (int)$cid ?>, <?= (int)$s['id'] ?>, <?= htmlspecialchars(json_encode($s['last_name'] . ', ' . $s['first_name']), ENT_QUOTES) ?>)">
                                         Logs
                                     </button>
-                                    <?php if (!$isStarted): ?>
-                                        <form action="<?= BASE_URL ?>admin/clearances/students/remove"
-                                              method="POST" onsubmit="return confirmAction(this, 'Remove student from clearance?', 'Remove', 'btn-danger')">
-                                             <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
-                                             <input type="hidden" name="clearance_id" value="<?= $cid ?>">
-                                             <input type="hidden" name="student_id"   value="<?= $s['id'] ?>">
-                                             <input type="hidden" name="tab"          value="tab-stu">
-                                             <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                                        </form>
-                                    <?php endif; ?>
+                                    <form action="<?= BASE_URL ?>admin/clearances/students/remove"
+                                          method="POST" onsubmit="return confirmAction(this, 'Remove student from clearance?', 'Remove', 'btn-danger')">
+                                         <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                                         <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+                                         <input type="hidden" name="student_id"   value="<?= $s['id'] ?>">
+                                         <input type="hidden" name="tab"          value="tab-stu">
+                                         <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -286,7 +291,6 @@ $isStarted = !empty($clearance['started_at']);
 <?php endif; ?>
 
 <!-- ====== Edit Clearance Modal ====== -->
-<?php if (!$isStarted): ?>
 <div id="editClearanceDetailModal" class="modal" style="display:none;">
     <div class="modal-box">
         <div class="modal-header">
@@ -337,7 +341,7 @@ $isStarted = !empty($clearance['started_at']);
                         <option value="all" style="font-weight: bold; color: var(--primary);">-- Assign All Signatories --</option>
                         <?php foreach ($unassignedSignatories as $us): ?>
                             <option value="<?= $us['id'] ?>">
-                                <?= htmlspecialchars($us['full_name']) ?> — <?= htmlspecialchars($us['office']) ?>
+                                <?= htmlspecialchars($us['full_name']) ?> — <?= htmlspecialchars($us['office']) ?> (<?= ucfirst($us['account_status'] ?? 'active') ?>)
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -377,7 +381,7 @@ $isStarted = !empty($clearance['started_at']);
                         <option value="all" style="font-weight: bold; color: var(--primary);">-- Assign All Enrollment Committees --</option>
                         <?php foreach ($unassignedEnrollmentCommittees as $ua): ?>
                             <option value="<?= $ua['id'] ?>">
-                                <?= htmlspecialchars($ua['full_name']) ?> — <?= htmlspecialchars($ua['department']) ?>
+                                <?= htmlspecialchars($ua['full_name']) ?> — <?= htmlspecialchars($ua['department']) ?> (<?= ucfirst($ua['account_status'] ?? 'active') ?>)
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -443,7 +447,6 @@ $isStarted = !empty($clearance['started_at']);
         </form>
     </div>
 </div>
-<?php endif; ?>
 
 <?php $logsUrl = BASE_URL . 'admin/clearances/student-logs'; include ROOT_PATH . '/app/Views/layouts/student_logs_modal.php'; ?>
 
@@ -476,6 +479,50 @@ function openEditClearanceDetail(id, name, desc, year) {
     document.getElementById('editDetailDesc').value = desc;
     document.getElementById('editDetailYear').value = year;
     document.getElementById('editClearanceDetailModal').style.display = 'flex';
+}
+
+function loadAdminDetailPrograms(college) {
+    const sel = document.getElementById('admin-stu-program-filter');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">All Programs</option>';
+    if (!college) {
+        applyAdminDetailFilters();
+        return;
+    }
+    fetch('<?= BASE_URL ?>api/programs?college=' + encodeURIComponent(college))
+        .then(r => r.json())
+        .then(data => {
+            data.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.code.toLowerCase();
+                opt.textContent = p.code;
+                sel.appendChild(opt);
+            });
+            applyAdminDetailFilters();
+        })
+        .catch(() => applyAdminDetailFilters());
+}
+
+function applyAdminDetailFilters() {
+    const search  = (document.getElementById('admin-stu-search')?.value || '').toLowerCase().trim();
+    const college = (document.getElementById('admin-stu-college-filter')?.value || '').toLowerCase();
+    const program = (document.getElementById('admin-stu-program-filter')?.value || '').toLowerCase();
+    const status  = document.getElementById('admin-stu-status-filter')?.value || 'all';
+
+    document.querySelectorAll('#admin-detail-stu-tbody tr[data-student-id]').forEach(row => {
+        const name    = (row.dataset.name    || '').toLowerCase();
+        const sid     = (row.dataset.sid     || '').toLowerCase();
+        const col     = (row.dataset.college || '').toLowerCase();
+        const prog    = (row.dataset.course  || '').toLowerCase();
+        const st      = (row.dataset.status  || '');
+
+        const show = (!search  || name.includes(search) || sid.includes(search))
+                  && (!college || col   === college)
+                  && (!program || prog  === program)
+                  && (status === 'all' || st === status);
+
+        row.style.display = show ? '' : 'none';
+    });
 }
 
 

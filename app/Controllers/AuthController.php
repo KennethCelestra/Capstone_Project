@@ -70,10 +70,17 @@ class AuthController extends Controller
         }
 
         if ($user) {
+            if (($user['account_status'] ?? 'active') === 'inactive') {
+                $this->setFlash('error', 'Your account is currently inactive. Please contact the administrator.');
+                $this->redirect('login');
+                return;
+            }
+
             session_regenerate_id(true);
             $_SESSION['user_id']   = $user['id'];
             $_SESSION['user_role'] = $role;
             $_SESSION['user_name'] = $user['full_name'];
+            $_SESSION['office']    = $user['office'] ?? '';
             $this->redirect(str_replace('_', '-', $role) . '/dashboard');
         } else {
             $this->setFlash('error', 'Invalid credentials. Please try again.');

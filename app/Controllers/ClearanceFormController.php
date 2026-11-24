@@ -70,6 +70,28 @@ class ClearanceFormController extends Controller
         $clearance   = $data['clearance'];
         $signatories = $data['signatories'];
 
+        // Sort signatories by office standard hierarchy
+        usort($signatories, function($a, $b) {
+            $order = [
+                'Library' => 1,
+                'Cashier' => 2,
+                'Guidance Office' => 3,
+                'guidance' => 3,
+                'Department Head' => 4,
+                'Department Office' => 4,
+                'Dean' => 5,
+                'Dean Office' => 5,
+                'Director of Student Affairs' => 6,
+                'Registrar' => 7
+            ];
+            $oa = $order[$a['office']] ?? 50;
+            $ob = $order[$b['office']] ?? 50;
+            if ($oa === $ob) {
+                return strcmp($a['office'], $b['office']);
+            }
+            return $oa <=> $ob;
+        });
+
         if (($clearance['type'] ?? 'regular') === 'exit') {
             require_once ROOT_PATH . '/app/Views/exit_clearance_form.php';
         } else {

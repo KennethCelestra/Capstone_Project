@@ -40,12 +40,14 @@ $routes = [
     'POST /admin/enrollment-committees/add'                    => ['AdminController', 'addEnrollmentCommittee'],
     'POST /admin/enrollment-committees/edit'                   => ['AdminController', 'editEnrollmentCommittee'],
     'POST /admin/enrollment-committees/delete'                 => ['AdminController', 'deleteEnrollmentCommittee'],
+    'POST /admin/enrollment-committees/status'                 => ['AdminController', 'updateEnrollmentCommitteeStatus'],
 
     // ---- Admin: Signatories ----
     'GET /admin/signatories'                      => ['AdminController', 'signatories'],
     'POST /admin/signatories/add'                 => ['AdminController', 'addSignatory'],
     'POST /admin/signatories/edit'                => ['AdminController', 'editSignatory'],
     'POST /admin/signatories/delete'              => ['AdminController', 'deleteSignatory'],
+    'POST /admin/signatories/status'              => ['AdminController', 'updateSignatoryStatus'],
 
     // ---- Admin: Clearances ----
     'GET /admin/clearances'                       => ['AdminController', 'clearances'],
@@ -55,6 +57,9 @@ $routes = [
     'POST /admin/clearances/archive'              => ['AdminController', 'archiveClearance'],
     'POST /admin/clearances/unarchive'            => ['AdminController', 'unarchiveClearance'],
     'POST /admin/clearances/start'                => ['AdminController', 'startClearance'],
+    'GET /admin/clearances/download-form'         => ['AdminController', 'downloadClearanceForm'],
+    'GET /admin/clearance-template'               => ['AdminController', 'clearanceTemplate'],
+    'POST /admin/clearance-template/update'       => ['AdminController', 'updateClearanceTemplate'],
     'GET /admin/archived-clearances'              => ['AdminController', 'archivedClearances'],
 
     // ---- Admin: Clearance Detail (dynamic ID via GET param) ----
@@ -92,9 +97,29 @@ $routes = [
     'POST /signatory/students/clear-all'          => ['SignatoryController', 'clearAll'],
     'POST /signatory/confirm/submit'              => ['SignatoryController', 'submitConfirm'],
     'POST /signatory/confirm-all'                 => ['SignatoryController', 'confirmAll'],
+    'POST /signatory/students/upload-requirement' => ['SignatoryController', 'uploadRequirement'],
+    'POST /signatory/students/delete-requirement' => ['SignatoryController', 'deleteRequirement'],
+    'GET /signatory/students/requirements'        => ['SignatoryController', 'getRequirementsJson'],
+    'GET /signatory/requirements/download'        => ['SignatoryController', 'downloadRequirement'],
     'POST /api/process-bg-emails'                 => ['SignatoryController', 'processBgEmails'],
 
     // ---- Public: Printable Clearance Form (token-secured, no login required) ----
     'GET /clearance/form'                         => ['ClearanceFormController', 'show'],
     'GET /clearance/logs'                         => ['ClearanceFormController', 'logs'],
+
+    // ---- API: Cascading Dropdowns ----
+    'GET /api/programs'                           => ['ApiController', 'programs'],
+    'GET /api/offices'                            => ['ApiController', 'offices'],
+    'GET /api/colleges'                           => ['ApiController', 'colleges'],
+
+    // ---- Admin: Departments, Programs & Offices ----
+    'GET /admin/departments'                      => ['AdminController', 'departments'],
+    'POST /admin/departments/colleges/add'        => ['AdminController', 'addCollege'],
+    'POST /admin/departments/colleges/delete'     => ['AdminController', 'deleteCollege'],
+    'POST /admin/departments/programs/add'        => ['AdminController', 'addProgram'],
+    'POST /admin/departments/programs/edit'       => ['AdminController', 'editProgram'],
+    'POST /admin/departments/programs/delete'     => ['AdminController', 'deleteProgram'],
+    'POST /admin/offices/add'                     => ['AdminController', 'addOffice'],
+    'POST /admin/offices/edit'                    => ['AdminController', 'editOffice'],
+    'POST /admin/offices/delete'                  => ['AdminController', 'deleteOffice'],
 ];
