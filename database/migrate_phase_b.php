@@ -1,10 +1,9 @@
 <?php
 require_once __DIR__ . '/../config/app.php';
+require_once __DIR__ . '/../core/Database.php';
 
 try {
-    $pdo = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASS, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-    ]);
+    $pdo = Database::getInstance();
 
     // Helper to check column existence
     $columnExists = function($table, $column) use ($pdo) {

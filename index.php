@@ -21,6 +21,7 @@ set_exception_handler(function (Throwable $e) {
     $msg = "[" . date('Y-m-d H:i:s') . "] EXCEPTION: " . $e->getMessage()
          . " in " . $e->getFile() . ":" . $e->getLine() . "\n" . $e->getTraceAsString() . "\n";
     @file_put_contents(ROOT_PATH . '/storage/logs/errors.txt', $msg, FILE_APPEND);
+    @file_put_contents('php://stderr', $msg);
     http_response_code(500);
     if (!headers_sent()) {
         if (file_exists(ROOT_PATH . '/app/Views/errors/500.php')) {

@@ -27,4 +27,4 @@ RUN mkdir -p /var/www/html/storage/logs /var/www/html/storage/requirements /var/
 ENV PORT=80
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+CMD ["sh", "-c", "php database/migrate_phase_a.php && php database/migrate_phase_b.php && apache2-foreground"]
