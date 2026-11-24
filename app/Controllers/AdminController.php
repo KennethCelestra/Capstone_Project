@@ -909,47 +909,6 @@ class AdminController extends Controller
         $this->redirect($back);
     }
 
-    public function submitForApproval(): void
-    {
-        $this->requireLogin('admin');
-        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
-        $id = (int)$this->getPost('clearance_id');
-        $clearance = $this->clearanceModel->findById($id);
-        $back = "admin/clearances/detail?id={$id}";
-
-        if (!$clearance) {
-            $this->setFlash('error', 'Clearance not found.');
-            $this->redirect('admin/clearances');
-            return;
-        }
-
-        // Find assigned Dean
-        $deanStmt = Database::getInstance()->prepare("
-            SELECT sg.id, sg.full_name, sg.email
-            FROM clearance_signatories cs
-            JOIN signatories sg ON sg.id = cs.signatory_id
-            WHERE cs.clearance_id = ? AND LOWER(sg.office) LIKE '%dean%'
-            LIMIT 1
-        ");
-        $deanStmt->execute([$id]);
-        $dean = $deanStmt->fetch();
-
-        if (!$dean) {
-            $this->setFlash('error', 'Please assign a Dean to this clearance before submitting for approval.');
-            $this->redirect($back);
-            return;
-        }
-
-        require_once ROOT_PATH . '/app/Models/ClearanceApproval.php';
-        $approvalModel = new ClearanceApproval();
-        $approvalModel->createRequest($id, (int)$dean['id'], $dean['full_name']);
-
-        Database::getInstance()->prepare("UPDATE clearances SET status = 'pending_approval' WHERE id = ?")->execute([$id]);
-
-        $this->setFlash('success', "Clearance submitted to Dean {$dean['full_name']} for approval.");
-        $this->redirect($back);
-    }
-
     public function downloadClearanceForm(): void
     {
         $this->requireLogin('admin');
@@ -1051,10 +1010,6 @@ class AdminController extends Controller
             return;
         }
 
-        require_once ROOT_PATH . '/app/Models/ClearanceApproval.php';
-        $approvalModel = new ClearanceApproval();
-        $latestApproval = $approvalModel->getLatestForClearance($id);
-
         $data = [
             'clearance'                      => $clearance,
             'cid'                            => $id,
@@ -1063,7 +1018,6 @@ class AdminController extends Controller
             'assignedEnrollmentCommittees'   => $this->clearanceModel->getEnrollmentCommittees($id),
             'unassignedEnrollmentCommittees' => $this->enrollmentCommitteeModel->findUnassigned($id),
             'students'                       => $this->clearanceModel->getStudentsWithStatus($id),
-            'latestApproval'                 => $latestApproval,
             'flash'                          => $this->getFlash(),
             'userName'                       => $_SESSION['user_name'],
         ];

@@ -1,6 +1,5 @@
 <?php
 require_once ROOT_PATH . '/app/Models/ClearanceStatus.php';
-require_once ROOT_PATH . '/app/Models/ClearanceApproval.php';
 require_once ROOT_PATH . '/app/Models/Clearance.php';
 require_once ROOT_PATH . '/app/Models/Signatory.php';
 require_once ROOT_PATH . '/app/Helpers/Mailer.php';
@@ -26,70 +25,12 @@ class SignatoryController extends Controller
         $signatoryId = (int) $_SESSION['user_id'];
         $clearances  = $this->statusModel->getClearancesForSignatory($signatoryId);
 
-        $signatoryRecord = $this->signatoryModel->findById($signatoryId);
-        $isDean = $signatoryRecord && stripos($signatoryRecord['office'], 'dean') !== false;
-        $approvalModel = new ClearanceApproval();
-        $pendingApprovals = $isDean ? $approvalModel->getPendingForSignatory($signatoryId) : [];
-
         $data = [
-            'clearances'       => $clearances,
-            'isDean'           => $isDean,
-            'pendingApprovals' => $pendingApprovals,
-            'flash'            => $this->getFlash(),
-            'userName'         => $_SESSION['user_name'],
+            'clearances' => $clearances,
+            'flash'      => $this->getFlash(),
+            'userName'   => $_SESSION['user_name'],
         ];
         $this->view('layouts/main', array_merge($data, ['content' => 'signatory/dashboard']));
-    }
-
-    public function approveClearance(): void
-    {
-        $this->requireLogin('signatory');
-        if (!$this->validateCsrfToken()) { $this->redirect('signatory/dashboard'); return; }
-        $approvalId  = (int) $this->getPost('approval_id');
-        $clearanceId = (int) $this->getPost('clearance_id');
-
-        $approvalModel  = new ClearanceApproval();
-        $clearanceModel = new Clearance();
-
-        if ($approvalModel->approve($approvalId)) {
-            $clearanceModel->markStarted($clearanceId);
-
-            $students = $clearanceModel->getEnrolledStudentsForEmail($clearanceId);
-            if (!empty($students)) {
-                if (!isset($_SESSION['bg_emails'])) {
-                    $_SESSION['bg_emails'] = [];
-                }
-                $_SESSION['bg_emails'][] = [
-                    'type'     => 'started',
-                    'students' => $students,
-                ];
-            }
-
-            $this->setFlash('success', 'Clearance approved and officially live! Enrolled students have been queued for notification.');
-        } else {
-            $this->setFlash('error', 'Could not approve this clearance.');
-        }
-
-        $this->redirect('signatory/dashboard');
-    }
-
-    public function rejectClearance(): void
-    {
-        $this->requireLogin('signatory');
-        if (!$this->validateCsrfToken()) { $this->redirect('signatory/dashboard'); return; }
-        $approvalId  = (int) $this->getPost('approval_id');
-        $clearanceId = (int) $this->getPost('clearance_id');
-        $note        = trim((string)$this->getPost('note', ''));
-
-        $approvalModel = new ClearanceApproval();
-        if ($approvalModel->reject($approvalId, $note)) {
-            Database::getInstance()->prepare("UPDATE clearances SET status = 'draft' WHERE id = ?")->execute([$clearanceId]);
-            $this->setFlash('warning', 'Clearance rejected and returned to draft for administrative revisions.');
-        } else {
-            $this->setFlash('error', 'Could not reject this clearance.');
-        }
-
-        $this->redirect('signatory/dashboard');
     }
 
     public function uploadRequirement(): void

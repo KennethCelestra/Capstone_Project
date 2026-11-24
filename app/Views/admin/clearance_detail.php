@@ -22,31 +22,14 @@ $isStarted = !empty($clearance['started_at']);
                 onclick="openEditClearanceDetail(<?= $cid ?>, '<?= htmlspecialchars(addslashes($clearance['name'])) ?>', '<?= htmlspecialchars(addslashes($clearance['description'])) ?>', '<?= htmlspecialchars($clearance['school_year']) ?>')">
             <i class="bi bi-pencil me-1"></i> Edit Info
         </button>
-        <?php $clStatus = $clearance['status'] ?? (empty($clearance['started_at']) ? 'draft' : 'active'); ?>
-        <?php if ($clStatus === 'active' || !empty($clearance['started_at'])): ?>
+        <?php if ($isStarted): ?>
             <span class="badge badge-success" title="Signing started">
                 Started <?= date('M j, Y g:i A', strtotime($clearance['started_at'])) ?>
             </span>
-        <?php elseif ($clStatus === 'pending_approval'): ?>
-            <span class="badge badge-warning text-dark" style="padding:0.4rem 0.75rem;">
-                <i class="bi bi-clock-history me-1"></i> Awaiting Dean Approval (<?= htmlspecialchars($latestApproval['approver_name'] ?? 'Dean') ?>)
-            </span>
         <?php else: ?>
-            <?php if (!empty($latestApproval) && $latestApproval['status'] === 'rejected'): ?>
-                <span class="badge bg-danger" title="<?= htmlspecialchars($latestApproval['note'] ?? '') ?>">
-                    <i class="bi bi-x-circle me-1"></i> Rejected by Dean: <?= htmlspecialchars($latestApproval['note'] ?? 'No note') ?>
-                </span>
-            <?php endif; ?>
-            <form action="<?= BASE_URL ?>admin/clearances/submit-for-approval" method="POST" style="margin:0; display:inline;">
-                <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
-                <input type="hidden" name="clearance_id" value="<?= $cid ?>">
-                <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Submit this clearance to the Dean for approval?')">
-                    <i class="bi bi-send-check me-1"></i> Submit for Dean Approval
-                </button>
-            </form>
-            <button class="btn btn-outline-primary btn-sm" id="startClearanceBtn"
+            <button class="btn btn-primary btn-sm" id="startClearanceBtn"
                     onclick="document.getElementById('startClearanceModal').style.display='flex'">
-                Direct Start
+                Start Clearance
             </button>
         <?php endif; ?>
     </div>
