@@ -22,18 +22,117 @@ $isStarted = !empty($clearance['started_at']);
                 onclick="openEditClearanceDetail(<?= $cid ?>, '<?= htmlspecialchars(addslashes($clearance['name'])) ?>', '<?= htmlspecialchars(addslashes($clearance['description'])) ?>', '<?= htmlspecialchars($clearance['school_year']) ?>')">
             <i class="bi bi-pencil me-1"></i> Edit Info
         </button>
-        <?php if ($isStarted): ?>
+        <?php
+        $approvalMap = [];
+        foreach ($collegeApprovals ?? [] as $ca) {
+            $approvalMap[$ca['college']] = $ca;
+        }
+        $hasAllApproval = isset($approvalMap['ALL']);
+        $totalEnrolledCols = count($enrolledColleges ?? []);
+        $approvedColCount = 0;
+        $hasUnsubmittedOrRejected = false;
+        if ($hasAllApproval) {
+            if ($approvalMap['ALL']['status'] === 'approved') {
+                $approvedColCount = $totalEnrolledCols;
+            } elseif ($approvalMap['ALL']['status'] === 'rejected') {
+                $hasUnsubmittedOrRejected = true;
+            }
+        } else {
+            foreach ($enrolledColleges ?? [] as $col) {
+                $st = $approvalMap[$col]['status'] ?? null;
+                if ($st === 'approved') {
+                    $approvedColCount++;
+                } elseif ($st === null || $st === 'rejected') {
+                    $hasUnsubmittedOrRejected = true;
+                }
+            }
+        }
+        $isLegacyDirectStart = $isStarted && empty($collegeApprovals);
+        ?>
+
+        <?php if ($isLegacyDirectStart): ?>
             <span class="badge badge-success" title="Signing started">
                 Started <?= date('M j, Y g:i A', strtotime($clearance['started_at'])) ?>
             </span>
         <?php else: ?>
-            <button class="btn btn-primary btn-sm" id="startClearanceBtn"
-                    onclick="document.getElementById('startClearanceModal').style.display='flex'">
-                Start Clearance
-            </button>
+            <?php if (!empty($collegeApprovals)): ?>
+                <span class="badge <?= ($approvedColCount > 0 && $approvedColCount === $totalEnrolledCols) ? 'badge-success' : 'badge-warning text-dark' ?>" style="padding:0.4rem 0.75rem;">
+                    <i class="bi bi-shield-check me-1"></i>
+                    <?= $approvedColCount ?> / <?= $totalEnrolledCols ?> College(s) Approved
+                </span>
+            <?php endif; ?>
+            <?php if ($hasUnsubmittedOrRejected || empty($collegeApprovals)): ?>
+                <form action="<?= BASE_URL ?>admin/clearances/submit-for-approval" method="POST" style="margin:0; display:inline;">
+                    <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                    <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+                    <button type="submit" class="btn btn-warning btn-sm"
+                            onclick="return confirm('Submit unapproved college(s) to their respective Deans for approval?')">
+                        <i class="bi bi-send-check me-1"></i> Submit for Dean Approval
+                    </button>
+                </form>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </div>
+
+<?php if (!$isLegacyDirectStart && !empty($collegeApprovals)): ?>
+<!-- ===== PER-COLLEGE DEAN APPROVAL STATUS ===== -->
+<div class="card mb-4" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow:hidden;">
+    <div style="padding:0.75rem 1.25rem; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <h5 style="margin:0; font-weight:700; font-size:0.98rem;">
+            <i class="bi bi-shield-check me-2"></i>Dean Approval Status by College
+        </h5>
+        <span class="text-muted" style="font-size:0.82rem;">Students become visible to signatories as soon as their college's Dean approves</span>
+    </div>
+    <div style="padding:0.85rem 1.25rem; display:flex; flex-wrap:wrap; gap:0.65rem;">
+        <?php
+        $displayItems = $hasAllApproval
+            ? [['college' => 'ALL', 'label' => 'All Colleges', 'row' => $approvalMap['ALL']]]
+            : array_map(fn($col) => ['college' => $col, 'label' => $col, 'row' => $approvalMap[$col] ?? null], $enrolledColleges ?? []);
+        ?>
+        <?php foreach ($displayItems as $item): ?>
+            <?php
+            $row    = $item['row'];
+            $status = $row['status'] ?? 'unsubmitted';
+            $dean   = $row['approver_name'] ?? '—';
+            $note   = $row['note'] ?? '';
+            $bg     = '#f3f4f6'; $border = '#d1d5db'; $badgeCls = 'bg-secondary'; $statusLabel = 'Not Submitted';
+            if ($status === 'approved') {
+                $bg = '#f0fdf4'; $border = '#86efac'; $badgeCls = 'bg-success'; $statusLabel = 'Approved';
+            } elseif ($status === 'pending') {
+                $bg = '#fffbeb'; $border = '#fde68a'; $badgeCls = 'bg-warning text-dark'; $statusLabel = 'Pending';
+            } elseif ($status === 'rejected') {
+                $bg = '#fef2f2'; $border = '#fca5a5'; $badgeCls = 'bg-danger'; $statusLabel = 'Rejected';
+            }
+            ?>
+            <div style="background:<?= $bg ?>; border:1px solid <?= $border ?>; border-radius:8px; padding:0.6rem 0.9rem; min-width:200px; flex:1 1 200px; max-width:300px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                    <strong style="font-size:0.92rem;"><?= htmlspecialchars($item['label']) ?></strong>
+                    <span class="badge <?= $badgeCls ?>" style="font-size:0.74rem;"><?= $statusLabel ?></span>
+                </div>
+                <div style="font-size:0.78rem; color:var(--text-muted);">
+                    Dean: <strong><?= htmlspecialchars($dean) ?></strong>
+                </div>
+                <?php if ($status === 'rejected' && $note !== ''): ?>
+                    <div style="font-size:0.78rem; color:#b91c1c; margin-top:0.25rem; font-style:italic;">
+                        &ldquo;<?= htmlspecialchars($note) ?>&rdquo;
+                    </div>
+                <?php endif; ?>
+                <?php if ($status === 'rejected' || $status === 'unsubmitted'): ?>
+                    <form action="<?= BASE_URL ?>admin/clearances/submit-for-approval" method="POST" style="margin-top:0.45rem;">
+                        <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                        <input type="hidden" name="clearance_id" value="<?= $cid ?>">
+                        <input type="hidden" name="college" value="<?= htmlspecialchars($item['college']) ?>">
+                        <button type="submit" class="btn btn-warning btn-sm" style="font-size:0.75rem; padding:2px 8px;">
+                            <i class="bi bi-arrow-repeat me-1"></i> <?= $status === 'rejected' ? 'Resubmit' : 'Submit' ?>
+                        </button>
+                    </form>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- ===== TABS ===== -->
 <div class="tabs">

@@ -302,12 +302,14 @@ ALTER TABLE clearances
 CREATE TABLE IF NOT EXISTS `clearance_approvals` (
     `id`            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `clearance_id`  INT UNSIGNED NOT NULL,
+    `college`       VARCHAR(50)  NOT NULL DEFAULT 'ALL',
     `approver_id`   INT UNSIGNED NOT NULL,
     `approver_name` VARCHAR(150) NOT NULL,
     `status`        ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
     `note`          TEXT NULL,
     `decided_at`    DATETIME NULL,
     `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY `uq_capp_clearance_college` (`clearance_id`, `college`),
     CONSTRAINT `fk_capp_clearance` FOREIGN KEY (`clearance_id`) REFERENCES `clearances`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

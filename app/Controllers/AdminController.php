@@ -909,6 +909,151 @@ class AdminController extends Controller
         $this->redirect($back);
     }
 
+    public function submitForApproval(): void
+    {
+        $this->requireLogin('admin');
+        if (!$this->validateCsrfToken()) { $this->redirect('admin/clearances'); return; }
+        $id            = (int)$this->getPost('clearance_id');
+        $targetCollege = trim((string)$this->getPost('college', ''));
+        $clearance     = $this->clearanceModel->findById($id);
+        $back          = "admin/clearances/detail?id={$id}";
+
+        if (!$clearance) {
+            $this->setFlash('error', 'Clearance not found.');
+            $this->redirect('admin/clearances');
+            return;
+        }
+
+        $pdo = Database::getInstance();
+
+        // 1. Get distinct enrolled colleges
+        $colStmt = $pdo->prepare("
+            SELECT DISTINCT st.college
+            FROM clearance_students cst
+            JOIN students st ON st.id = cst.student_id
+            WHERE cst.clearance_id = ? AND st.college != ''
+            ORDER BY st.college ASC
+        ");
+        $colStmt->execute([$id]);
+        $enrolledColleges = $colStmt->fetchAll(\PDO::FETCH_COLUMN);
+
+        if (empty($enrolledColleges)) {
+            $this->setFlash('error', 'Enroll students first before submitting for Dean approval.');
+            $this->redirect($back);
+            return;
+        }
+
+        // 2. Get assigned Deans for this clearance
+        $deanStmt = $pdo->prepare("
+            SELECT sg.id, sg.full_name, sg.email, sg.scope_type, sg.scope_value
+            FROM clearance_signatories cs
+            JOIN signatories sg ON sg.id = cs.signatory_id
+            WHERE cs.clearance_id = ? AND LOWER(sg.office) LIKE '%dean%'
+            ORDER BY sg.id ASC
+        ");
+        $deanStmt->execute([$id]);
+        $deans = $deanStmt->fetchAll();
+
+        if (empty($deans)) {
+            $this->setFlash('error', 'Please assign a Dean for each enrolled college before submitting for approval.');
+            $this->redirect($back);
+            return;
+        }
+
+        $collegeDeans = [];
+        $globalDean   = null;
+        foreach ($deans as $d) {
+            if (($d['scope_type'] ?? null) === 'college' && !empty($d['scope_value'])) {
+                $collegeDeans[strtoupper(trim($d['scope_value']))] = $d;
+            } elseif (empty($d['scope_type'])) {
+                if ($globalDean === null) $globalDean = $d;
+            }
+        }
+
+        require_once ROOT_PATH . '/app/Models/ClearanceApproval.php';
+        $approvalModel = new ClearanceApproval();
+        $existingRows  = $approvalModel->getForClearance($id);
+        $existingMap   = [];
+        foreach ($existingRows as $row) {
+            $existingMap[$row['college']] = $row;
+        }
+
+        // Determine which colleges to submit
+        $toSubmit = []; // [ ['college' => ..., 'dean' => ...], ... ]
+
+        if ($targetCollege !== '') {
+            // Single-college (or 'ALL') submit/resubmit
+            if ($targetCollege === 'ALL') {
+                if (!$globalDean) {
+                    $this->setFlash('error', 'No global Dean (All Students scope) is assigned to this clearance.');
+                    $this->redirect($back);
+                    return;
+                }
+                $toSubmit[] = ['college' => 'ALL', 'dean' => $globalDean];
+            } else {
+                $key  = strtoupper($targetCollege);
+                $dean = $collegeDeans[$key] ?? $globalDean;
+                if (!$dean) {
+                    $this->setFlash('error', "Please assign a Dean for {$targetCollege} before submitting.");
+                    $this->redirect($back);
+                    return;
+                }
+                $toSubmit[] = ['college' => $targetCollege, 'dean' => $dean];
+            }
+        } elseif ($globalDean && empty($collegeDeans)) {
+            // Only a global Dean is assigned -> single 'ALL' approval
+            $cur = $existingMap['ALL']['status'] ?? null;
+            if ($cur !== 'approved' && $cur !== 'pending') {
+                $toSubmit[] = ['college' => 'ALL', 'dean' => $globalDean];
+            }
+        } else {
+            // Per-college Dean approval: every enrolled college must have a Dean
+            $missingDeans = [];
+            foreach ($enrolledColleges as $col) {
+                $cur = $existingMap[$col]['status'] ?? null;
+                if ($cur === 'approved' || $cur === 'pending') {
+                    continue; // already approved or awaiting decision
+                }
+                $dean = $collegeDeans[strtoupper($col)] ?? $globalDean;
+                if (!$dean) {
+                    $missingDeans[] = $col;
+                } else {
+                    $toSubmit[] = ['college' => $col, 'dean' => $dean];
+                }
+            }
+
+            if (!empty($missingDeans)) {
+                $this->setFlash('error', 'Cannot submit: please assign a Dean for college(s): ' . implode(', ', $missingDeans) . '.');
+                $this->redirect($back);
+                return;
+            }
+        }
+
+        if (empty($toSubmit)) {
+            $this->setFlash('info', 'All enrolled colleges are already approved or awaiting Dean approval.');
+            $this->redirect($back);
+            return;
+        }
+
+        $submittedLabels = [];
+        foreach ($toSubmit as $item) {
+            $approvalModel->createOrResetRequest(
+                $id,
+                $item['college'],
+                (int)$item['dean']['id'],
+                $item['dean']['full_name']
+            );
+            $submittedLabels[] = ($item['college'] === 'ALL' ? 'All Colleges' : $item['college']) . ' (' . $item['dean']['full_name'] . ')';
+        }
+
+        if (empty($clearance['started_at'])) {
+            $pdo->prepare("UPDATE clearances SET status = 'pending_approval' WHERE id = ?")->execute([$id]);
+        }
+
+        $this->setFlash('success', 'Submitted for Dean approval: ' . implode(', ', $submittedLabels) . '.');
+        $this->redirect($back);
+    }
+
     public function downloadClearanceForm(): void
     {
         $this->requireLogin('admin');
@@ -1010,6 +1155,14 @@ class AdminController extends Controller
             return;
         }
 
+        require_once ROOT_PATH . '/app/Models/ClearanceApproval.php';
+        $approvalModel    = new ClearanceApproval();
+        $collegeApprovals = $approvalModel->getForClearance($id);
+        $students         = $this->clearanceModel->getStudentsWithStatus($id);
+
+        $enrolledColleges = array_values(array_unique(array_filter(array_column($students, 'college'))));
+        sort($enrolledColleges);
+
         $data = [
             'clearance'                      => $clearance,
             'cid'                            => $id,
@@ -1017,7 +1170,9 @@ class AdminController extends Controller
             'unassignedSignatories'          => $this->signatoryModel->findUnassigned($id),
             'assignedEnrollmentCommittees'   => $this->clearanceModel->getEnrollmentCommittees($id),
             'unassignedEnrollmentCommittees' => $this->enrollmentCommitteeModel->findUnassigned($id),
-            'students'                       => $this->clearanceModel->getStudentsWithStatus($id),
+            'students'                       => $students,
+            'collegeApprovals'               => $collegeApprovals,
+            'enrolledColleges'               => $enrolledColleges,
             'flash'                          => $this->getFlash(),
             'userName'                       => $_SESSION['user_name'],
         ];
