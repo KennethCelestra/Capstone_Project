@@ -36,18 +36,25 @@ class Clearance extends Model
 
     /**
      * Students enrolled in a clearance, shaped for the email queue.
+     * Optionally filtered by college (e.g. when a college Dean approves).
      */
-    public function getEnrolledStudentsForEmail(int $clearanceId): array
+    public function getEnrolledStudentsForEmail(int $clearanceId, ?string $college = null): array
     {
-        $stmt = $this->db->prepare("
+        $sql = "
             SELECT st.id AS student_id, CONCAT(st.first_name, ' ', st.last_name) AS full_name, st.email,
                    c.id AS clearance_id, c.name AS clearance_name
             FROM clearance_students cst
             JOIN students st ON st.id = cst.student_id
             JOIN clearances c ON c.id = cst.clearance_id
             WHERE cst.clearance_id = ?
-        ");
-        $stmt->execute([$clearanceId]);
+        ";
+        $params = [$clearanceId];
+        if ($college !== null && $college !== '' && $college !== 'ALL') {
+            $sql .= " AND st.college = ?";
+            $params[] = $college;
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 

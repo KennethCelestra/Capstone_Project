@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_PATH . '/app/Models/ClearanceStatus.php';
+require_once ROOT_PATH . '/app/Models/ClearanceApproval.php';
 require_once ROOT_PATH . '/app/Models/Clearance.php';
 require_once ROOT_PATH . '/app/Models/Signatory.php';
 require_once ROOT_PATH . '/app/Helpers/Mailer.php';
@@ -25,12 +26,98 @@ class SignatoryController extends Controller
         $signatoryId = (int) $_SESSION['user_id'];
         $clearances  = $this->statusModel->getClearancesForSignatory($signatoryId);
 
+        $signatoryRecord  = $this->signatoryModel->findById($signatoryId);
+        $isDean           = $signatoryRecord && stripos($signatoryRecord['office'], 'dean') !== false;
+        $approvalModel    = new ClearanceApproval();
+        $pendingApprovals = $isDean ? $approvalModel->getPendingForSignatory($signatoryId) : [];
+
         $data = [
-            'clearances' => $clearances,
-            'flash'      => $this->getFlash(),
-            'userName'   => $_SESSION['user_name'],
+            'clearances'       => $clearances,
+            'isDean'           => $isDean,
+            'pendingApprovals' => $pendingApprovals,
+            'flash'            => $this->getFlash(),
+            'userName'         => $_SESSION['user_name'],
         ];
         $this->view('layouts/main', array_merge($data, ['content' => 'signatory/dashboard']));
+    }
+
+    public function approveClearance(): void
+    {
+        $this->requireLogin('signatory');
+        if (!$this->validateCsrfToken()) { $this->redirect('signatory/dashboard'); return; }
+        $signatoryId = (int) $_SESSION['user_id'];
+        $approvalId  = (int) $this->getPost('approval_id');
+        $clearanceId = (int) $this->getPost('clearance_id');
+
+        $approvalModel  = new ClearanceApproval();
+        $clearanceModel = new Clearance();
+        $approval       = $approvalModel->findById($approvalId);
+
+        if (!$approval || (int)$approval['clearance_id'] !== $clearanceId || (int)$approval['approver_id'] !== $signatoryId) {
+            $this->setFlash('error', 'Invalid approval request.');
+            $this->redirect('signatory/dashboard');
+            return;
+        }
+
+        if ($approvalModel->approveForSignatory($approvalId, $signatoryId)) {
+            // Ensure clearance is marked active/started on first college approval
+            $clearanceModel->markStarted($clearanceId);
+
+            $college      = $approval['college'] ?? 'ALL';
+            $collegeLabel = ($college === 'ALL') ? 'All Colleges' : $college;
+            $students     = $clearanceModel->getEnrolledStudentsForEmail($clearanceId, $college);
+
+            if (!empty($students)) {
+                if (!isset($_SESSION['bg_emails'])) {
+                    $_SESSION['bg_emails'] = [];
+                }
+                $_SESSION['bg_emails'][] = [
+                    'type'     => 'started',
+                    'students' => $students,
+                ];
+            }
+
+            $this->setFlash(
+                'success',
+                "Approved {$collegeLabel} for this clearance! " . count($students) . " student(s) are now active for signatories and queued for email notification."
+            );
+        } else {
+            $this->setFlash('error', 'This approval request was already processed or could not be approved.');
+        }
+
+        $this->redirect('signatory/dashboard');
+    }
+
+    public function rejectClearance(): void
+    {
+        $this->requireLogin('signatory');
+        if (!$this->validateCsrfToken()) { $this->redirect('signatory/dashboard'); return; }
+        $signatoryId = (int) $_SESSION['user_id'];
+        $approvalId  = (int) $this->getPost('approval_id');
+        $clearanceId = (int) $this->getPost('clearance_id');
+        $note        = trim((string)$this->getPost('note', ''));
+
+        $approvalModel = new ClearanceApproval();
+        $approval      = $approvalModel->findById($approvalId);
+
+        if (!$approval || (int)$approval['clearance_id'] !== $clearanceId || (int)$approval['approver_id'] !== $signatoryId) {
+            $this->setFlash('error', 'Invalid rejection request.');
+            $this->redirect('signatory/dashboard');
+            return;
+        }
+
+        if ($approvalModel->rejectForSignatory($approvalId, $signatoryId, $note)) {
+            $college      = $approval['college'] ?? 'ALL';
+            $collegeLabel = ($college === 'ALL') ? 'All Colleges' : $college;
+            $this->setFlash(
+                'warning',
+                "Rejected {$collegeLabel}. Admin can revise and resubmit {$collegeLabel} without affecting other colleges."
+            );
+        } else {
+            $this->setFlash('error', 'Could not reject this clearance request.');
+        }
+
+        $this->redirect('signatory/dashboard');
     }
 
     public function uploadRequirement(): void

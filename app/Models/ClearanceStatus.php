@@ -4,6 +4,27 @@ class ClearanceStatus extends Model
 {
     protected string $table = 'clearance_status';
 
+    /**
+     * SQL predicate ensuring a student is only visible/actionable when either:
+     *  - No approval records exist for the clearance (legacy direct-start), OR
+     *  - The student's college (or 'ALL') has an 'approved' Dean approval.
+     */
+    private function approvedCollegeSql(string $clearanceCol = 'c.id', string $studentCollegeCol = 'st.college'): string
+    {
+        return "(
+            NOT EXISTS (
+                SELECT 1 FROM clearance_approvals ca_any
+                WHERE ca_any.clearance_id = {$clearanceCol}
+            )
+            OR EXISTS (
+                SELECT 1 FROM clearance_approvals ca_ok
+                WHERE ca_ok.clearance_id = {$clearanceCol}
+                  AND ca_ok.status = 'approved'
+                  AND (ca_ok.college = 'ALL' OR ca_ok.college = {$studentCollegeCol})
+            )
+        )";
+    }
+
     // ----------------------------------------------------------------
     // SIGNATORY: Student listing
     // ----------------------------------------------------------------
@@ -14,6 +35,7 @@ class ClearanceStatus extends Model
      */
     public function getStudentsForSignatory(int $clearanceId, int $signatoryId): array
     {
+        $approvedSql = $this->approvedCollegeSql('c.id', 'st.college');
         $stmt = $this->db->prepare("
             SELECT st.id, st.student_id AS student_number, CONCAT(st.first_name, ' ', st.last_name) AS full_name,
                    st.last_name, st.first_name, st.college, st.email, st.course, st.year_level, st.section,
@@ -30,6 +52,7 @@ class ClearanceStatus extends Model
                           AND cs2.signatory_id = sg2.id
                        WHERE csig2.clearance_id = cst.clearance_id
                          AND csig2.signatory_id != ?
+                         AND csig2.is_final = 0
                          AND (
                              sg2.scope_type IS NULL
                              OR (sg2.scope_type = 'college' AND sg2.scope_value = st.college)
@@ -49,6 +72,7 @@ class ClearanceStatus extends Model
             WHERE cst.clearance_id = ?
               AND c.archived = 0
               AND c.started_at IS NOT NULL
+              AND {$approvedSql}
               AND (
                   sg.scope_type IS NULL 
                   OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
@@ -62,10 +86,11 @@ class ClearanceStatus extends Model
 
     /**
      * Get all clearances a signatory is assigned to, with summary counts.
-     * Only returns clearances that have been started by the admin.
+     * Only returns clearances that have been started and have approved colleges in scope.
      */
     public function getClearancesForSignatory(int $signatoryId): array
     {
+        $approvedSql = $this->approvedCollegeSql('c.id', 'st.college');
         $stmt = $this->db->prepare("
             SELECT c.id AS clearance_id, c.name AS clearance_name, c.school_year,
                    COUNT(DISTINCT cst.student_id)                              AS total_students,
@@ -82,6 +107,7 @@ class ClearanceStatus extends Model
                AND cs.student_id   = cst.student_id
                AND cs.signatory_id = ?
             WHERE csig.signatory_id = ? AND c.archived = 0 AND c.started_at IS NOT NULL
+              AND {$approvedSql}
               AND (
                   sg.scope_type IS NULL 
                   OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
@@ -100,6 +126,7 @@ class ClearanceStatus extends Model
      */
     public function getFlaggedStudentsForConfirmation(int $signatoryId, int $clearanceId = 0): array
     {
+        $approvedSql = $this->approvedCollegeSql('c.id', 'st.college');
         $sql = "
             SELECT cs.clearance_id, c.name AS clearance_name,
                    st.id AS student_db_id, st.student_id AS student_number,
@@ -109,6 +136,7 @@ class ClearanceStatus extends Model
             JOIN clearances c  ON c.id  = cs.clearance_id
             JOIN students   st ON st.id = cs.student_id
             WHERE cs.signatory_id = ? AND cs.status = 'flagged' AND c.started_at IS NOT NULL
+              AND {$approvedSql}
         ";
         $params = [$signatoryId];
 
@@ -464,6 +492,7 @@ class ClearanceStatus extends Model
      */
     public function getClearancesForEnrollmentCommittee(int $enrollmentCommitteeId, int $archived = 0): array
     {
+        $approvedSql = $this->approvedCollegeSql('c.id', 'st.college');
         $stmt = $this->db->prepare("
             SELECT
                 c.id AS clearance_id,
@@ -493,6 +522,7 @@ class ClearanceStatus extends Model
                AND cs.student_id   = st.id
                AND cs.signatory_id = csig.signatory_id
             WHERE ca.enrollment_committee_id = ? AND c.archived = ? AND c.started_at IS NOT NULL
+              AND {$approvedSql}
               AND (
                   sg.scope_type IS NULL 
                   OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
@@ -568,6 +598,7 @@ class ClearanceStatus extends Model
                AND cs.signatory_id = sg.id
             WHERE csig.clearance_id = ?
               AND csig.signatory_id != ?
+              AND csig.is_final = 0
               AND (
                   sg.scope_type IS NULL
                   OR (sg.scope_type = 'college' AND sg.scope_value = st.college)
@@ -591,6 +622,7 @@ class ClearanceStatus extends Model
      */
     public function clearAllPending(int $clearanceId, int $signatoryId): array
     {
+        $approvedSql = $this->approvedCollegeSql('cst.clearance_id', 'st.college');
         // Step 1: Get all students in this clearance that are NOT flagged for this signatory
         $stmt = $this->db->prepare("
             SELECT st.id
@@ -603,6 +635,7 @@ class ClearanceStatus extends Model
                AND cs.clearance_id = ?
                AND cs.signatory_id = ?
             WHERE cst.clearance_id = ?
+              AND {$approvedSql}
               AND (cs.status IS NULL OR cs.status = 'pending')
               AND (
                   sg.scope_type IS NULL 
@@ -621,6 +654,7 @@ class ClearanceStatus extends Model
                          AND cs2.signatory_id = sg2.id
                       WHERE csig2.clearance_id = cst.clearance_id
                         AND csig2.signatory_id != ?
+                        AND csig2.is_final = 0
                         AND (
                             sg2.scope_type IS NULL
                             OR (sg2.scope_type = 'college' AND sg2.scope_value = st.college)
@@ -669,6 +703,7 @@ class ClearanceStatus extends Model
      */
     public function getFlaggedStudentsPerSignatory(int $clearanceId, ?int $excludeSignatoryId = null): array
     {
+        $approvedSql = $this->approvedCollegeSql('cs.clearance_id', 'st.college');
         $sql = "
             SELECT sg.id AS signatory_id, sg.office, sg.full_name AS signatory_name,
                    st.student_id AS student_number,
@@ -678,6 +713,7 @@ class ClearanceStatus extends Model
             JOIN signatories sg ON sg.id = cs.signatory_id
             JOIN students st    ON st.id = cs.student_id
             WHERE cs.clearance_id = ? AND cs.status = 'flagged'
+              AND {$approvedSql}
         ";
         $params = [$clearanceId];
 
@@ -706,6 +742,7 @@ class ClearanceStatus extends Model
      */
     public function getAllSignatoryProgressForClearance(int $clearanceId, ?int $excludeSignatoryId = null): array
     {
+        $approvedSql = $this->approvedCollegeSql('csig.clearance_id', 'st.college');
         $sql = "
             SELECT sg.id AS signatory_id, sg.office, sg.full_name,
                    COUNT(DISTINCT cst.student_id)                                   AS total,
@@ -720,6 +757,7 @@ class ClearanceStatus extends Model
                                          AND cs.signatory_id = sg.id 
                                          AND cs.student_id = st.id
             WHERE csig.clearance_id = ?
+              AND {$approvedSql}
         ";
         $params = [$clearanceId];
 

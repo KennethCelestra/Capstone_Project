@@ -1,16 +1,18 @@
 <?php
 require_once __DIR__ . '/../config/app.php';
+require_once __DIR__ . '/../core/Database.php';
 
 try {
-    $pdo = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASS, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-    ]);
+    $pdo = Database::getInstance();
 
-    // Helper to check column existence
+    // Helper to check column existence (compatible with native prepares on MySQL, MariaDB, and TiDB)
     $columnExists = function($table, $column) use ($pdo) {
-        $stmt = $pdo->prepare("SHOW COLUMNS FROM `{$table}` LIKE ?");
-        $stmt->execute([$column]);
-        return (bool)$stmt->fetch();
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?
+        ");
+        $stmt->execute([$table, $column]);
+        return (int)$stmt->fetchColumn() > 0;
     };
 
     // 1. clearances: status column
@@ -30,15 +32,26 @@ try {
         CREATE TABLE IF NOT EXISTS `clearance_approvals` (
             `id`           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             `clearance_id` INT UNSIGNED NOT NULL,
+            `college`      VARCHAR(50)  NOT NULL DEFAULT 'ALL',
             `approver_id`  INT UNSIGNED NOT NULL,
             `approver_name` VARCHAR(150) NOT NULL,
             `status`       ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
             `note`         TEXT NULL,
             `decided_at`   DATETIME NULL,
             `created_at`   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY `uq_capp_clearance_college` (`clearance_id`, `college`),
             CONSTRAINT `fk_capp_clearance` FOREIGN KEY (`clearance_id`) REFERENCES `clearances`(`id`) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ");
+
+    if (!$columnExists('clearance_approvals', 'college')) {
+        $pdo->exec("ALTER TABLE `clearance_approvals` ADD COLUMN `college` VARCHAR(50) NOT NULL DEFAULT 'ALL' AFTER `clearance_id`");
+        try {
+            $pdo->exec("ALTER TABLE `clearance_approvals` ADD UNIQUE KEY `uq_capp_clearance_college` (`clearance_id`, `college`)");
+        } catch (Exception $e) {
+            // index may already exist
+        }
+    }
 
     // 3. clearance_signatories: is_final column
     if (!$columnExists('clearance_signatories', 'is_final')) {

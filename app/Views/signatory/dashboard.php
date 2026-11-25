@@ -64,6 +64,84 @@ foreach ($clearances as $c) {
     </div>
 <?php endif; ?>
 
+<?php if (!empty($pendingApprovals)): ?>
+<div class="card mb-4" style="background:var(--surface); border:1px solid #f59e0b; border-radius:12px; box-shadow:0 4px 14px rgba(245,158,11,0.15); overflow:hidden;">
+    <div style="padding:1rem 1.25rem; background:#fffbeb; border-bottom:1px solid #fde68a; display:flex; justify-content:space-between; align-items:center;">
+        <h4 style="margin:0; font-size:1.05rem; font-weight:700; color:#b45309;">
+            <i class="bi bi-shield-exclamation me-2"></i>Clearances Awaiting Your Approval (Dean)
+        </h4>
+        <span class="badge bg-warning text-dark"><?= count($pendingApprovals) ?> Pending</span>
+    </div>
+    <div class="p-3">
+        <?php foreach ($pendingApprovals as $app): ?>
+            <?php $colLabel = (($app['college'] ?? 'ALL') === 'ALL') ? 'All Colleges' : $app['college']; ?>
+            <div style="background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:1rem; margin-bottom:0.75rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                <div>
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; flex-wrap:wrap;">
+                        <h5 style="margin:0; font-size:1rem; font-weight:700;"><?= htmlspecialchars($app['clearance_name']) ?></h5>
+                        <span class="badge bg-primary" style="font-size:0.76rem;"><?= htmlspecialchars($colLabel) ?></span>
+                    </div>
+                    <div style="font-size:0.85rem; color:var(--text-muted);">
+                        <span>Academic Year: <strong><?= htmlspecialchars($app['school_year']) ?></strong></span>
+                        <span class="mx-2">&bull;</span>
+                        <span><?= htmlspecialchars($colLabel) ?> Students: <strong><?= (int)$app['student_count'] ?></strong></span>
+                    </div>
+                </div>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                    <form action="<?= BASE_URL ?>signatory/approvals/approve" method="POST" style="margin:0;">
+                        <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+                        <input type="hidden" name="approval_id" value="<?= $app['id'] ?>">
+                        <input type="hidden" name="clearance_id" value="<?= $app['clearance_id'] ?>">
+                        <button type="submit" class="btn btn-success btn-sm"
+                                onclick="return confirm('Approve <?= htmlspecialchars(addslashes($colLabel)) ?> for this clearance? Students from <?= htmlspecialchars(addslashes($colLabel)) ?> will immediately appear to signatories and be emailed.')">
+                            <i class="bi bi-check-circle me-1"></i> Approve <?= htmlspecialchars($colLabel) ?>
+                        </button>
+                    </form>
+                    <button type="button" class="btn btn-outline-danger btn-sm"
+                            onclick="openRejectModal(<?= $app['id'] ?>, <?= $app['clearance_id'] ?>, '<?= htmlspecialchars(addslashes($app['clearance_name'] . ' — ' . $colLabel)) ?>')">
+                        <i class="bi bi-x-circle me-1"></i> Reject
+                    </button>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div id="rejectClearanceModal" class="modal" style="display:none;">
+    <div class="modal-box" style="max-width:440px;">
+        <div class="modal-header">
+            <h3>Reject College Approval</h3>
+            <button onclick="document.getElementById('rejectClearanceModal').style.display='none'" class="close-btn">✕</button>
+        </div>
+        <form action="<?= BASE_URL ?>signatory/approvals/reject" method="POST">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
+            <input type="hidden" name="approval_id" id="rejectApprovalId">
+            <input type="hidden" name="clearance_id" id="rejectClearanceId">
+            <div style="padding:1.25rem 1.5rem;">
+                <p>Provide a reason for rejecting <strong id="rejectClearanceName"></strong>. Only this college will be returned to Admin for revision; other colleges are unaffected.</p>
+                <div class="form-group mb-0">
+                    <label>Reason / Note <span class="required">*</span></label>
+                    <textarea name="note" class="form-control" rows="3" required placeholder="Describe what needs to be changed..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('rejectClearanceModal').style.display='none'">Cancel</button>
+                <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+function openRejectModal(approvalId, clearanceId, name) {
+    document.getElementById('rejectApprovalId').value = approvalId;
+    document.getElementById('rejectClearanceId').value = clearanceId;
+    document.getElementById('rejectClearanceName').textContent = name;
+    document.getElementById('rejectClearanceModal').style.display = 'flex';
+}
+</script>
+<?php endif; ?>
+
 <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden;">
     <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: .6rem;">
         <i class="bi bi-folder2-open" style="color: var(--primary); font-size: 1.1rem;"></i>
